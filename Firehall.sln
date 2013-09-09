@@ -1,0 +1,67 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firehall", "Firehall\Firehall.csproj", "{1E9B811C-F7CD-42BE-A236-AC7610BD4F28}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1E9B811C-F7CD-42BE-A236-AC7610BD4F28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E9B811C-F7CD-42BE-A236-AC7610BD4F28}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E9B811C-F7CD-42BE-A236-AC7610BD4F28}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E9B811C-F7CD-42BE-A236-AC7610BD4F28}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = Firehall\Firehall.csproj
+		Policies = $0
+		$0.TextStylePolicy = $1
+		$1.FileWidth = 120
+		$1.TabsToSpaces = False
+		$1.NoTabsAfterNonTabs = True
+		$1.inheritsSet = VisualStudio
+		$1.inheritsScope = text/plain
+		$1.scope = text/plain
+		$0.TextStylePolicy = $2
+		$2.inheritsSet = null
+		$2.scope = application/config+xml
+		$0.XmlFormattingPolicy = $3
+		$3.inheritsSet = null
+		$3.scope = application/config+xml
+		$0.TextStylePolicy = $4
+		$4.FileWidth = 120
+		$4.TabWidth = 2
+		$4.IndentWidth = 2
+		$4.NoTabsAfterNonTabs = True
+		$4.inheritsSet = Mono
+		$4.inheritsScope = text/plain
+		$4.scope = application/xml
+		$0.XmlFormattingPolicy = $5
+		$5.inheritsSet = Mono
+		$5.inheritsScope = application/xml
+		$5.scope = application/xml
+		$0.TextStylePolicy = $6
+		$6.inheritsSet = null
+		$6.scope = text/x-csharp
+		$0.CSharpFormattingPolicy = $7
+		$7.inheritsSet = Mono
+		$7.inheritsScope = text/x-csharp
+		$7.scope = text/x-csharp
+		$0.TextStylePolicy = $8
+		$8.inheritsSet = null
+		$8.scope = application/x-asax
+		$0.TextStylePolicy = $9
+		$9.FileWidth = 120
+		$9.TabWidth = 2
+		$9.IndentWidth = 2
+		$9.NoTabsAfterNonTabs = True
+		$9.inheritsSet = Mono
+		$9.inheritsScope = text/plain
+		$9.scope = application/x-aspx
+		$0.TextStylePolicy = $10
+		$10.inheritsSet = null
+		$10.scope = application/x-master-page
+	EndGlobalSection
+EndGlobal
