@@ -41,10 +41,10 @@
     <Reference Include="System.Security" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.SQLite">
-      <HintPath>Bin\System.Data.SQLite.dll</HintPath>
+      <HintPath>lib\System.Data.SQLite.dll</HintPath>
     </Reference>
     <Reference Include="System.Data.SQLite.Linq">
-      <HintPath>Bin\System.Data.SQLite.Linq.dll</HintPath>
+      <HintPath>lib\System.Data.SQLite.Linq.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -145,13 +145,13 @@
     <Folder Include="App_Code\" />
     <Folder Include="App_LocalResources\" />
     <Folder Include="Membership\" />
-    <Folder Include="Bin\" />
+    <Folder Include="lib\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App_LocalResources\InstallMembership.sql" />
     <None Include="App_Data\app_data.sqlite" />
     <None Include="Web.sitemap" />
-    <None Include="Bin\System.Data.SQLite.dll" />
-    <None Include="Bin\System.Data.SQLite.Linq.dll" />
+    <None Include="lib\System.Data.SQLite.dll" />
+    <None Include="lib\System.Data.SQLite.Linq.dll" />
   </ItemGroup>
 </Project>

@@ -6,7 +6,7 @@ using System.Web.Security;
 
 namespace Firehall
 {
-	public partial class CreatingUserAccounts : BasePage
+	public partial class CreatingUserAccounts : System.Web.UI.Page
 	{
 		const string passwordQuestion = "What is your favourite colour";
 

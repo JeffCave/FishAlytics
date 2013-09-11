@@ -1,4 +1,4 @@
-<%@ Page Language="C#" AutoeventWireup="true" Inherits="Firehall.CreatingUserAccounts" MasterPageFile="~/Site.master" %>
+<%@ Page Language="C#" AutoeventWireup="true" Inherits="Firehall.CreatingUserAccounts" MasterPageFile="~/Site.master" CodeFile="CreatingUserAccounts.aspx.cs" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" Runat="Server">
 <table>
 	<tr>

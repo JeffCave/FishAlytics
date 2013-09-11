@@ -1,1 +1,1 @@
-<%@ Application Inherits="Firehall.Global" %>
+<%@ Application Inherits="Firehall.Global" Codefile="Global.asax.cs" %>

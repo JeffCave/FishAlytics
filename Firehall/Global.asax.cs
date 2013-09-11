@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections;
 using System.ComponentModel;
@@ -7,7 +6,7 @@ using System.Web.SessionState;
 
 namespace Firehall
 {
-	public class Global : System.Web.HttpApplication
+	public partial class Global : System.Web.HttpApplication
 	{
 		
 		protected virtual void Application_Start (Object sender, EventArgs e)

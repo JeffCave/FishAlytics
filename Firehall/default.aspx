@@ -1,4 +1,4 @@
-<%@ Page Language="C#" MasterPageFile="~/Site.master" AutoEventWireup="true" Inherits="Firehall.Default" %>
+<%@ Page Language="C#" MasterPageFile="~/Site.master" AutoEventWireup="true" Inherits="Firehall.Default" CodeFile="default.aspx.cs" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" Runat="Server">
 
 	<asp:Panel runat="server" ID="AuthenticatedMessagePanel">
