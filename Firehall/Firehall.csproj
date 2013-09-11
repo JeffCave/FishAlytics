@@ -153,5 +153,8 @@
     <None Include="Web.sitemap" />
     <None Include="lib\System.Data.SQLite.dll" />
     <None Include="lib\System.Data.SQLite.Linq.dll" />
+    <None Include="lib\SQLite.Interop.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

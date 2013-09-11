@@ -4,25 +4,25 @@ using System.ComponentModel;
 using System.Configuration;
 using System.Configuration.Provider;
 using System.Data;
-using System.Data.SQLite;
 using System.Globalization;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Web.Profile;
 using System.Xml.Serialization;
+using Mono.Data.Sqlite;
 
-namespace TechInfoSystems.Data.SQLite
+namespace TechInfoSystems.Data.Sqlite
 {
 	/// <summary>
-	/// Provides a Profile implementation whose data is stored in a SQLite database.
+	/// Provides a Profile implementation whose data is stored in a Sqlite database.
 	/// </summary>
-	public sealed class SQLiteProfileProvider : ProfileProvider
+	public sealed class SqliteProfileProvider : ProfileProvider
 	{
 		#region Private Fields
 
 		private static string _connectionString;
-		private const string HTTP_TRANSACTION_ID = "SQLiteTran";
+		private const string HTTP_TRANSACTION_ID = "SqliteTran";
 		private const string USER_TB_NAME = "[aspnet_Users]";
 		private const string PROFILE_TB_NAME = "[aspnet_Profile]";
 		private const string APP_TB_NAME = "[aspnet_Applications]";
@@ -51,7 +51,7 @@ namespace TechInfoSystems.Data.SQLite
 			set
 			{
 				if (value.Length > MAX_APPLICATION_NAME_LENGTH)
-					throw new ProviderException(String.Format("SQLiteProfileProvider error: applicationName must be less than or equal to {0} characters.", MAX_APPLICATION_NAME_LENGTH));
+					throw new ProviderException(String.Format("SqliteProfileProvider error: applicationName must be less than or equal to {0} characters.", MAX_APPLICATION_NAME_LENGTH));
 
 				_applicationName = value;
 				_applicationId = GetApplicationId(_applicationName);
@@ -71,7 +71,7 @@ namespace TechInfoSystems.Data.SQLite
 			set
 			{
 				if (value.Length > MAX_APPLICATION_NAME_LENGTH)
-					throw new ProviderException(String.Format("SQLiteProfileProvider error: membershipApplicationName must be less than or equal to {0} characters.", MAX_APPLICATION_NAME_LENGTH));
+					throw new ProviderException(String.Format("SqliteProfileProvider error: membershipApplicationName must be less than or equal to {0} characters.", MAX_APPLICATION_NAME_LENGTH));
 
 				_membershipApplicationName = value;
 				_membershipApplicationId = GetApplicationId(_membershipApplicationName);
@@ -102,23 +102,23 @@ namespace TechInfoSystems.Data.SQLite
 				throw new ArgumentNullException("config");
 
 			if (string.IsNullOrEmpty(name))
-				name = "SQLiteProfileProvider";
+				name = "SqliteProfileProvider";
 
 
 			if (string.IsNullOrEmpty(config["description"]))
 			{
 				config.Remove("description");
-				config.Add("description", "SQLite Profile Provider");
+				config.Add("description", "Sqlite Profile Provider");
 			}
 
 			base.Initialize(name, config);
 
-			// Initialize SQLiteConnection.
+			// Initialize SqliteConnection.
 			ConnectionStringSettings connectionStringSettings = ConfigurationManager.ConnectionStrings[config["connectionStringName"]];
 
 			if (connectionStringSettings == null || String.IsNullOrEmpty(connectionStringSettings.ConnectionString))
 			{
-				throw new ProviderException("Connection String is empty for SQLiteProfileProvider. Check the web configuration file (web.config).");
+				throw new ProviderException("Connection String is empty for SqliteProfileProvider. Check the web configuration file (web.config).");
 			}
 			_connectionString = connectionStringSettings.ConnectionString;
 
@@ -189,7 +189,7 @@ namespace TechInfoSystems.Data.SQLite
 		}
 
 		/// <summary>
-		/// Updates the SQLite profile database with the specified property values. 
+		/// Updates the Sqlite profile database with the specified property values. 
 		/// </summary>
 		/// <param name="sc">The <see cref="SettingsContext" /> that contains user profile information. </param>
 		/// <param name="properties">A <see cref="SettingsPropertyValueCollection" /> containing profile information and 
@@ -210,8 +210,8 @@ namespace TechInfoSystems.Data.SQLite
 			if (names.Length == 0)
 				return;
 
-			SQLiteTransaction tran = null;
-			SQLiteConnection cn = GetDbConnectionForProfile();
+			SqliteTransaction tran = null;
+			SqliteConnection cn = GetDbConnectionForProfile();
 			try
 			{
 				if (cn.State == ConnectionState.Closed)
@@ -220,7 +220,7 @@ namespace TechInfoSystems.Data.SQLite
 				if (!IsTransactionInProgress())
 					tran = cn.BeginTransaction();
 
-				using (SQLiteCommand cmd = cn.CreateCommand())
+				using (SqliteCommand cmd = cn.CreateCommand())
 				{
 					cmd.CommandText = "SELECT UserId FROM " + USER_TB_NAME + " WHERE LoweredUsername = $Username AND ApplicationId = $ApplicationId;";
 
@@ -280,7 +280,7 @@ namespace TechInfoSystems.Data.SQLite
 					{
 						tran.Rollback();
 					}
-					catch (SQLiteException) { }
+					catch (SqliteException) { }
 				}
 
 				throw;
@@ -311,8 +311,8 @@ namespace TechInfoSystems.Data.SQLite
 				throw new ArgumentException("Profiles collection is empty", "profiles");
 
 			int numDeleted = 0;
-			SQLiteTransaction tran = null;
-			SQLiteConnection cn = GetDbConnectionForProfile();
+			SqliteTransaction tran = null;
+			SqliteConnection cn = GetDbConnectionForProfile();
 			try
 			{
 				if (cn.State == ConnectionState.Closed)
@@ -339,7 +339,7 @@ namespace TechInfoSystems.Data.SQLite
 					{
 						tran.Rollback();
 					}
-					catch (SQLiteException) { }
+					catch (SqliteException) { }
 				}
 
 				throw;
@@ -366,8 +366,8 @@ namespace TechInfoSystems.Data.SQLite
 		public override int DeleteProfiles(string[] usernames)
 		{
 			int numDeleted = 0;
-			SQLiteTransaction tran = null;
-			SQLiteConnection cn = GetDbConnectionForProfile();
+			SqliteTransaction tran = null;
+			SqliteConnection cn = GetDbConnectionForProfile();
 			try
 			{
 				if (cn.State == ConnectionState.Closed)
@@ -394,7 +394,7 @@ namespace TechInfoSystems.Data.SQLite
 					{
 						tran.Rollback();
 					}
-					catch (SQLiteException) { }
+					catch (SqliteException) { }
 				}
 
 				throw;
@@ -421,10 +421,10 @@ namespace TechInfoSystems.Data.SQLite
 		/// </returns>
 		public override int DeleteInactiveProfiles(ProfileAuthenticationOption authenticationOption, DateTime userInactiveSinceDate)
 		{
-			SQLiteConnection cn = GetDbConnectionForProfile();
+			SqliteConnection cn = GetDbConnectionForProfile();
 			try
 			{
-				using (SQLiteCommand cmd = cn.CreateCommand())
+				using (SqliteCommand cmd = cn.CreateCommand())
 				{
 					cmd.CommandText = "DELETE FROM " + PROFILE_TB_NAME + " WHERE UserId IN (SELECT UserId FROM " + USER_TB_NAME
 														+ " WHERE ApplicationId = $ApplicationId AND LastActivityDate <= $LastActivityDate"
@@ -456,10 +456,10 @@ namespace TechInfoSystems.Data.SQLite
 		/// </returns>
 		public override int GetNumberOfInactiveProfiles(ProfileAuthenticationOption authenticationOption, DateTime userInactiveSinceDate)
 		{
-			SQLiteConnection cn = GetDbConnectionForProfile();
+			SqliteConnection cn = GetDbConnectionForProfile();
 			try
 			{
-				using (SQLiteCommand cmd = cn.CreateCommand())
+				using (SqliteCommand cmd = cn.CreateCommand())
 				{
 					cmd.CommandText = "SELECT COUNT(*) FROM " + USER_TB_NAME + " u, " + PROFILE_TB_NAME + " p " +
 														"WHERE u.ApplicationId = $ApplicationId AND u.LastActivityDate <= $LastActivityDate AND u.UserId = p.UserId" + GetClauseForAuthenticationOptions(authenticationOption);
@@ -496,10 +496,10 @@ namespace TechInfoSystems.Data.SQLite
 												+ USER_TB_NAME + " u, " + PROFILE_TB_NAME + " p WHERE u.ApplicationId = $ApplicationId AND u.UserId = p.UserId "
 												+ GetClauseForAuthenticationOptions(authenticationOption);
 
-			SQLiteParameter prm = new SQLiteParameter("$ApplicationId", DbType.String, 36);
+			SqliteParameter prm = new SqliteParameter("$ApplicationId", DbType.String, 36);
 			prm.Value = _membershipApplicationId;
 
-			SQLiteParameter[] args = new SQLiteParameter[1];
+			SqliteParameter[] args = new SqliteParameter[1];
 			args[0] = prm;
 			return GetProfilesForQuery(sqlQuery, args, pageIndex, pageSize, out totalRecords);
 		}
@@ -521,12 +521,12 @@ namespace TechInfoSystems.Data.SQLite
 												+ USER_TB_NAME + " u, " + PROFILE_TB_NAME + " p WHERE u.ApplicationId = $ApplicationId AND u.UserId = p.UserId AND u.LastActivityDate <= $LastActivityDate"
 												+ GetClauseForAuthenticationOptions(authenticationOption);
 
-			SQLiteParameter prm1 = new SQLiteParameter("$ApplicationId", DbType.String, 256);
+			SqliteParameter prm1 = new SqliteParameter("$ApplicationId", DbType.String, 256);
 			prm1.Value = _membershipApplicationId;
-			SQLiteParameter prm2 = new SQLiteParameter("$LastActivityDate", DbType.DateTime);
+			SqliteParameter prm2 = new SqliteParameter("$LastActivityDate", DbType.DateTime);
 			prm2.Value = userInactiveSinceDate;
 
-			SQLiteParameter[] args = new SQLiteParameter[2];
+			SqliteParameter[] args = new SqliteParameter[2];
 			args[0] = prm1;
 			args[1] = prm2;
 
@@ -550,12 +550,12 @@ namespace TechInfoSystems.Data.SQLite
 												+ USER_TB_NAME + " u, " + PROFILE_TB_NAME + " p WHERE u.ApplicationId = $ApplicationId AND u.UserId = p.UserId AND u.LoweredUserName LIKE $UserName"
 												+ GetClauseForAuthenticationOptions(authenticationOption);
 
-			SQLiteParameter prm1 = new SQLiteParameter("$ApplicationId", DbType.String, 256);
+			SqliteParameter prm1 = new SqliteParameter("$ApplicationId", DbType.String, 256);
 			prm1.Value = _membershipApplicationId;
-			SQLiteParameter prm2 = new SQLiteParameter("$UserName", DbType.String, 256);
+			SqliteParameter prm2 = new SqliteParameter("$UserName", DbType.String, 256);
 			prm2.Value = usernameToMatch.ToLowerInvariant();
 
-			SQLiteParameter[] args = new SQLiteParameter[2];
+			SqliteParameter[] args = new SqliteParameter[2];
 			args[0] = prm1;
 			args[1] = prm2;
 
@@ -580,14 +580,14 @@ namespace TechInfoSystems.Data.SQLite
 												+ USER_TB_NAME + " u, " + PROFILE_TB_NAME + " p WHERE u.ApplicationId = $ApplicationId AND u.UserId = p.UserId AND u.UserName LIKE $UserName AND u.LastActivityDate <= $LastActivityDate"
 												+ GetClauseForAuthenticationOptions(authenticationOption);
 
-			SQLiteParameter prm1 = new SQLiteParameter("$ApplicationId", DbType.String, 256);
+			SqliteParameter prm1 = new SqliteParameter("$ApplicationId", DbType.String, 256);
 			prm1.Value = _membershipApplicationId;
-			SQLiteParameter prm2 = new SQLiteParameter("$UserName", DbType.String, 256);
+			SqliteParameter prm2 = new SqliteParameter("$UserName", DbType.String, 256);
 			prm2.Value = usernameToMatch.ToLowerInvariant();
-			SQLiteParameter prm3 = new SQLiteParameter("$LastActivityDate", DbType.DateTime);
+			SqliteParameter prm3 = new SqliteParameter("$LastActivityDate", DbType.DateTime);
 			prm3.Value = userInactiveSinceDate;
 
-			SQLiteParameter[] args = new SQLiteParameter[3];
+			SqliteParameter[] args = new SqliteParameter[3];
 			args[0] = prm1;
 			args[1] = prm2;
 			args[2] = prm3;
@@ -599,9 +599,9 @@ namespace TechInfoSystems.Data.SQLite
 
 		#region Private Methods
 
-		private static void CreateAnonymousUser(string username, SQLiteConnection cn, SQLiteTransaction tran, string userId)
+		private static void CreateAnonymousUser(string username, SqliteConnection cn, SqliteTransaction tran, string userId)
 		{
-			using (SQLiteCommand cmd = cn.CreateCommand())
+			using (SqliteCommand cmd = cn.CreateCommand())
 			{
 				cmd.CommandText = "INSERT INTO " + USER_TB_NAME
 													+ " (UserId, Username, LoweredUsername, ApplicationId, Email, LoweredEmail, Comment, Password,"
@@ -697,10 +697,10 @@ namespace TechInfoSystems.Data.SQLite
 			string values = null;
 			byte[] buffer = null;
 
-			SQLiteConnection cn = GetDbConnectionForProfile();
+			SqliteConnection cn = GetDbConnectionForProfile();
 			try
 			{
-				using (SQLiteCommand cmd = cn.CreateCommand())
+				using (SqliteCommand cmd = cn.CreateCommand())
 				{
 					cmd.CommandText = "SELECT UserId FROM " + USER_TB_NAME + " WHERE LoweredUsername = $UserName AND ApplicationId = $ApplicationId";
 					cmd.Parameters.AddWithValue("$UserName", username.ToLowerInvariant());
@@ -719,7 +719,7 @@ namespace TechInfoSystems.Data.SQLite
 						cmd.Parameters.AddWithValue("$UserId", userId);
 
 
-						using (SQLiteDataReader dr = cmd.ExecuteReader())
+						using (SqliteDataReader dr = cmd.ExecuteReader())
 						{
 							if (dr.Read())
 							{
@@ -754,10 +754,10 @@ namespace TechInfoSystems.Data.SQLite
 
 		private static string GetApplicationId(string appName)
 		{
-			SQLiteConnection cn = GetDbConnectionForProfile();
+			SqliteConnection cn = GetDbConnectionForProfile();
 			try
 			{
-				using (SQLiteCommand cmd = cn.CreateCommand())
+				using (SqliteCommand cmd = cn.CreateCommand())
 				{
 					cmd.CommandText = "SELECT ApplicationId FROM aspnet_Applications WHERE ApplicationName = $AppName";
 					cmd.Parameters.AddWithValue("$AppName", appName);
@@ -781,10 +781,10 @@ namespace TechInfoSystems.Data.SQLite
 			if (String.IsNullOrEmpty(_applicationId) || String.IsNullOrEmpty(_membershipApplicationName))
 			{
 				// No record exists in the application table for either the profile application and/or the membership application. Create it.
-				SQLiteConnection cn = GetDbConnectionForProfile();
+				SqliteConnection cn = GetDbConnectionForProfile();
 				try
 				{
-					using (SQLiteCommand cmd = cn.CreateCommand())
+					using (SqliteCommand cmd = cn.CreateCommand())
 					{
 						cmd.CommandText = "INSERT INTO " + APP_TB_NAME + " (ApplicationId, ApplicationName, Description) VALUES ($ApplicationId, $ApplicationName, $Description)";
 
@@ -825,7 +825,7 @@ namespace TechInfoSystems.Data.SQLite
 			}
 		}
 
-		private static ProfileInfoCollection GetProfilesForQuery(string sqlQuery, SQLiteParameter[] args, int pageIndex, int pageSize, out int totalRecords)
+		private static ProfileInfoCollection GetProfilesForQuery(string sqlQuery, SqliteParameter[] args, int pageIndex, int pageSize, out int totalRecords)
 		{
 			if (pageIndex < 0)
 				throw new ArgumentException("Page index must be non-negative", "pageIndex");
@@ -841,11 +841,11 @@ namespace TechInfoSystems.Data.SQLite
 				throw new ArgumentException("pageIndex*pageSize too large");
 			}
 
-			SQLiteConnection cn = GetDbConnectionForProfile();
+			SqliteConnection cn = GetDbConnectionForProfile();
 			try
 			{
 				ProfileInfoCollection profiles = new ProfileInfoCollection();
-				using (SQLiteCommand cmd = cn.CreateCommand())
+				using (SqliteCommand cmd = cn.CreateCommand())
 				{
 					cmd.CommandText = sqlQuery;
 
@@ -857,7 +857,7 @@ namespace TechInfoSystems.Data.SQLite
 					if (cn.State == ConnectionState.Closed)
 						cn.Open();
 
-					using (SQLiteDataReader dr = cmd.ExecuteReader())
+					using (SqliteDataReader dr = cmd.ExecuteReader())
 					{
 						totalRecords = 0;
 						while (dr.Read())
@@ -885,14 +885,14 @@ namespace TechInfoSystems.Data.SQLite
 			}
 		}
 
-		private static bool DeleteProfile(SQLiteConnection cn, SQLiteTransaction tran, string username)
+		private static bool DeleteProfile(SqliteConnection cn, SqliteTransaction tran, string username)
 		{
 			bool deleteSuccessful = false;
 
 			if (cn.State != ConnectionState.Open)
 				cn.Open();
 
-			using (SQLiteCommand cmd = cn.CreateCommand())
+			using (SqliteCommand cmd = cn.CreateCommand())
 			{
 				cmd.CommandText = "SELECT UserId FROM " + USER_TB_NAME + " WHERE LoweredUsername = $Username AND ApplicationId = $ApplicationId";
 
@@ -1221,26 +1221,26 @@ namespace TechInfoSystems.Data.SQLite
 		/// Get a reference to the database connection used for profile. If a transaction is currently in progress, and the
 		/// connection string of the transaction connection is the same as the connection string for the profile provider,
 		/// then the connection associated with the transaction is returned, and it will already be open. If no transaction is in progress,
-		/// a new <see cref="SQLiteConnection"/> is created and returned. It will be closed and must be opened by the caller
+		/// a new <see cref="SqliteConnection"/> is created and returned. It will be closed and must be opened by the caller
 		/// before using.
 		/// </summary>
-		/// <returns>A <see cref="SQLiteConnection"/> object.</returns>
+		/// <returns>A <see cref="SqliteConnection"/> object.</returns>
 		/// <remarks>The transaction is stored in <see cref="System.Web.HttpContext.Current"/>. That means transaction support is limited
 		/// to web applications. For other types of applications, there is no transaction support unless this code is modified.</remarks>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
-		private static SQLiteConnection GetDbConnectionForProfile()
+		private static SqliteConnection GetDbConnectionForProfile()
 		{
 			// Look in the HTTP context bag for a previously created connection and transaction. Return if found and its connection
 			// string matches that of the Profile connection string; otherwise return a fresh connection.
 			if (System.Web.HttpContext.Current != null)
 			{
-				SQLiteTransaction tran = (SQLiteTransaction)System.Web.HttpContext.Current.Items[HTTP_TRANSACTION_ID];
+				SqliteTransaction tran = (SqliteTransaction)System.Web.HttpContext.Current.Items[HTTP_TRANSACTION_ID];
 
 				if ((tran != null) && (String.Equals(tran.Connection.ConnectionString, _connectionString)))
 					return tran.Connection;
 			}
 
-			return new SQLiteConnection(_connectionString);
+			return new SqliteConnection(_connectionString);
 		}
 
 		/// <summary>
@@ -1249,11 +1249,11 @@ namespace TechInfoSystems.Data.SQLite
 		/// <returns>
 		/// 	<c>true</c> if a database transaction is in progress; otherwise, <c>false</c>.
 		/// </returns>
-		/// <remarks>A transaction is considered in progress if an instance of <see cref="SQLiteTransaction"/> is found in the
+		/// <remarks>A transaction is considered in progress if an instance of <see cref="SqliteTransaction"/> is found in the
 		/// <see cref="System.Web.HttpContext.Current"/> Items property and its connection string is equal to the Profile 
-		/// provider's connection string. Note that this implementation of <see cref="SQLiteProfileProvider"/> never adds a 
-		/// <see cref="SQLiteTransaction"/> to <see cref="System.Web.HttpContext.Current"/>, but it is possible that 
-		/// another data provider in this application does. This may be because other data is also stored in this SQLite database,
+		/// provider's connection string. Note that this implementation of <see cref="SqliteProfileProvider"/> never adds a 
+		/// <see cref="SqliteTransaction"/> to <see cref="System.Web.HttpContext.Current"/>, but it is possible that 
+		/// another data provider in this application does. This may be because other data is also stored in this Sqlite database,
 		/// and the application author wants to provide transaction support across the individual providers. If an instance of
 		/// <see cref="System.Web.HttpContext.Current"/> does not exist (for example, if the calling application is not a web application),
 		/// this method always returns false.</remarks>
@@ -1262,7 +1262,7 @@ namespace TechInfoSystems.Data.SQLite
 			if (System.Web.HttpContext.Current == null)
 				return false;
 
-			SQLiteTransaction tran = (SQLiteTransaction)System.Web.HttpContext.Current.Items[HTTP_TRANSACTION_ID];
+			SqliteTransaction tran = (SqliteTransaction)System.Web.HttpContext.Current.Items[HTTP_TRANSACTION_ID];
 
 			if ((tran != null) && (String.Equals(tran.Connection.ConnectionString, _connectionString)))
 				return true;
