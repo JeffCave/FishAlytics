@@ -454,11 +454,10 @@ namespace TechInfoSystems.Data.Sqlite
 				return null;
 			}
 
-			if (passwordAnswer != null) {
+			string encodedPasswordAnswer;
+			if (!string.IsNullOrEmpty (passwordAnswer)) {
 				passwordAnswer = passwordAnswer.Trim ();
 			}
-
-			string encodedPasswordAnswer;
 			if (!string.IsNullOrEmpty (passwordAnswer)) {
 				if (passwordAnswer.Length > MAX_PASSWORD_ANSWER_LENGTH) {
 					status = MembershipCreateStatus.InvalidAnswer;
@@ -534,84 +533,85 @@ namespace TechInfoSystems.Data.Sqlite
 
 			MembershipUser u = GetUser (username, false);
 
-			if (u == null) {
-				DateTime createDate = DateTime.UtcNow;
-
-				if (providerUserKey == null) {
-					providerUserKey = Guid.NewGuid ();
-				} else {
-					if (!(providerUserKey is Guid)) {
-						status = MembershipCreateStatus.InvalidProviderUserKey;
-						return null;
-					}
-				}
-
-				SqliteConnection cn = GetDBConnectionForMembership ();
-				try {
-					using (SqliteCommand cmd = cn.CreateCommand()) {
-						cmd.CommandText = "INSERT INTO " + USER_TB_NAME +
-							" (UserId, Username, LoweredUsername, ApplicationId, Email, LoweredEmail, Comment, Password, " +
-							" PasswordFormat, PasswordSalt, PasswordQuestion, PasswordAnswer, IsApproved, IsAnonymous, " +
-							" LastActivityDate, LastLoginDate, LastPasswordChangedDate, CreateDate, " +
-							" IsLockedOut, LastLockoutDate, FailedPasswordAttemptCount, FailedPasswordAttemptWindowStart, " +
-							" FailedPasswordAnswerAttemptCount, FailedPasswordAnswerAttemptWindowStart) " +
-							" Values ($UserId, $Username, $LoweredUsername, $ApplicationId, $Email, $LoweredEmail, $Comment, $Password, " +
-							" $PasswordFormat, $PasswordSalt, $PasswordQuestion, $PasswordAnswer, $IsApproved, $IsAnonymous, " +
-							" $LastActivityDate, $LastLoginDate, $LastPasswordChangedDate, $CreateDate, " +
-							" $IsLockedOut, $LastLockoutDate, $FailedPasswordAttemptCount, $FailedPasswordAttemptWindowStart, " +
-							" $FailedPasswordAnswerAttemptCount, $FailedPasswordAnswerAttemptWindowStart)";
-
-						DateTime nullDate = _minDate;
-
-						cmd.Parameters.AddWithValue ("$UserId", providerUserKey.ToString ());
-						cmd.Parameters.AddWithValue ("$Username", username);
-						cmd.Parameters.AddWithValue ("$LoweredUsername", username.ToLowerInvariant ());
-						cmd.Parameters.AddWithValue ("$ApplicationId", _applicationId);
-						cmd.Parameters.AddWithValue ("$Email", email);
-						cmd.Parameters.AddWithValue ("$LoweredEmail", (email != null ? email.ToLowerInvariant () : null));
-						cmd.Parameters.AddWithValue ("$Comment", null);
-						cmd.Parameters.AddWithValue ("$Password", encodedPassword);
-						cmd.Parameters.AddWithValue ("$PasswordFormat", PasswordFormat.ToString ());
-						cmd.Parameters.AddWithValue ("$PasswordSalt", salt);
-						cmd.Parameters.AddWithValue ("$PasswordQuestion", passwordQuestion);
-						cmd.Parameters.AddWithValue ("$PasswordAnswer", encodedPasswordAnswer);
-						cmd.Parameters.AddWithValue ("$IsApproved", isApproved);
-						cmd.Parameters.AddWithValue ("$IsAnonymous", false);
-						cmd.Parameters.AddWithValue ("$LastActivityDate", createDate);
-						cmd.Parameters.AddWithValue ("$LastLoginDate", createDate);
-						cmd.Parameters.AddWithValue ("$LastPasswordChangedDate", createDate);
-						cmd.Parameters.AddWithValue ("$CreateDate", createDate);
-						cmd.Parameters.AddWithValue ("$IsLockedOut", false);
-						cmd.Parameters.AddWithValue ("$LastLockoutDate", nullDate);
-						cmd.Parameters.AddWithValue ("$FailedPasswordAttemptCount", 0);
-						cmd.Parameters.AddWithValue ("$FailedPasswordAttemptWindowStart", nullDate);
-						cmd.Parameters.AddWithValue ("$FailedPasswordAnswerAttemptCount", 0);
-						cmd.Parameters.AddWithValue ("$FailedPasswordAnswerAttemptWindowStart", nullDate);
-
-						if (cn.State == ConnectionState.Closed)
-							cn.Open ();
-
-						if (cmd.ExecuteNonQuery () > 0) {
-							status = MembershipCreateStatus.Success;
-						} else {
-							status = MembershipCreateStatus.UserRejected;
-						}
-					}
-				} catch {
-					status = MembershipCreateStatus.ProviderError;
-
-					throw;
-				} finally {
-					if (!IsTransactionInProgress ())
-						cn.Dispose ();
-				}
-
-				return GetUser (username, false);
-			} else {
+			if (u != null) {
 				status = MembershipCreateStatus.DuplicateUserName;
+				return null;
+			} 
+
+
+
+			DateTime createDate = DateTime.UtcNow;
+
+			if (providerUserKey == null) {
+				providerUserKey = Guid.NewGuid ();
+			} else {
+				if (!(providerUserKey is Guid)) {
+					status = MembershipCreateStatus.InvalidProviderUserKey;
+					return null;
+				}
 			}
 
-			return null;
+			SqliteConnection cn = GetDBConnectionForMembership ();
+			try {
+				using (SqliteCommand cmd = cn.CreateCommand()) {
+					cmd.CommandText = "INSERT INTO " + USER_TB_NAME +
+						" (UserId, Username, LoweredUsername, ApplicationId, Email, LoweredEmail, Comment, Password, " +
+						" PasswordFormat, PasswordSalt, PasswordQuestion, PasswordAnswer, IsApproved, IsAnonymous, " +
+						" LastActivityDate, LastLoginDate, LastPasswordChangedDate, CreateDate, " +
+						" IsLockedOut, LastLockoutDate, FailedPasswordAttemptCount, FailedPasswordAttemptWindowStart, " +
+						" FailedPasswordAnswerAttemptCount, FailedPasswordAnswerAttemptWindowStart) " +
+						" Values ($UserId, $Username, $LoweredUsername, $ApplicationId, $Email, $LoweredEmail, $Comment, $Password, " +
+						" $PasswordFormat, $PasswordSalt, $PasswordQuestion, $PasswordAnswer, $IsApproved, $IsAnonymous, " +
+						" $LastActivityDate, $LastLoginDate, $LastPasswordChangedDate, $CreateDate, " +
+						" $IsLockedOut, $LastLockoutDate, $FailedPasswordAttemptCount, $FailedPasswordAttemptWindowStart, " +
+						" $FailedPasswordAnswerAttemptCount, $FailedPasswordAnswerAttemptWindowStart)";
+
+					DateTime nullDate = _minDate;
+
+					cmd.Parameters.AddWithValue ("$UserId", providerUserKey.ToString ());
+					cmd.Parameters.AddWithValue ("$Username", username);
+					cmd.Parameters.AddWithValue ("$LoweredUsername", username.ToLowerInvariant ());
+					cmd.Parameters.AddWithValue ("$ApplicationId", _applicationId);
+					cmd.Parameters.AddWithValue ("$Email", email);
+					cmd.Parameters.AddWithValue ("$LoweredEmail", (email != null ? email.ToLowerInvariant () : null));
+					cmd.Parameters.AddWithValue ("$Comment", null);
+					cmd.Parameters.AddWithValue ("$Password", encodedPassword);
+					cmd.Parameters.AddWithValue ("$PasswordFormat", PasswordFormat.ToString ());
+					cmd.Parameters.AddWithValue ("$PasswordSalt", salt);
+					cmd.Parameters.AddWithValue ("$PasswordQuestion", passwordQuestion);
+					cmd.Parameters.AddWithValue ("$PasswordAnswer", encodedPasswordAnswer);
+					cmd.Parameters.AddWithValue ("$IsApproved", isApproved);
+					cmd.Parameters.AddWithValue ("$IsAnonymous", false);
+					cmd.Parameters.AddWithValue ("$LastActivityDate", createDate);
+					cmd.Parameters.AddWithValue ("$LastLoginDate", createDate);
+					cmd.Parameters.AddWithValue ("$LastPasswordChangedDate", createDate);
+					cmd.Parameters.AddWithValue ("$CreateDate", createDate);
+					cmd.Parameters.AddWithValue ("$IsLockedOut", false);
+					cmd.Parameters.AddWithValue ("$LastLockoutDate", nullDate);
+					cmd.Parameters.AddWithValue ("$FailedPasswordAttemptCount", 0);
+					cmd.Parameters.AddWithValue ("$FailedPasswordAttemptWindowStart", nullDate);
+					cmd.Parameters.AddWithValue ("$FailedPasswordAnswerAttemptCount", 0);
+					cmd.Parameters.AddWithValue ("$FailedPasswordAnswerAttemptWindowStart", nullDate);
+
+					if (cn.State == ConnectionState.Closed)
+						cn.Open ();
+
+					if (cmd.ExecuteNonQuery () > 0) {
+						status = MembershipCreateStatus.Success;
+					} else {
+						status = MembershipCreateStatus.UserRejected;
+					}
+				}
+			} catch {
+				status = MembershipCreateStatus.ProviderError;
+
+				throw;
+			} finally {
+				if (!IsTransactionInProgress ())
+					cn.Dispose ();
+			}
+
+			return GetUser (username, false);
 		}
 
 		/// <summary>
@@ -1369,6 +1369,8 @@ namespace TechInfoSystems.Data.Sqlite
 
 					cmd.ExecuteNonQuery ();
 				}
+			} catch (Exception ex) {
+				Console.Error.WriteLine(ex.ToString());
 			} finally {
 				if (!IsTransactionInProgress ())
 					cn.Dispose ();
