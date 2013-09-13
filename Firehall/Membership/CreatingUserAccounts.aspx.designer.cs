@@ -15,18 +15,10 @@ namespace Firehall {
 		
 		protected System.Web.UI.WebControls.Content Content1;
 		
-		protected System.Web.UI.WebControls.TextBox Username;
+		protected System.Web.UI.WebControls.CreateUserWizard RegisterUser;
 		
-		protected System.Web.UI.WebControls.TextBox Password;
+		protected System.Web.UI.WebControls.CreateUserWizardStep CreateUserStep1;
 		
-		protected System.Web.UI.WebControls.TextBox Email;
-		
-		protected System.Web.UI.WebControls.Label SecurityQuestion;
-		
-		protected System.Web.UI.WebControls.TextBox SecurityAnswer;
-		
-		protected System.Web.UI.WebControls.Button CreateAccountButton;
-		
-		protected System.Web.UI.WebControls.Label CreateAccountResults;
+		protected System.Web.UI.WebControls.CompleteWizardStep CompletedStep1;
 	}
 }
