@@ -5,7 +5,7 @@ using System.Web.UI;
 
 namespace Firehall
 {
-	public partial class UserBasedAuthorization : System.Web.UI.Page
+	public partial class CreateUserWizardWithRoles : System.Web.UI.Page
 	{
 	}
 }
