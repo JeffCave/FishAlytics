@@ -15,12 +15,14 @@ namespace Firehall {
 		
 		protected System.Web.UI.WebControls.Content MainContentContent;
 		
-		protected System.Web.UI.WebControls.Content LoginContentContent;
+		protected System.Web.UI.WebControls.TextBox RoleName;
 		
-		public new Firehall.Site Master {
-			get {
-				return ((Firehall.Site)(base.Master));
-			}
-		}
+		protected System.Web.UI.WebControls.Label MessageBox;
+		
+		protected System.Web.UI.WebControls.Button CreateRoleButton;
+		
+		protected System.Web.UI.WebControls.GridView RoleList;
+		
+		protected System.Web.UI.WebControls.Label RoleNameLabel;
 	}
 }
