@@ -14,13 +14,5 @@ namespace Firehall {
 	public partial class RoleBasedAuthorization {
 		
 		protected System.Web.UI.WebControls.Content MainContentContent;
-		
-		protected System.Web.UI.WebControls.Content LoginContentContent;
-		
-		public new Firehall.Site Master {
-			get {
-				return ((Firehall.Site)(base.Master));
-			}
-		}
 	}
 }

@@ -19,6 +19,10 @@ namespace Firehall {
 		
 		protected System.Web.UI.WebControls.CreateUserWizardStep CreateUserStep1;
 		
+		protected System.Web.UI.WebControls.WizardStep SpecifyRolesStep;
+		
+		protected System.Web.UI.WebControls.CheckBoxList RoleList;
+		
 		protected System.Web.UI.WebControls.CompleteWizardStep CompletedStep1;
 	}
 }

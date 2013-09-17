@@ -54,8 +54,8 @@
     <Content Include="logout.aspx" />
     <Content Include="Roles\ManageRoles.aspx" />
     <Content Include="Roles\UsersAndRoles.aspx" />
-    <Content Include="Roles\CreateUserWizardWithRoles.aspx" />
     <Content Include="Roles\RoleBasedAuthorization.aspx" />
+    <Content Include="Style.css" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Global.asax.cs">
@@ -124,12 +124,6 @@
     </Compile>
     <Compile Include="Roles\UsersAndRoles.aspx.designer.cs">
       <DependentUpon>UsersAndRoles.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Roles\CreateUserWizardWithRoles.aspx.cs">
-      <DependentUpon>CreateUserWizardWithRoles.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Roles\CreateUserWizardWithRoles.aspx.designer.cs">
-      <DependentUpon>CreateUserWizardWithRoles.aspx</DependentUpon>
     </Compile>
     <Compile Include="Roles\RoleBasedAuthorization.aspx.cs">
       <DependentUpon>RoleBasedAuthorization.aspx</DependentUpon>

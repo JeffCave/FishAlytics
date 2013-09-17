@@ -14,5 +14,23 @@ namespace Firehall {
 	public partial class UsersAndRoles {
 		
 		protected System.Web.UI.WebControls.Content MainContentContent;
+		
+		protected System.Web.UI.WebControls.Label ActionStatus;
+		
+		protected System.Web.UI.WebControls.DropDownList UserList;
+		
+		protected System.Web.UI.WebControls.Repeater UsersRoleList;
+		
+		protected System.Web.UI.WebControls.CheckBox RoleCheckBox;
+		
+		protected System.Web.UI.WebControls.DropDownList RoleList;
+		
+		protected System.Web.UI.WebControls.GridView RolesUserList;
+		
+		protected System.Web.UI.WebControls.Label UserNameLabel;
+		
+		protected System.Web.UI.WebControls.TextBox UserNameToAddToRole;
+		
+		protected System.Web.UI.WebControls.Button AddUserToRoleButton;
 	}
 }
