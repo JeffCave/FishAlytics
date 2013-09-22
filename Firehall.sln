@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firehall", "Firehall\Firehall.csproj", "{1E9B811C-F7CD-42BE-A236-AC7610BD4F28}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FirehallTests", "FirehallTests\FirehallTests.csproj", "{37D56A25-D17E-4AA1-B7E3-C1D5770DAD14}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +15,10 @@ Global
 		{1E9B811C-F7CD-42BE-A236-AC7610BD4F28}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1E9B811C-F7CD-42BE-A236-AC7610BD4F28}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1E9B811C-F7CD-42BE-A236-AC7610BD4F28}.Release|Any CPU.Build.0 = Release|Any CPU
+		{37D56A25-D17E-4AA1-B7E3-C1D5770DAD14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37D56A25-D17E-4AA1-B7E3-C1D5770DAD14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37D56A25-D17E-4AA1-B7E3-C1D5770DAD14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37D56A25-D17E-4AA1-B7E3-C1D5770DAD14}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = Firehall\Firehall.csproj
@@ -20,7 +26,6 @@ Global
 		$0.TextStylePolicy = $1
 		$1.FileWidth = 120
 		$1.TabsToSpaces = False
-		$1.NoTabsAfterNonTabs = True
 		$1.inheritsSet = VisualStudio
 		$1.inheritsScope = text/plain
 		$1.scope = text/plain
@@ -46,6 +51,7 @@ Global
 		$6.inheritsSet = null
 		$6.scope = text/x-csharp
 		$0.CSharpFormattingPolicy = $7
+		$7.IndentSwitchBody = True
 		$7.inheritsSet = Mono
 		$7.inheritsScope = text/x-csharp
 		$7.scope = text/x-csharp
@@ -61,7 +67,11 @@ Global
 		$9.inheritsScope = text/plain
 		$9.scope = application/x-aspx
 		$0.TextStylePolicy = $10
-		$10.inheritsSet = null
+		$10.FileWidth = 120
+		$10.TabWidth = 2
+		$10.IndentWidth = 2
+		$10.inheritsSet = Mono
+		$10.inheritsScope = text/plain
 		$10.scope = application/x-master-page
 	EndGlobalSection
 EndGlobal
