@@ -14,5 +14,31 @@ namespace Firehall {
 	public partial class RoleBasedAuthorization {
 		
 		protected System.Web.UI.WebControls.Content MainContentContent;
+		
+		protected System.Web.UI.WebControls.LoginView LoginView1;
+		
+		protected System.Web.UI.WebControls.GridView UserGrid;
+		
+		protected System.Web.UI.WebControls.LinkButton LinkButton1;
+		
+		protected System.Web.UI.WebControls.LinkButton LinkButton2;
+		
+		protected System.Web.UI.WebControls.LinkButton EditButton;
+		
+		protected System.Web.UI.WebControls.LinkButton DeleteButton;
+		
+		protected System.Web.UI.WebControls.Label Label1;
+		
+		protected System.Web.UI.WebControls.TextBox Email;
+		
+		protected System.Web.UI.WebControls.RequiredFieldValidator RequiredFieldValidator1;
+		
+		protected System.Web.UI.WebControls.RegularExpressionValidator RegularExpressionValidator1;
+		
+		protected System.Web.UI.WebControls.Label Label2;
+		
+		protected System.Web.UI.WebControls.TextBox Comment;
+		
+		protected System.Web.UI.WebControls.ValidationSummary ValidationSummary1;
 	}
 }

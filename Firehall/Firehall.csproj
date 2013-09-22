@@ -56,6 +56,7 @@
     <Content Include="Roles\UsersAndRoles.aspx" />
     <Content Include="Roles\RoleBasedAuthorization.aspx" />
     <Content Include="Style.css" />
+    <Content Include="Roles\web.config" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Global.asax.cs">
@@ -149,6 +150,7 @@
     <Folder Include="Membership\" />
     <Folder Include="lib\" />
     <Folder Include="Roles\" />
+    <Folder Include="New Folder\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App_LocalResources\InstallMembership.sql" />
