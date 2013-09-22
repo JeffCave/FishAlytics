@@ -15,9 +15,11 @@ namespace Firehall {
 		
 		protected System.Web.UI.HtmlControls.HtmlHead Head1;
 		
+		protected System.Web.UI.HtmlControls.HtmlTitle BrowserTitle;
+		
 		protected System.Web.UI.HtmlControls.HtmlForm form1;
 		
-		protected System.Web.UI.WebControls.ContentPlaceHolder MainContent;
+		protected System.Web.UI.WebControls.Label SiteHtmlTitle;
 		
 		protected System.Web.UI.WebControls.ContentPlaceHolder LoginContent;
 		
@@ -26,5 +28,17 @@ namespace Firehall {
 		protected System.Web.UI.WebControls.LoginName LoginName1;
 		
 		protected System.Web.UI.WebControls.LoginStatus LoginStatus1;
+		
+		protected System.Web.UI.WebControls.SiteMapPath BreadCrumb;
+		
+		protected System.Web.UI.WebControls.SiteMapDataSource SiteMapDataSource1;
+		
+		protected System.Web.UI.WebControls.Repeater menu;
+		
+		protected System.Web.UI.WebControls.HyperLink lnkMenuItem;
+		
+		protected System.Web.UI.WebControls.Label PageHtmlTitle;
+		
+		protected System.Web.UI.WebControls.ContentPlaceHolder MainContent;
 	}
 }

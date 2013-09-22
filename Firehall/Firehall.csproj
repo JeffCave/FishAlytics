@@ -57,6 +57,8 @@
     <Content Include="Roles\RoleBasedAuthorization.aspx" />
     <Content Include="Style.css" />
     <Content Include="Roles\web.config" />
+    <Content Include="Calls\CallTypes.aspx" />
+    <Content Include="Administration\default.aspx" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Global.asax.cs">
@@ -132,6 +134,18 @@
     <Compile Include="Roles\RoleBasedAuthorization.aspx.designer.cs">
       <DependentUpon>RoleBasedAuthorization.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Calls\CallTypes.aspx.cs">
+      <DependentUpon>CallTypes.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Calls\CallTypes.aspx.designer.cs">
+      <DependentUpon>CallTypes.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Administration\default.aspx.cs">
+      <DependentUpon>default.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Administration\default.aspx.designer.cs">
+      <DependentUpon>default.aspx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
@@ -150,7 +164,8 @@
     <Folder Include="Membership\" />
     <Folder Include="lib\" />
     <Folder Include="Roles\" />
-    <Folder Include="New Folder\" />
+    <Folder Include="Calls\" />
+    <Folder Include="Administration\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App_LocalResources\InstallMembership.sql" />
