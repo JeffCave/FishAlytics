@@ -2,13 +2,13 @@
 <siteMap xmlns="http://schemas.microsoft.com/AspNet/SiteMap-File-1.0">
 	<siteMapNode url="~/default.aspx" title="Home">
 		<siteMapNode url="~/Administration/default.aspx" title="Admin">
-			<siteMapNode title="Users" url="~/Membership/UserBasedAuthorization.aspx" >
-				<siteMapNode url="~/Membership/CreatingUserAccounts.aspx" title="Creating User Accounts" />
-				<siteMapNode url="~/Membership/Guestbook.aspx" title="Storing Additional User Information" />
+			<siteMapNode title="Users" url="~/Administration/Membership/UserBasedAuthorization.aspx" >
+				<siteMapNode url="~/Administration/Membership/CreatingUserAccounts.aspx" title="Creating User Accounts" />
+				<siteMapNode url="~/Administration/Membership/Guestbook.aspx" title="Storing Additional User Information" />
 			</siteMapNode>
-			<siteMapNode title="Roles" url="~/Roles/ManageRoles.aspx">
-				<siteMapNode url="~/Roles/UsersAndRoles.aspx" title="Users and Roles" />
-				<siteMapNode url="~/Roles/RoleBasedAuthorization.aspx" title="Role-Based Authorization" />
+			<siteMapNode title="Roles" url="~/Administration/Roles/ManageRoles.aspx">
+				<siteMapNode url="~/Administration/Roles/UsersAndRoles.aspx" title="Users and Roles" />
+				<siteMapNode url="~/Administration/Roles/RoleBasedAuthorization.aspx" title="Role-Based Authorization" />
 			</siteMapNode>
 		</siteMapNode>
 		<siteMapNode title="Calls" url="~/Calls/default.aspx">

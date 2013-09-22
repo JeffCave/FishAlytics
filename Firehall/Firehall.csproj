@@ -45,20 +45,20 @@
     <Content Include="Global.asax" />
     <Content Include="web.config" />
     <Content Include="MemberPages\Members.aspx" />
-    <Content Include="Membership\CreatingUserAccounts.aspx" />
-    <Content Include="Membership\AdditionalUserInfo.aspx" />
-    <Content Include="Membership\Guestbook.aspx" />
     <Content Include="Site.master" />
     <Content Include="default.aspx" />
     <Content Include="login.aspx" />
     <Content Include="logout.aspx" />
-    <Content Include="Roles\ManageRoles.aspx" />
-    <Content Include="Roles\UsersAndRoles.aspx" />
-    <Content Include="Roles\RoleBasedAuthorization.aspx" />
     <Content Include="Style.css" />
-    <Content Include="Roles\web.config" />
     <Content Include="Calls\CallTypes.aspx" />
     <Content Include="Administration\default.aspx" />
+    <Content Include="Administration\Roles\ManageRoles.aspx" />
+    <Content Include="Administration\Roles\UsersAndRoles.aspx" />
+    <Content Include="Administration\Roles\RoleBasedAuthorization.aspx" />
+    <Content Include="Administration\Roles\web.config" />
+    <Content Include="Administration\Membership\AdditionalUserInfo.aspx" />
+    <Content Include="Administration\Membership\CreatingUserAccounts.aspx" />
+    <Content Include="Administration\Membership\Guestbook.aspx" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Global.asax.cs">
@@ -73,24 +73,6 @@
     <Compile Include="App_Code\SQLiteMembershipProvider.cs" />
     <Compile Include="App_Code\SQLiteProfileProvider.cs" />
     <Compile Include="App_Code\SQLiteRoleProvider.cs" />
-    <Compile Include="Membership\CreatingUserAccounts.aspx.cs">
-      <DependentUpon>CreatingUserAccounts.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Membership\CreatingUserAccounts.aspx.designer.cs">
-      <DependentUpon>CreatingUserAccounts.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Membership\AdditionalUserInfo.aspx.cs">
-      <DependentUpon>AdditionalUserInfo.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Membership\AdditionalUserInfo.aspx.designer.cs">
-      <DependentUpon>AdditionalUserInfo.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Membership\Guestbook.aspx.cs">
-      <DependentUpon>Guestbook.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Membership\Guestbook.aspx.designer.cs">
-      <DependentUpon>Guestbook.aspx</DependentUpon>
-    </Compile>
     <Compile Include="Site.master.cs">
       <DependentUpon>Site.master</DependentUpon>
     </Compile>
@@ -116,24 +98,6 @@
       <DependentUpon>logout.aspx</DependentUpon>
     </Compile>
     <Compile Include="App_Code\BasePage.cs" />
-    <Compile Include="Roles\ManageRoles.aspx.cs">
-      <DependentUpon>ManageRoles.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Roles\ManageRoles.aspx.designer.cs">
-      <DependentUpon>ManageRoles.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Roles\UsersAndRoles.aspx.cs">
-      <DependentUpon>UsersAndRoles.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Roles\UsersAndRoles.aspx.designer.cs">
-      <DependentUpon>UsersAndRoles.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Roles\RoleBasedAuthorization.aspx.cs">
-      <DependentUpon>RoleBasedAuthorization.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Roles\RoleBasedAuthorization.aspx.designer.cs">
-      <DependentUpon>RoleBasedAuthorization.aspx</DependentUpon>
-    </Compile>
     <Compile Include="Calls\CallTypes.aspx.cs">
       <DependentUpon>CallTypes.aspx</DependentUpon>
     </Compile>
@@ -145,6 +109,42 @@
     </Compile>
     <Compile Include="Administration\default.aspx.designer.cs">
       <DependentUpon>default.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Administration\Roles\ManageRoles.aspx.cs">
+      <DependentUpon>..\..\Roles\ManageRoles.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Administration\Roles\ManageRoles.aspx.designer.cs">
+      <DependentUpon>..\..\Roles\ManageRoles.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Administration\Roles\UsersAndRoles.aspx.cs">
+      <DependentUpon>..\..\Roles\UsersAndRoles.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Administration\Roles\UsersAndRoles.aspx.designer.cs">
+      <DependentUpon>..\..\Roles\UsersAndRoles.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Administration\Roles\RoleBasedAuthorization.aspx.cs">
+      <DependentUpon>..\..\Roles\RoleBasedAuthorization.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Administration\Roles\RoleBasedAuthorization.aspx.designer.cs">
+      <DependentUpon>..\..\Roles\RoleBasedAuthorization.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Administration\Membership\AdditionalUserInfo.aspx.cs">
+      <DependentUpon>AdditionalUserInfo.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Administration\Membership\AdditionalUserInfo.aspx.designer.cs">
+      <DependentUpon>AdditionalUserInfo.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Administration\Membership\CreatingUserAccounts.aspx.cs">
+      <DependentUpon>CreatingUserAccounts.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Administration\Membership\CreatingUserAccounts.aspx.designer.cs">
+      <DependentUpon>CreatingUserAccounts.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Administration\Membership\Guestbook.aspx.cs">
+      <DependentUpon>Guestbook.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Administration\Membership\Guestbook.aspx.designer.cs">
+      <DependentUpon>Guestbook.aspx</DependentUpon>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
@@ -161,11 +161,10 @@
     <Folder Include="App_Data\" />
     <Folder Include="App_Code\" />
     <Folder Include="App_LocalResources\" />
-    <Folder Include="Membership\" />
     <Folder Include="lib\" />
-    <Folder Include="Roles\" />
     <Folder Include="Calls\" />
     <Folder Include="Administration\" />
+    <Folder Include="Administration\Membership\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App_LocalResources\InstallMembership.sql" />
