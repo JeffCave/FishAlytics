@@ -12,6 +12,11 @@ namespace FirehallTests
 			}
 		}
 
+		[Test]
+		public void Login ()
+		{
+
+		}
 	}
 }
 
