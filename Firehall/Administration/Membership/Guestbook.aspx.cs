@@ -5,7 +5,7 @@ using System.Web.UI;
 
 namespace Firehall
 {
-	public partial class Guestbook : System.Web.UI.Page
+	public partial class Guestbook : Firehall.Page
 	{
 	}
 }

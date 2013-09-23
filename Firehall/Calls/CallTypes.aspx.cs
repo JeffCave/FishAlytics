@@ -5,7 +5,7 @@ using System.Web.UI;
 
 namespace Firehall
 {
-	public partial class CallTypes : Firehall.BasePage
+	public partial class CallTypes : Firehall.Page
 	{
 	}
 }

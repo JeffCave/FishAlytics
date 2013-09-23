@@ -54,11 +54,12 @@
     <Content Include="Administration\default.aspx" />
     <Content Include="Administration\Roles\ManageRoles.aspx" />
     <Content Include="Administration\Roles\UsersAndRoles.aspx" />
-    <Content Include="Administration\Roles\RoleBasedAuthorization.aspx" />
     <Content Include="Administration\Roles\web.config" />
     <Content Include="Administration\Membership\AdditionalUserInfo.aspx" />
     <Content Include="Administration\Membership\CreatingUserAccounts.aspx" />
     <Content Include="Administration\Membership\Guestbook.aspx" />
+    <Content Include="Administration\Membership\Members.aspx" />
+    <Content Include="Calls\default.aspx" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Global.asax.cs">
@@ -122,12 +123,6 @@
     <Compile Include="Administration\Roles\UsersAndRoles.aspx.designer.cs">
       <DependentUpon>..\..\Roles\UsersAndRoles.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Administration\Roles\RoleBasedAuthorization.aspx.cs">
-      <DependentUpon>..\..\Roles\RoleBasedAuthorization.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Administration\Roles\RoleBasedAuthorization.aspx.designer.cs">
-      <DependentUpon>..\..\Roles\RoleBasedAuthorization.aspx</DependentUpon>
-    </Compile>
     <Compile Include="Administration\Membership\AdditionalUserInfo.aspx.cs">
       <DependentUpon>AdditionalUserInfo.aspx</DependentUpon>
     </Compile>
@@ -145,6 +140,18 @@
     </Compile>
     <Compile Include="Administration\Membership\Guestbook.aspx.designer.cs">
       <DependentUpon>Guestbook.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Administration\Membership\Members.aspx.cs">
+      <DependentUpon>Members.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Administration\Membership\Members.aspx.designer.cs">
+      <DependentUpon>Members.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Calls\default.aspx.cs">
+      <DependentUpon>default.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Calls\default.aspx.designer.cs">
+      <DependentUpon>default.aspx</DependentUpon>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

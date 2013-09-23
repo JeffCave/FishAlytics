@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Firehall
 {
-	public partial class UsersAndRoles : System.Web.UI.Page
+	public partial class UsersAndRoles : Firehall.Page
 	{
 		protected void Page_Load (object sender, EventArgs e)
 		{ 

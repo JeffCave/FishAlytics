@@ -3,9 +3,9 @@ using System.Web.UI;
 
 namespace Firehall
 {
-	public class BasePage:Page
+	public class Page:System.Web.UI.Page
 	{
-		public BasePage ()
+		public Page ()
 		{
 		}
 	}
