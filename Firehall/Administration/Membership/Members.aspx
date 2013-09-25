@@ -1,6 +1,5 @@
 <%@ Page Language="C#" Inherits="Firehall.RoleBasedAuthorization" MasterPageFile="~/Site.master" %>
 <asp:Content ContentPlaceHolderID="MainContent" ID="MainContentContent" runat="server">
-	<h1>Role Based Authorization</h1>
 	<asp:LoginView ID="LoginView1" runat="server">
 	  <RoleGroups>
           <asp:RoleGroup Roles="Administrators">

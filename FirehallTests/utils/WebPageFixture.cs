@@ -3,7 +3,7 @@ using NUnit.Framework;
 using System.Net;
 using System.IO;
 
-namespace FirehallTests
+namespace FirehallTests.General
 {
 	public abstract class WebPageFixture
 	{
@@ -24,6 +24,12 @@ namespace FirehallTests
 					fullurl = BaseUrl + PageUrl;
 				}
 				return fullurl;
+			}
+		}
+
+		protected WebDriverPool DriverPool{
+			get{
+				return WebDriverPool.Instance;
 			}
 		}
 

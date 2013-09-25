@@ -32,8 +32,6 @@
 			</ul>
 		</div>
 	</header>
-	<footer>
-	</footer>
 	
 	<article id="content">
 		<header>
@@ -45,6 +43,10 @@
 		</asp:ContentPlaceHolder>
 	</article>
             
+	<footer>
+		<p>Content is property of <asp:Label>Some Company</asp:Label></p>
+		<p>System designed by Plaid Sheep</p>
+	</footer>
 </form>
 </body>
 </html>

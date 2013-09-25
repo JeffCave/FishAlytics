@@ -34,10 +34,24 @@
       <Private>False</Private>
       <Package>mono-nunit</Package>
     </Reference>
+    <Reference Include="Selenium.WebDriverBackedSelenium">
+      <HintPath>lib\selenium\Selenium.WebDriverBackedSelenium.dll</HintPath>
+    </Reference>
+    <Reference Include="ThoughtWorks.Selenium.Core">
+      <HintPath>lib\selenium\ThoughtWorks.Selenium.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="WebDriver">
+      <HintPath>lib\selenium\WebDriver.dll</HintPath>
+    </Reference>
+    <Reference Include="WebDriver.Support">
+      <HintPath>lib\selenium\WebDriver.Support.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="login.cs" />
     <Compile Include="utils\WebPageFixture.cs" />
+    <Compile Include="utils\WebDriverPool.cs" />
+    <Compile Include="utils\PooledWebDriver.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

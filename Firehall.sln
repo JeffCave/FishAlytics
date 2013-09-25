@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Firehall", "Firehall\Fireha
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FirehallTests", "FirehallTests\FirehallTests.csproj", "{37D56A25-D17E-4AA1-B7E3-C1D5770DAD14}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vius", "Vius\Vius.csproj", "{9C5BB174-9F70-460F-AF21-3A7DB21F88B7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +21,10 @@ Global
 		{37D56A25-D17E-4AA1-B7E3-C1D5770DAD14}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{37D56A25-D17E-4AA1-B7E3-C1D5770DAD14}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{37D56A25-D17E-4AA1-B7E3-C1D5770DAD14}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C5BB174-9F70-460F-AF21-3A7DB21F88B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C5BB174-9F70-460F-AF21-3A7DB21F88B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C5BB174-9F70-460F-AF21-3A7DB21F88B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C5BB174-9F70-460F-AF21-3A7DB21F88B7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = Firehall\Firehall.csproj
@@ -52,6 +58,10 @@ Global
 		$6.scope = text/x-csharp
 		$0.CSharpFormattingPolicy = $7
 		$7.IndentSwitchBody = True
+		$7.BeforeMethodCallParentheses = False
+		$7.BeforeIndexerDeclarationBracket = False
+		$7.NewParentheses = False
+		$7.SpacesBeforeBrackets = False
 		$7.inheritsSet = Mono
 		$7.inheritsScope = text/x-csharp
 		$7.scope = text/x-csharp
