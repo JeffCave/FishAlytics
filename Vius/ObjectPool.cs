@@ -9,17 +9,33 @@ namespace Vius
 	/// <remarks>
 	/// http://commons.apache.org/proper/commons-pool/apidocs/org/apache/commons/pool/impl/GenericObjectPool.html
 	/// </remarks>
-	public class ObjectPool<T>:IDisposable
+	public abstract class ObjectPool<T>:IDisposable
 	{
+		#region "Private Variables"
 		private object locker = new object();
 
 		private Queue<PooledObject<T>> idle = new Queue<PooledObject<T>>();
 		private List<PooledObject<T>> active = new List<PooledObject<T>>();
 
-		private int maxactive = 10;
+		#endregion
+
+		#region "Abstract Methods"
+
+		public abstract T CreateObject();
+		public abstract bool EvictionTest(PooledObject<T> pooleditem);
+		public abstract bool ValidationTest(PooledObject<T> item);
+		public abstract void Disposer(T item);
+
+		#endregion
+
+
+		#region Configuration
+
+		//set the defaults for several values
+		private int pMaxActive = 10;
 		private int maxidle = 10;
 		private int minidle = 0;
-		private int testspereviction = 10;
+		private int pTestsPerEviction = 10;
 
 		/// <summary>
 		/// Returns the maximum number of objects that can be allocated by the pool (checked out to clients, or idle awaiting checkout) at a given time.
@@ -29,10 +45,10 @@ namespace Vius
 		/// </value>
 		public int MaxActive {
 			get {
-				return maxactive;
+				return pMaxActive;
 			}
 			set {
-				maxactive = value;
+				pMaxActive = value;
 			}
 		}
 
@@ -44,6 +60,9 @@ namespace Vius
 		/// </value>
 		public int MaxIdle {
 			get {
+				if(maxidle < minidle){
+					return minidle;
+				}
 				return maxidle;
 			}
 			set {
@@ -62,10 +81,32 @@ namespace Vius
 				return minidle;
 			}
 			set {
+				if(value < 0){
+					value = 0;
+				}
 				minidle = value;
 			}
 		}
 
+		/// <summary>
+		/// the max number of objects to examine during each run of the idle object evictor thread (if any).
+		/// </summary>
+		/// <value>
+		/// the max number of objects to examine during each run of the idle object evictor thread (if any).
+		/// </value>
+		public int TestsPerEvictionRun {
+			get {
+				return pTestsPerEviction;
+			}
+			set {
+				if(value < 1){
+					value = 1;
+				}
+				pTestsPerEviction = value;
+			}
+		}
+
+		#endregion
 
 		/// <summary>
 		/// The number of instances currently borrowed from this pool.
@@ -80,16 +121,57 @@ namespace Vius
 		}
 
 		/// <summary>
+		/// The total number of instances, both active and idle
+		/// </summary>
+		/// <value>
+		/// Total Instances
+		/// </value>
+		public int Count {
+			get {
+				return NumActive + NumIdle;
+			}
+		}
+
+		/// <summary>
 		/// Borrows an object from the pool.
 		/// </summary>
 		public PooledObject<T> Borrow ()
 		{
+			PooledObject<T> item = null;
 			lock (locker) {
-				PooledObject<T> item = idle.Dequeue();
+				// borrowing moves the item from the idle state to the active state,
+				// check that we have room for that
+				if(MaxActive >= NumActive) {
+					throw new Exception("Too many active instances");
+				}
 
+				//if we have an instance already, use that, otherwise create one
+				while(item==null && idle.Count>0){
+					item = idle.Dequeue();
+
+					//has this been disposed of by the eviction routines?
+					if(item.disposed){
+						item = null;
+					}
+
+					//it is still active, but in the wrong queue?
+					if(item.locked != null){
+						//put it in the correct queue, and discard it
+						active.Add(item);
+						item = null;
+					}
+				}
+
+				// we didn't find one in the idle queue so create a new one
+				if(item == null){
+					item = new PooledObject<T>(this,CreateObject());
+				}
+
+				//house keeping on the instance
 				item.locked = DateTime.Now;
 				item.numuses++;
 
+				//add it to the active items
 				active.Add(item);
 				return item;
 			}
@@ -103,8 +185,8 @@ namespace Vius
 		{
 			lock (locker) {
 				active.Remove(item);
-				idle.Enqueue(item);
 				item.locked = null;
+				idle.Enqueue(item);
 			}
 		}
 
@@ -113,6 +195,7 @@ namespace Vius
 		/// </summary>
 		public void Clear()
 		{
+			throw new NotImplementedException();
 		}
 
 		/// <summary>
@@ -126,13 +209,21 @@ namespace Vius
 		/// </remarks>
 		public void Dispose ()
 		{
+			throw new NotImplementedException();
 		}
 
 		/// <summary>
-		/// Perform numTests idle object eviction tests, evicting examined objects that meet the criteria for eviction.
+		/// Perform numTests idle object eviction tests, evicting 
+		/// examined objects that meet the criteria for eviction.
 		/// </summary>
-		public void Evict()
+		public void Evict ()
 		{
+			List<PooledObject<T>> tests = new List<PooledObject<T>>(idle.ToArray());
+			foreach (var item in tests) {
+				if (EvictionTest(item)) {
+					Invalidate(item);
+				}
+			}
 		}
 
 		/// <summary>
@@ -148,26 +239,30 @@ namespace Vius
 		}
 
 		/// <summary>
-		/// Returns the max number of objects to examine during each run of the idle object evictor thread (if any).
-		/// </summary>
-		/// <value>
-		/// The number tests per eviction run.
-		/// </value>
-		public int TestsPerEvictionRun {
-			get {
-				return testspereviction;
-			}
-		}
-
-		/// <summary>
 		/// Invalidates an object from the pool.
 		/// </summary>
 		/// <param name='item'>
 		/// Item.
 		/// </param>
-		public void Invalidate (T item)
+		public void Invalidate (PooledObject<T> item)
 		{
+			lock (locker) {
+				Disposer(item.Item);
+				item.disposed = true;
+			}
 		}
+
+		/// <summary>
+		/// Start the eviction thread or service, or when delay is non-positive, stop it if it is already running.
+		/// </summary>
+		/// <param name='delay'>
+		/// Delay.
+		/// </param>
+		protected  void	startEvictor (long delay)
+		{
+			throw new NotImplementedException();
+		}
+
 
 		/*
 		 * 
@@ -186,8 +281,6 @@ namespace Vius
           Returns the action to take when the borrowObject() method is invoked when the pool is exhausted (the maximum number of "active" objects has been reached).
  void	setConfig(GenericObjectPool.Config conf) 
           Sets my configuration.
- void	setFactory(PoolableObjectFactory<T> factory) 
-          Deprecated. to be removed in version 2.0
  void	setMaxActive(int maxActive) 
           Sets the cap on the number of objects that can be allocated by the pool (checked out to clients, or idle awaiting checkout) at a given time.
  void	setMaxIdle(int maxIdle) 
@@ -196,10 +289,6 @@ namespace Vius
           Sets the maximum amount of time (in milliseconds) the borrowObject() method should block before throwing an exception when the pool is exhausted and the "when exhausted" action is WHEN_EXHAUSTED_BLOCK.
  void	setMinEvictableIdleTimeMillis(long minEvictableIdleTimeMillis) 
           Sets the minimum amount of time an object may sit idle in the pool before it is eligible for eviction by the idle object evictor (if any).
- void	setMinIdle(int minIdle) 
-          Sets the minimum number of objects allowed in the pool before the evictor thread (if active) spawns new objects.
- void	setNumTestsPerEvictionRun(int numTestsPerEvictionRun) 
-          Sets the max number of objects to examine during each run of the idle object evictor thread (if any).
  void	setSoftMinEvictableIdleTimeMillis(long softMinEvictableIdleTimeMillis) 
           Sets the minimum amount of time an object may sit idle in the pool before it is eligible for eviction by the idle object evictor (if any), with the extra condition that at least "minIdle" object instances remain in the pool.
  void	setTestOnBorrow(boolean testOnBorrow) 
@@ -212,9 +301,7 @@ namespace Vius
           Sets the number of milliseconds to sleep between runs of the idle object evictor thread.
  void	setWhenExhaustedAction(byte whenExhaustedAction) 
           Sets the action to take when the borrowObject() method is invoked when the pool is exhausted (the maximum number of "active" objects has been reached).
-protected  void	startEvictor(long delay) 
-          Start the eviction thread or service, or when delay is non-positive, stop it if it is already running.
- 
+
 		 */
 	}
 }
