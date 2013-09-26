@@ -34,13 +34,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="Activity.cs" />
     <Compile Include="Role.cs" />
-    <Compile Include="ActivityProvider.cs" />
     <Compile Include="IDataElement.cs" />
     <Compile Include="PooledObject.cs" />
     <Compile Include="ObjectPool.cs" />
     <Compile Include="BaseDataElement.cs" />
+    <Compile Include="Capability.cs" />
+    <Compile Include="CapabilityProvider.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

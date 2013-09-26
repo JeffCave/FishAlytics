@@ -2,7 +2,7 @@ using System;
 
 namespace Vius
 {
-	public abstract class Activity
+	public abstract class Capability
 	{
 		public static Type FromString(string activity){
 			return Type.GetType(activity);

@@ -19,7 +19,7 @@ namespace Vius
 		public new void Add (Type activity)
 		{
 			//we are only accepting items of type Activity
-			if (!activity.IsAssignableFrom(typeof(Activity))) {
+			if (!activity.IsAssignableFrom(typeof(Capability))) {
 				throw new ArgumentException("Added item is not a valid Activity","activity");
 			}
 

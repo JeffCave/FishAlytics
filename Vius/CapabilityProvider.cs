@@ -4,17 +4,17 @@ using System.Reflection;
 
 namespace Vius
 {
-	public class ActivityProvider
+	public class CapabilityProvider
 	{
 		protected Assembly baseAssembly = null;
 		private object locker = new object();
 
-		public ActivityProvider ()
+		public CapabilityProvider ()
 		{
 			baseAssembly = Assembly.GetExecutingAssembly();
 		}
 
-		public ActivityProvider (Assembly assembly)
+		public CapabilityProvider (Assembly assembly)
 		{
 			baseAssembly = assembly;
 		}
@@ -31,7 +31,7 @@ namespace Vius
 			var rtn = new List<Type>();
 
 			foreach (var type in assembly.GetTypes()) {
-				if (type.IsAssignableFrom(typeof(Activity))) {
+				if (type.IsAssignableFrom(typeof(Capability))) {
 					rtn.Add(type);
 				}
 			}
