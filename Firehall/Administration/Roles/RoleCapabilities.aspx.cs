@@ -12,18 +12,34 @@ namespace Firehall.Administration.Roles
 	public partial class RoleCapabilities : Firehall.Page
 	{
 		private Vius.Role role;
+		protected Vius.Role Role {
+			get {
+				if(role == null){
+					role = Vius.Role.GetRole(RoleName.Text);
+				}
+				return role;
+			}
+		}
 
 		protected void Page_Load (object sender, EventArgs e)
 		{ 
 			if (!Page.IsPostBack) {
-				this.role = Vius.Role.GetRole(Request["r"].ToString());
+				RoleName.Text = Request["r"].ToString();
 				BindCapabilitiesToList (); 
 			} 
 		}
 
 		protected void HandleCapabilityChanged (object sender, System.EventArgs e)
 		{
-			throw new NotImplementedException();
+			var checkbox = (CheckBox)sender;
+			var capability = checkbox.Text;
+			var role = this.Role;
+
+			if (checkbox.Checked) {
+				role += capability;
+			} else {
+				role -= capability;
+			}
 		}
 
 		/// <summary>
@@ -41,7 +57,7 @@ namespace Firehall.Administration.Roles
 				// Programmatically reference the CheckBox 
 				CheckBox CapabilityCheckBox = (CheckBox)ri.FindControl ("CapabilityCheckBox"); 
 				// See if RoleCheckBox.Text is in selectedUsersRoles 
-//				CapabilityCheckBox.Checked = role.Contains(CapabilityCheckBox.Text);
+				CapabilityCheckBox.Checked = this.Role.Contains(CapabilityCheckBox.Text);
 			} 
 
 		}

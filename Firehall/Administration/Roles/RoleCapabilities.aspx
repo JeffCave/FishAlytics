@@ -1,19 +1,17 @@
 <%@ Page Language="C#" Inherits="Firehall.Administration.Roles.RoleCapabilities" MasterPageFile="~/Site.master" %>
 <asp:Content ContentPlaceHolderID="MainContent" ID="MainContentContent" runat="server">
-	<h3>Manage Role Capabilities</h3>
-	<p align="center">
-		<asp:Label ID="ActionStatus" runat="server" CssClass="Important"></asp:Label> 
+	<p>
+	This is a listing of the current system capabilities associated with the "<%=this.Role.Name%>" role.
 	</p>
 	<p>
-		<asp:Label ID="RoleName" runat="server" /> 
+		<h3><asp:Label ID="RoleName" runat="server" /> </h3>
 	</p>
-	<p>
+	<ul>
 		<asp:Repeater ID="CapabilityList" runat="server"> 
 			<ItemTemplate>
-				<asp:CheckBox runat="server" ID="CapabilityCheckBox" AutoPostBack="true" Text='<%# Container.DataItem %>' OnCheckedChanged="HandleCapabilityChanged" /> 
-				<br /> 
+				<li><asp:CheckBox runat="server" ID="CapabilityCheckBox" AutoPostBack="true" Text='<%# Container.DataItem %>' OnCheckedChanged="HandleCapabilityChanged" /></li>
 			</ItemTemplate> 
 		</asp:Repeater>
-	</p>
+	</ul>
 	
 </asp:Content>

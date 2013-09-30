@@ -14,10 +14,11 @@ using Mono.Data.Sqlite;
 
 namespace Vius
 {
-	public class Role:List<string>,IDataElement<string>
+	public class Role:HashSet<string>,IDataElement<string>
 	{
 		private object localLocker = new object();
 		private static object staticLocker = new object();
+		private List<string> origCapabilities = new List<string>();
 
 		#region Config
 		private bool immediatesave=false;
@@ -64,6 +65,31 @@ namespace Vius
 		}
 		#endregion
 
+		#region Initialization
+		/// <summary>
+		/// Initialize the specified name and config.
+		/// </summary>
+		/// <param name='name'>
+		/// Name.
+		/// </param>
+		/// <param name='config'>
+		/// Config.
+		/// </param>
+		public void Initialize (string name)
+		{
+			if (!Roles.RoleExists(name)) {
+				throw new ArgumentOutOfRangeException("Role does not exist");
+			}
+			
+			this.Name = name;
+			
+			ImmediateSave = true;
+			Load();
+		}
+
+
+		#endregion
+
 		#region Roles
 		private string name;
 		public string Name {
@@ -88,7 +114,6 @@ namespace Vius
 		public Role (string name)
 		{
 			Initialize(name);
-			Load(name);
 		}
 
 		private static string cnnstr = null;
@@ -122,11 +147,25 @@ namespace Vius
 			this.Save();
 		}
 
+		public static Role operator +(Role role, string capability) 
+		{
+			role.Add(capability);
+			return role;
+		}
+
 		public new void Add (string capability)
 		{
-			if (Capabilities.AllCapabilities.Contains(capability)) {
+			//is there actually something to do?
+			if (base.Contains(capability)) {
+				return;
+			}
+
+			//is it a valid thing to add?
+			if (!Capabilities.AllCapabilities.Contains(capability)) {
 				throw new Exception("Invalid Capability");
 			}
+
+			//do the actual work
 			base.Add(capability);
 			CapabilityChanged(this,new EventArgs());
 		}
@@ -137,8 +176,19 @@ namespace Vius
 			CapabilityChanged(this,new EventArgs());
 		}
 
+		public static Role operator - (Role role, string capability)
+		{
+			role.Remove(capability);
+			return role;
+		}
+
 		public new bool Remove (string capability)
 		{
+			//is there actually something to do?
+			if (!base.Contains(capability)) {
+				return true;
+			}
+
 			var rtn = base.Remove(capability);
 			CapabilityChanged(this,new EventArgs());
 			return rtn;
@@ -159,13 +209,13 @@ namespace Vius
 
 		public bool IsNew {
 			get {
-				return Roles.RoleExists(this.Name);
+				return !Roles.RoleExists(this.Name);
 			}
 		}
 
 		public bool IsDirty {
 			get {
-				throw new System.NotImplementedException();
+				return !origCapabilities.Equals(this);
 			}
 		}
 
@@ -192,18 +242,27 @@ namespace Vius
 				Roles.CreateRole(this.Name);
 			}
 
+			//if there hasn't been a change, then don't do anything
+			if (!IsDirty) {
+				return;
+			}
+
+			if (!TableExists) {
+				Create();
+			}
+
 			//first thing to do is delete all the items that have been removed
 			var sqlIn = new System.Text.StringBuilder();
 			foreach (var capability in this) {
-				sqlIn.AppendFormat(",'{0}'",capability);
+				sqlIn.AppendFormat(",'{0}'", capability);
 			}
-			sql = sqlIn.ToString().Substring(1);
-			ExecDataCmd((cmd)=>{
+			sql = sqlIn.ToString();
+			ExecDataCmd((cmd) => {
 				cmd.CommandText =
 					 "delete \n" +
-					 "from  tAuthRoleCapabilities \n" +
-					 "where role = @role and \n" +
-					 "      capability not in ("+sql+") \n";
+					"from  tAuthRoleCapabilities \n" +
+					"where RoleId = @role and \n" +
+					"      capability not in (''" + sql + ") \n";
 
 				var param = cmd.CreateParameter();
 				param.DbType = System.Data.DbType.AnsiString;
@@ -212,32 +271,58 @@ namespace Vius
 
 				cmd.Parameters.Add(param);
 				cmd.ExecuteNonQuery();
-			});
+			}
+			);
 
 			//then we insert all the items that have been added
 			sqlIn = new StringBuilder(
-				"insert into tAuthRoleCapabilities ");
+				"insert into tAuthRoleCapabilities(RoleId,Capability) values \n");
+			//create list of adds
+			var InsertExists = false;
 			foreach (var capability in this) {
-				sqlIn.AppendFormat("values('{0}','{0}')",Name,capability);
+				//don't include capabilities that were already in the list
+				if (!origCapabilities.Contains(capability)) {
+					sqlIn.AppendFormat("    ('{0}','{1}'),\n", Name, capability);
+					InsertExists = true;
+				}
 			}
-			ExecDataCmd((cmd)=>{
-				cmd.CommandText = sqlIn.ToString();
-				cmd.ExecuteNonQuery();
-			});
 
+			if (InsertExists) {
+				sql = sqlIn.ToString();
+				sql = sql.Substring(0, sql.Length - ",\n".Length);
+				ExecDataCmd((cmd) => {
+					cmd.CommandText = sql;
+					cmd.ExecuteNonQuery();
+				}
+				);
+			}
+
+			origCapabilities.Clear();
+			origCapabilities.AddRange(this);
 		}
 
 		public void Create ()
 		{
-			ExecDataCmd(cmd=>{
+			if (TableExists) {
+				return;
+			}
+			ExecDataCmd(cmd => {
 				cmd.CommandText = 
-					"create table tAuthRoleCapabilities (RoleId varchar(255), Capability varchar(255))";
+				"create table tAuthRoleCapabilities (RoleId varchar(255), Capability varchar(255))";
 				cmd.ExecuteNonQuery();
 			});
+
 		}
 
-		public void Delete(){
+		public void Delete ()
+		{
 			Roles.DeleteRole(this.name);
+
+			//table doesn't exist? nothing to delete
+			if (!TableExists) {
+				return;
+			}
+
 			ExecDataCmd(cmd=>{
 				cmd.CommandText = 
 					"delete " +
@@ -247,32 +332,116 @@ namespace Vius
 			});
 		}
 
-		public void Load(){
+		public void Load ()
+		{
 			base.Clear();
+
+			//no table? nothing to load
+			if (!TableExists) {
+				return;
+			}
+
 			ExecDataCmd(cmd=>{
 				cmd.CommandText = 
 					"select capability " +
 					"from tAuthRoleCapabilities " +
-					"where role = <?role?>";
+					"where RoleId = @role";
 				
 				var param = cmd.CreateParameter();
 				param.DbType = System.Data.DbType.AnsiString;
-				param.ParameterName = "<?role?>";
+				param.ParameterName = "@role";
 				param.Value = Name;
+				cmd.Parameters.Add(param);
 
 				using(var rs = cmd.ExecuteReader()){
 					while(rs.Read()){
-						base.Add(rs.GetString(0));
+						var capability = rs.GetString(0);
+						if(!base.Contains(capability)){
+							base.Add(capability);
+						}
 					}
 					rs.Close();
 				}
 			});
+
+			origCapabilities.Clear();
+			origCapabilities.AddRange(this);
 		}
 
 		public void Load (string role)
 		{
 			Name = role;
 			Load();
+		}
+		/// <summary>
+		/// Gets the users in role.
+		/// </summary>
+		/// <param name="roleName">Name of the role.</param>
+		/// <returns>Returns the users in role.</returns>
+		public static List<Role> GetRolesInCapability (string capability)
+		{
+			var roles = new List<Role>();
+
+			if (!Capabilities.Exists(capability)) {
+				throw new ArgumentOutOfRangeException("capability", "Capability does not exist");
+			}
+
+			//no table? nothing to look up
+			if (!TableExists) {
+				return roles;
+			}
+
+			SqliteConnection cn = GetDbConnectionForCapabilities();
+			try {
+				using (SqliteCommand cmd = cn.CreateCommand()) {
+					cmd.CommandText = 
+						"SELECT RoleId " +
+						"FROM   " + ROLE_TB_NAME + " r " +
+						"       INNER JOIN " + CAPABILITY_TB_NAME + " cr ON r.RoleId = cr.RoleId " +
+						"WHERE  cr.Capability = $CapabilityName";
+					cmd.Parameters.AddWithValue("$CapabilityName", capability);
+
+					if (cn.State == ConnectionState.Closed){
+						cn.Open();
+					}
+
+					using (SqliteDataReader dr = cmd.ExecuteReader()) {
+						while (dr.Read()) {
+							roles.Add(Role.GetRole(dr.GetString(0)));
+						}
+					}
+				}
+			} finally {
+				if (!IsTransactionInProgress())
+					cn.Dispose();
+			}
+
+			return roles;
+		}
+
+		private static bool tableExists = false;
+		private static bool TableExists {
+			get {
+				lock(staticLocker){
+					if(!tableExists){
+						ExecDataCmd(cmd=>{
+							cmd.CommandText = 
+								"select * " +
+								"from tAuthRoleCapabilities " +
+								"where 1=2";
+							try{
+								using(var rs = cmd.ExecuteReader()){
+									rs.Read();
+								}
+								tableExists = true;
+							} catch {
+								tableExists = false;
+							}
+						});
+					}
+				}
+				return tableExists;
+			}
 		}
 		#endregion
 
@@ -327,7 +496,14 @@ namespace Vius
 					if(cnn.State == System.Data.ConnectionState.Closed){
 						cnn.Open();
 					}
-					cmdfunc(cmd);
+					try{
+						cmdfunc(cmd);
+					} catch (Exception ex){
+						Console.Error.WriteLine(ex.Message);
+						Console.Error.WriteLine(ex.StackTrace);
+						Console.Error.WriteLine(cmd.CommandText);
+						throw ex;
+					}
 					cnn.Close();
 				}
 			}
@@ -344,70 +520,6 @@ namespace Vius
 
 		#endregion
 
-		#region Public Methods
-
-		/// <summary>
-		/// Initialize the specified name and config.
-		/// </summary>
-		/// <param name='name'>
-		/// Name.
-		/// </param>
-		/// <param name='config'>
-		/// Config.
-		/// </param>
-		public void Initialize (string name)
-		{
-			if (!Roles.RoleExists(name)) {
-				throw new ArgumentOutOfRangeException("Role does not exist");
-			}
-			
-			this.Name = name;
-			
-			ImmediateSave = true;
-			Load();
-		}
-
-		/// <summary>
-		/// Gets the users in role.
-		/// </summary>
-		/// <param name="roleName">Name of the role.</param>
-		/// <returns>Returns the users in role.</returns>
-		public List<Role> GetRolesInCapability (string capability)
-		{
-			var roles = new List<Role>();
-
-			if (!Capabilities.Exists(capability)) {
-				throw new ArgumentOutOfRangeException("capability","Capability does not exist");
-			}
-
-			SqliteConnection cn = GetDbConnectionForCapabilities();
-			try {
-				using (SqliteCommand cmd = cn.CreateCommand()) {
-					cmd.CommandText = 
-						"SELECT RoleId " +
-						"FROM   " + ROLE_TB_NAME + " r " +
-						"       INNER JOIN " + CAPABILITY_TB_NAME + " cr ON r.RoleId = cr.RoleId " +
-						"WHERE  cr.Capability = $CapabilityName";
-					cmd.Parameters.AddWithValue("$CapabilityName", capability);
-
-					if (cn.State == ConnectionState.Closed){
-						cn.Open();
-					}
-
-					using (SqliteDataReader dr = cmd.ExecuteReader()) {
-						while (dr.Read()) {
-							roles.Add(Role.GetRole(dr.GetString(0)));
-						}
-					}
-				}
-			} finally {
-				if (!IsTransactionInProgress())
-					cn.Dispose();
-			}
-
-			return roles;
-		}
-		#endregion
 
 		#region Private Methods
 

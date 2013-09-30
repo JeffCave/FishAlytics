@@ -29,7 +29,8 @@ namespace Vius
 
 		public abstract void Dispose ();
 
-		public abstract void Validate();
+		public virtual void Validate(){
+		}
 
 		public abstract void Save();
 

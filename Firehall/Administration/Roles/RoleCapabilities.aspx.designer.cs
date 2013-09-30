@@ -15,8 +15,6 @@ namespace Firehall.Administration.Roles {
 		
 		protected System.Web.UI.WebControls.Content MainContentContent;
 		
-		protected System.Web.UI.WebControls.Label ActionStatus;
-		
 		protected System.Web.UI.WebControls.Label RoleName;
 		
 		protected System.Web.UI.WebControls.Repeater CapabilityList;
