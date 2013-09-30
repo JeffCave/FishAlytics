@@ -16,22 +16,18 @@ namespace Vius
 {
 	public class Role:List<string>,IDataElement<string>
 	{
-
+		private object localLocker = new object();
 		private static object staticLocker = new object();
 
 		#region Config
-		private bool immediatesave;
+		private bool immediatesave=false;
 		public bool ImmediateSave {
 			get {
 				return immediatesave;
 			}
 			set {
-				//if the value hasn't changed, don't do anything
-				if(value == immediatesave){
-					return;
-				}
-
-				lock(CapabilityChanged){
+				lock(localLocker){
+					//if the value hasn't changed, don't do anything
 					if(value == immediatesave){
 						return;
 					}
@@ -364,9 +360,9 @@ namespace Vius
 			if (!Roles.RoleExists(name)) {
 				throw new ArgumentOutOfRangeException("Role does not exist");
 			}
-
+			
 			this.Name = name;
-
+			
 			ImmediateSave = true;
 			Load();
 		}
