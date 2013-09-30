@@ -2,7 +2,7 @@ using System;
 
 namespace Vius
 {
-	public abstract class BaseDataElement:IDataElement
+	public abstract class BaseDataElement<PK>:IDataElement<PK>
 	{
 		public BaseDataElement ()
 		{
@@ -30,6 +30,15 @@ namespace Vius
 		public abstract void Dispose ();
 
 		public abstract void Validate();
+
+		public abstract void Save();
+
+		public abstract void Load();
+		public abstract void Load(PK primarykey);
+
+		public abstract void Delete();
+
+		public abstract void Create();
 	}
 }
 

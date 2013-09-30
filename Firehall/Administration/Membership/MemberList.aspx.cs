@@ -6,7 +6,7 @@ using System.Web.UI.WebControls;
 
 namespace Firehall
 {
-	public partial class RoleBasedAuthorization : Firehall.Page
+	public partial class MemberList : Firehall.Page
 	{
 
 		protected void Page_Load (object sender, EventArgs e)

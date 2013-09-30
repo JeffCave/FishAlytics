@@ -1,71 +1,199 @@
 using System;
+using System.Data;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Configuration.Provider;
+using System.Collections.Specialized;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reflection;
+using System.Web.Compilation;
+using System.Web.Security;
+using Mono.Data.Sqlite;
 
 namespace Vius
 {
 	public class CapabilityProvider
 	{
-		protected Assembly baseAssembly = null;
+		protected List<Assembly> _assemblies = new List<Assembly>();
 		private object locker = new object();
 
-		public CapabilityProvider ()
-		{
-			baseAssembly = Assembly.GetExecutingAssembly();
-		}
+		private static object staticlocker = new object();
+		private static CapabilityProvider instance = null;
 
-		public CapabilityProvider (Assembly assembly)
-		{
-			baseAssembly = assembly;
-		}
+		private ReadOnlyCollection<string> allCapabilities = null;
 
-		private List<Type> allActivities = null;
-		public List<Type> AllActivities {
+
+		/// <summary>
+		/// Gets the instance.
+		/// </summary>
+		/// <value>
+		/// The instance.
+		/// </value>
+		public static CapabilityProvider Instance {
 			get {
-				return GetAllActivities();
-			}
-		}
-
-		protected static List<Type> GetAllActivities (Assembly assembly)
-		{
-			var rtn = new List<Type>();
-
-			foreach (var type in assembly.GetTypes()) {
-				if (type.IsAssignableFrom(typeof(Capability))) {
-					rtn.Add(type);
+				lock(staticlocker){
+					if(instance == null){
+						instance = new CapabilityProvider();
+					}
+					return instance;
 				}
 			}
-
-			foreach (AssemblyName child in assembly.GetReferencedAssemblies()) {
-				var ass = Assembly.Load(child);
-				var lst = GetAllActivities(ass);
-				rtn.AddRange(lst);
-			}
-
-			return rtn;
 		}
 
 		/// <summary>
-		/// Gets all activities.
+		/// Initializes a new instance of the <see cref="Vius.CapabilityProvider"/> class.
+		/// </summary>
+		public CapabilityProvider ()
+		{
+			var assList = BuildManager.GetReferencedAssemblies();
+			foreach (var ass in assList) {
+				_assemblies.Add(ass as Assembly);
+			}
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Vius.CapabilityProvider"/> class.
+		/// </summary>
+		/// <param name='assembly'>
+		/// Assembly.
+		/// </param>
+		public CapabilityProvider (Assembly assembly)
+		{
+			_assemblies.Add(assembly);
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Vius.CapabilityProvider"/> class.
+		/// </summary>
+		/// <param name='assemblies'>
+		/// Assemblies.
+		/// </param>
+		public CapabilityProvider (IEnumerable<Assembly> assemblies)
+		{
+			_assemblies.AddRange(assemblies);
+		}
+
+		/// <summary>
+		/// All capabilities.
+		/// </summary>
+		public ReadOnlyCollection<string> AllCapabilities {
+			get {
+				lock(locker){
+					if(allCapabilities == null){
+						allCapabilities = GetAllCapabilities(_assemblies);
+					}
+					return allCapabilities;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Recursively searches all assemblies for capabilities.
 		/// </summary>
 		/// <returns>
-		/// All activities.
+		/// All the capabilities.
 		/// </returns>
-		/// <param name='force'>
-		/// Force a reload of the Activities
+		/// <param name='assemblies'>
+		/// Assemblies to be searched
 		/// </param>
-		public List<Type> GetAllActivities (bool force = false)
+		/// <param name='skip'>
+		/// A list of assemblies to be ignored
+		/// </param>
+		protected static ReadOnlyCollection<string> GetAllCapabilities (ICollection<Assembly> assemblies, List<Assembly> skip = null)
 		{
-			if (force || allActivities == null) {
-				allActivities = null;
-				lock(locker){
-					if(allActivities == null){
-						allActivities = GetAllActivities(baseAssembly);
+			var rtn = new List<string>();
+			if (skip == null) {
+				skip = new List<Assembly>();
+			}
+
+			foreach (Assembly child in assemblies) {
+				if(skip.Contains(child)){
+					continue;
+				}
+				try{
+					var lst = GetAllCapabilities(child,skip);
+					if(lst.Count > 0){
+						rtn.AddRange(lst);
+					}
+				} catch {
+					System.Console.Error.WriteLine("Failed Load (1): " + child.FullName);
+				}
+			}
+
+			return rtn.Distinct().ToList().AsReadOnly(); 
+		}
+
+		/// <summary>
+		/// Gets all capabilities.
+		/// </summary>
+		/// <returns>
+		/// The all capabilities.
+		/// </returns>
+		/// <param name='assembly'>
+		/// Assembly.
+		/// </param>
+		/// <param name='skip'>
+		/// Skip.
+		/// </param>
+		protected static ReadOnlyCollection<string> GetAllCapabilities (Assembly assembly, List<Assembly> skip = null)
+		{
+			var rtn = new List<string>();
+
+			if (skip == null) {
+				skip = new List<Assembly>();
+			}
+			if (skip.Contains(assembly)) {
+				return rtn.AsReadOnly();
+			}
+
+			foreach (var type in assembly.GetTypes()) {
+				if (type.IsSubclassOf(typeof(Vius.Capability))) {
+					rtn.Add(type.FullName);
+				}
+			}
+
+			System.Console.Out.WriteLine("Checked Assembly: " + assembly.FullName);
+			skip.Add(assembly);
+
+			foreach (AssemblyName child in assembly.GetReferencedAssemblies()) {
+				var ass = Assembly.Load(child);
+				if(!skip.Contains(ass)){
+					try {
+						var lst = GetAllCapabilities(ass,skip);
+						if(lst.Count > 0){
+							rtn.AddRange(lst);
+						}
+					} catch {
+						System.Console.Error.WriteLine("Failed Load (2): " + child.FullName);
 					}
 				}
 			}
-			return allActivities;
+
+			return rtn.Distinct().ToList().AsReadOnly(); 
 		}
+
+		/// <summary>
+		/// Clears the Capabilities listing internally, forcing a reload
+		/// </summary>
+		public void ResetCapabilities()
+		{
+			allCapabilities = null;
+		}
+
+		/// <summary>
+		/// Gets a value indicating whether the specified role name already exists in the role data source for the configured applicationName.
+		/// </summary>
+		/// <param name="roleName">The name of the role to search for in the data source.</param>
+		/// <returns>
+		/// true if the role name already exists in the data source for the configured applicationName; otherwise, false.
+		/// </returns>
+		public bool Exists(string capabilityName)
+		{
+			return AllCapabilities.Contains(capabilityName);
+		}
+
 	}
+
 }
 

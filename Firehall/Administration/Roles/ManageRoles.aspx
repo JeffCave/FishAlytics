@@ -9,10 +9,15 @@
 <br />
 <asp:GridView ID="RoleList" runat="server" AutoGenerateColumns="false">
 	<Columns>
-		<asp:CommandField DeleteText="Delete Role" ShowDeleteButton="True"/>
+		<asp:TemplateField ShowHeader="False">
+			<ItemTemplate>
+				<asp:LinkButton ID="DeleteButton" runat="server" CausesValidation="False" CommandName="Delete" Text="[x]"></asp:LinkButton>
+				<asp:HyperLink Id="RoleButton" runat="server">[r]</asp:HyperLink>
+			</ItemTemplate>
+		</asp:TemplateField>
 		<asp:TemplateField HeaderText="Role">
 			<ItemTemplate>
-				<asp:Label runat="server" ID="RoleNameLabel" Text='<%# Container.DataItem %>' />
+				<asp:Label runat="server" ID="RoleNameLabel" />
 			</ItemTemplate>
 		</asp:TemplateField>
 	</Columns>    

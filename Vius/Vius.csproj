@@ -31,6 +31,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Data" />
+    <Reference Include="Mono.Data.Sqlite" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
@@ -41,6 +46,12 @@
     <Compile Include="BaseDataElement.cs" />
     <Compile Include="Capability.cs" />
     <Compile Include="CapabilityProvider.cs" />
+    <Compile Include="Capabilities.cs" />
+    <Compile Include="QuickDict.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Folder Include="Authentication\" />
+    <Folder Include="Data\" />
+  </ItemGroup>
 </Project>

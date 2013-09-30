@@ -13,9 +13,23 @@ namespace Firehall
 		{
 			CreateRoleButton.Command += HandleCommand;
 			RoleList.RowDeleting += HandleRowDeleting;
+			RoleList.RowDataBound += HandleRowDataBound;
 
 			if (!IsPostBack) {
 				DisplayRolesInGrid ();
+			}
+		}
+
+		void HandleRowDataBound (object sender, GridViewRowEventArgs e)
+		{
+			if (e.Row.RowType == DataControlRowType.DataRow) {
+				HyperLink link = (HyperLink)e.Row.FindControl("RoleButton");
+				link.NavigateUrl = String.Format(
+					"RoleCapabilities.aspx?r={0}",
+					Server.UrlEncode(e.Row.DataItem.ToString())
+				);
+				Label label = (Label)e.Row.FindControl("RoleNameLabel");
+				label.Text = Server.HtmlEncode(e.Row.DataItem.ToString());
 			}
 		}
 

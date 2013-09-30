@@ -56,8 +56,10 @@
     <Content Include="Administration\Membership\AdditionalUserInfo.aspx" />
     <Content Include="Administration\Membership\CreatingUserAccounts.aspx" />
     <Content Include="Administration\Membership\Guestbook.aspx" />
-    <Content Include="Administration\Membership\Members.aspx" />
     <Content Include="Calls\default.aspx" />
+    <Content Include="Administration\Membership\UserRoles.aspx" />
+    <Content Include="Administration\Roles\RoleCapabilities.aspx" />
+    <Content Include="Administration\Membership\MemberList.aspx" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Global.asax.cs">
@@ -133,12 +135,6 @@
     <Compile Include="Administration\Membership\Guestbook.aspx.designer.cs">
       <DependentUpon>Guestbook.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Administration\Membership\Members.aspx.cs">
-      <DependentUpon>Members.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Administration\Membership\Members.aspx.designer.cs">
-      <DependentUpon>Members.aspx</DependentUpon>
-    </Compile>
     <Compile Include="Calls\default.aspx.cs">
       <DependentUpon>default.aspx</DependentUpon>
     </Compile>
@@ -146,7 +142,25 @@
       <DependentUpon>default.aspx</DependentUpon>
     </Compile>
     <Compile Include="App_Code\BaseMasterPage.cs" />
-    <Compile Include="App_Code\Activities.cs" />
+    <Compile Include="App_Code\Capabilities.cs" />
+    <Compile Include="Administration\Membership\UserRoles.aspx.cs">
+      <DependentUpon>UserRoles.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Administration\Membership\UserRoles.aspx.designer.cs">
+      <DependentUpon>UserRoles.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Administration\Roles\RoleCapabilities.aspx.designer.cs">
+      <DependentUpon>RoleCapabilities.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Administration\Roles\RoleCapabilities.aspx.cs">
+      <DependentUpon>RoleCapabilities.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Administration\Membership\MemberList.aspx.cs">
+      <DependentUpon>MemberList.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Administration\Membership\MemberList.aspx.designer.cs">
+      <DependentUpon>MemberList.aspx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />

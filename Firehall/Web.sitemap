@@ -2,7 +2,7 @@
 <siteMap xmlns="http://schemas.microsoft.com/AspNet/SiteMap-File-1.0">
 	<siteMapNode title="Home" url="~/default.aspx">
 		<siteMapNode title="Admin" url="~/Administration/default.aspx">
-			<siteMapNode title="Members" url="~/Administration/Membership/Members.aspx" >
+			<siteMapNode title="Members" url="~/Administration/Membership/MemberList.aspx" >
 				<siteMapNode title="Register" url="~/Administration/Membership/CreatingUserAccounts.aspx" />
 				<siteMapNode url="~/Administration/Membership/Guestbook.aspx" title="Storing Additional User Information" />
 			</siteMapNode>

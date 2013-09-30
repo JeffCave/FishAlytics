@@ -11,7 +11,7 @@
 namespace Firehall {
 	
 	
-	public partial class RoleBasedAuthorization {
+	public partial class MemberList {
 		
 		protected System.Web.UI.WebControls.Content MainContentContent;
 		
@@ -26,6 +26,8 @@ namespace Firehall {
 		protected System.Web.UI.WebControls.LinkButton EditButton;
 		
 		protected System.Web.UI.WebControls.LinkButton DeleteButton;
+		
+		protected System.Web.UI.WebControls.LinkButton RolesButton;
 		
 		protected System.Web.UI.WebControls.Label Label1;
 		
