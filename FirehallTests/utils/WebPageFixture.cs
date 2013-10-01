@@ -1,13 +1,17 @@
 using System;
-using NUnit.Framework;
 using System.Net;
 using System.IO;
+using NUnit.Framework;
+using OpenQA.Selenium;
 
 namespace FirehallTests.General
 {
 	public abstract class WebPageFixture
 	{
-		protected virtual string BaseUrl {
+		//a web element object for generic use
+		protected IWebElement elem = null;
+
+		public virtual string BaseUrl {
 			get {
 				return "http://127.0.0.1:8080";
 			}
@@ -30,6 +34,12 @@ namespace FirehallTests.General
 		protected WebDriverPool DriverPool{
 			get{
 				return WebDriverPool.Instance;
+			}
+		}
+
+		public SeleniumHelper Helper {
+			get {
+				return SeleniumHelper.Get(BaseUrl);
 			}
 		}
 

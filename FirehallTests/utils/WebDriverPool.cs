@@ -4,6 +4,8 @@ using System.Collections.Generic;
 namespace FirehallTests.General{
 	public class WebDriverPool:IDisposable{
 
+		private const int MAX_USES = 0;
+
 		private int maxdriver = 10;
 		private Dictionary<SupportedDrivers,List<PooledWebDriver>> alldriver = new Dictionary<SupportedDrivers, List<PooledWebDriver>>();
 
@@ -90,6 +92,7 @@ namespace FirehallTests.General{
 					}
 					rtn = new PooledWebDriver(type);
 					rtn.parent = this;
+
 					drivers.Add(rtn);
 				}
 
@@ -106,7 +109,7 @@ namespace FirehallTests.General{
 		/// </param>
 		public void Checkin (PooledWebDriver driver)
 		{
-			if (driver.used > 100) {
+			if (driver.used > MAX_USES) {
 				alldriver[SupportedDrivers.Chrome].Remove(driver);
 				driver.driver.Close();
 			}

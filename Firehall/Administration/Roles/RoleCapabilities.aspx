@@ -6,7 +6,7 @@
 	<p>
 		<h3><asp:Label ID="RoleName" runat="server" /> </h3>
 	</p>
-	<ul>
+	<ul id="CapabilityList" class="DataList">
 		<asp:Repeater ID="CapabilityList" runat="server"> 
 			<ItemTemplate>
 				<li><asp:CheckBox runat="server" ID="CapabilityCheckBox" AutoPostBack="true" Text='<%# Container.DataItem %>' OnCheckedChanged="HandleCapabilityChanged" /></li>
