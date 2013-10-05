@@ -39,19 +39,26 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="Role.cs" />
-    <Compile Include="IDataElement.cs" />
     <Compile Include="PooledObject.cs" />
     <Compile Include="ObjectPool.cs" />
-    <Compile Include="BaseDataElement.cs" />
-    <Compile Include="Capability.cs" />
-    <Compile Include="CapabilityProvider.cs" />
-    <Compile Include="Capabilities.cs" />
     <Compile Include="QuickDict.cs" />
+    <Compile Include="Data\DataProvider.cs" />
+    <Compile Include="Authentication\Capabilities.cs" />
+    <Compile Include="Authentication\Capability.cs" />
+    <Compile Include="Authentication\CapabilityProvider.cs" />
+    <Compile Include="Authentication\Role.cs" />
+    <Compile Include="Data\BaseDataElement.cs" />
+    <Compile Include="Data\IDataElement.cs" />
+    <Compile Include="Data\IDataCollection.cs" />
+    <Compile Include="Web\DbSiteMapProvider.cs" />
+    <Compile Include="Web\PageSiteMapProvider.cs" />
+    <Compile Include="Web\SiteMapNode.cs" />
+    <Compile Include="Web\Page.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <Folder Include="Authentication\" />
     <Folder Include="Data\" />
+    <Folder Include="Web\" />
   </ItemGroup>
 </Project>

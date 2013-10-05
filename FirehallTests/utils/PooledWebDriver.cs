@@ -3,6 +3,13 @@ using OpenQA.Selenium;
 
 namespace FirehallTests.General
 {
+	/// <summary>
+	/// Pooled web driver.
+	/// </summary>
+	/// <remarks>
+	/// $Id$
+	/// $URL$
+	/// </remarks>
 	public class PooledWebDriver:IDisposable
 	{
 		public IWebDriver driver;

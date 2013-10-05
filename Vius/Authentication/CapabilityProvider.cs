@@ -13,6 +13,13 @@ using Mono.Data.Sqlite;
 
 namespace Vius
 {
+	/// <summary>
+	/// Capability provider.
+	/// </summary>
+	/// <remarks>
+	/// $Id$
+	/// $URL$
+	/// </remarks>
 	public class CapabilityProvider
 	{
 		protected List<Assembly> _assemblies = new List<Assembly>();

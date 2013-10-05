@@ -11,6 +11,13 @@ using FirehallTests.General;
 
 namespace FirehallTests.Administration.Roles
 {
+	/// <summary>
+	/// Role capabilities.
+	/// </summary>
+	/// <remarks>
+	/// $Id$
+	/// $URL$
+	/// </remarks>
 	[TestFixture]
 	public class RoleCapabilities:FirehallTests.General.WebPageFixture
 	{

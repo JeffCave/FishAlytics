@@ -66,6 +66,11 @@ namespace Vius
 		#endregion
 
 		#region Initialization
+		protected Role (string name)
+		{
+			Initialize(name);
+		}
+
 		/// <summary>
 		/// Initialize the specified name and config.
 		/// </summary>
@@ -111,11 +116,6 @@ namespace Vius
 			return new Role(name);
 		}
 
-		public Role (string name)
-		{
-			Initialize(name);
-		}
-
 		private static string cnnstr = null;
 		private static string CnnStr {
 			get {
@@ -137,6 +137,20 @@ namespace Vius
 		}
 		#endregion
 
+		#region Operators And Casting
+		public static Role operator +(Role role, string capability) 
+		{
+			role.Add(capability);
+			return role;
+		}
+
+		public static Role operator - (Role role, string capability)
+		{
+			role.Remove(capability);
+			return role;
+		}
+		#endregion
+
 
 		#region ICollection
 
@@ -145,12 +159,6 @@ namespace Vius
 		private void ImmediateSaver (object owner, EventArgs args)
 		{
 			this.Save();
-		}
-
-		public static Role operator +(Role role, string capability) 
-		{
-			role.Add(capability);
-			return role;
 		}
 
 		public new void Add (string capability)
@@ -174,12 +182,6 @@ namespace Vius
 		{
 			base.Clear();
 			CapabilityChanged(this,new EventArgs());
-		}
-
-		public static Role operator - (Role role, string capability)
-		{
-			role.Remove(capability);
-			return role;
 		}
 
 		public new bool Remove (string capability)

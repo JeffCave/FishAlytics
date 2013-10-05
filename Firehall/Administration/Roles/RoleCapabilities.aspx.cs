@@ -12,6 +12,13 @@ namespace Firehall.Administration.Roles
 	public partial class RoleCapabilities : Firehall.Page
 	{
 		private Vius.Role role;
+
+		/// <summary>
+		/// Gets the role this page is associated with
+		/// </summary>
+		/// <value>
+		/// The role.
+		/// </value>
 		protected Vius.Role Role {
 			get {
 				if(role == null){
@@ -29,6 +36,15 @@ namespace Firehall.Administration.Roles
 			} 
 		}
 
+		/// <summary>
+		/// Handles the click changing the capability
+		/// </summary>
+		/// <param name='sender'>
+		/// Checkbox that was clicked
+		/// </param>
+		/// <param name='e'>
+		/// Arguments
+		/// </param>
 		protected void HandleCapabilityChanged (object sender, System.EventArgs e)
 		{
 			var checkbox = (CheckBox)sender;

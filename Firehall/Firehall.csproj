@@ -92,7 +92,6 @@
     <Compile Include="logout.aspx.designer.cs">
       <DependentUpon>logout.aspx</DependentUpon>
     </Compile>
-    <Compile Include="App_Code\BasePage.cs" />
     <Compile Include="Calls\CallTypes.aspx.cs">
       <DependentUpon>CallTypes.aspx</DependentUpon>
     </Compile>
@@ -161,6 +160,7 @@
     <Compile Include="Administration\Membership\MemberList.aspx.designer.cs">
       <DependentUpon>MemberList.aspx</DependentUpon>
     </Compile>
+    <Compile Include="App_Code\BasePage.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />

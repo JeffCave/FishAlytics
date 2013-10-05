@@ -9,8 +9,25 @@ namespace Firehall.Administration.Members
 {
 	using Security = System.Web.Security;
 
+	/// <summary>
+	/// User roles.
+	/// </summary>
+	/// <remarks>
+	/// $Id$
+	/// $URL$
+	/// </remarks>
 	public partial class UserRoles : Firehall.Page
 	{
+		/// <summary>
+		/// Creates the site map node.
+		/// </summary>
+		/// <returns>
+		/// The site map node.
+		/// </returns>
+		public new static Vius.Web.SiteMapNode CreateSiteMapNode(){
+			return null;
+		}
+
 		protected void Page_Load (object sender, EventArgs e)
 		{ 
 			UserList.SelectedIndexChanged += HandleUserChanged;
