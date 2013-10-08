@@ -8,80 +8,6 @@ using Vius.Data;
 
 namespace Vius.Web
 {
-	public class DbSiteMapNode: Vius.Web.SiteMapNode
-	{
-		internal int? ParentKey = null;
-
-		internal DbSiteMapNode (DbSiteMapProvider provider, IDataRecord rec)
-			:base(provider,"")
-		{
-			Load(rec);
-		}
-
-		public DbSiteMapNode(DbSiteMapProvider provider, string key)
-			:base(provider, key)
-		{
-
-		}
-
-		private string key = "";
-		public new string Key {
-			get {
-				if(string.IsNullOrEmpty(key)){
-					key = base.Key;
-				}
-				return key.ToString();
-			}
-			protected set {
-				key = value;
-			}
-		}
-
-		public override SiteMapNodeCollection ChildNodes {
-			get {
-				return base.ChildNodes;
-			}
-			set {
-				base.ChildNodes = value;
-			}
-		}
-
-		public override System.Web.SiteMapNode ParentNode {
-			get {
-				return base.ParentNode;
-			}
-			set {
-				base.ParentNode = value;
-			}
-		}
-
-		internal void Load (System.Data.IDataRecord rec)
-		{
-			for (int fld=0; fld<rec.FieldCount; fld++) {
-				switch(rec.GetName(fld).ToLower()){
-					case "PageId":
-						this.Key = rec.GetInt16(fld).ToString();
-						break;
-					case "MenuLabel":
-						this.Title = rec.GetString(fld);
-						break;
-					case "Url":
-						this.Url = rec.GetString(fld);
-						break;
-					case "Capabilities":
-
-						break;
-					case "Parent":
-						ParentKey = rec.GetInt16(fld);
-						break;
-					case "Desc":
-						this.Description = rec.GetString(fld);
-						break;
-				}
-			}
-		}
-
-	}
 
 	/// <summary>
 	/// Site map provider.
@@ -90,12 +16,38 @@ namespace Vius.Web
 	/// $Id$
 	/// $URL$
 	/// </remarks>
-	public class DbSiteMapProvider:System.Web.SiteMapProvider
+	public class DbSiteMapProvider:System.Web.StaticSiteMapProvider
 	{
-		private SiteMapNode root = null;
+		private System.Web.SiteMapNode root = null;
 		private object locker = new object();
 
 		private const string TbName = "tWebPages";
+		private const string TbChild = TbName + "Capabilities";
+
+		private TimeSpan pExpiryRate = new TimeSpan(0,11,30,41,56);
+		private DateTime NextLoad = DateTime.MinValue;
+
+		public TimeSpan ExpiryRate {
+			get {
+				return pExpiryRate;
+			}
+			set {
+				lock(locker){
+					if(value < TimeSpan.Zero){
+						return;
+					}
+					try{
+						NextLoad = NextLoad.Subtract(pExpiryRate);
+						NextLoad = NextLoad.Add(value);
+					} catch {
+						NextLoad = DateTime.MinValue;
+					}
+					pExpiryRate = value;
+					CheckDataFreshness();
+				}
+			}
+		}
+		
 		private DataProvider Db {
 			get {
 				return DataProvider.Instance;
@@ -106,101 +58,6 @@ namespace Vius.Web
 		{
 		}
 
-		private List<DbSiteMapNode> allnodes = null;
-		private object allnodeslocker = new object();
-		internal List<DbSiteMapNode> AllNodes {
-			get {
-				if(allnodes == null){
-					lock (allnodeslocker) {
-						if (allnodes == null) {
-							allnodes = new List<DbSiteMapNode>();
-							Db.UseCommand(cmd => {
-								cmd.CommandText = "select * from " + TbName + "";
-								var rs = cmd.ExecuteReader();
-								while (rs.Read()) {
-									allnodes.Add(new DbSiteMapNode(this, rs));
-								}
-							}
-							);
-
-						}
-					}
-				}
-				return allnodes;
-			}
-		}
-
-		/// <summary>
-		/// Finds the site map node.
-		/// </summary>
-		/// <returns>
-		/// The site map node.
-		/// </returns>
-		/// <param name='rawUrl'>
-		/// Raw URL.
-		/// </param>
-		public override System.Web.SiteMapNode FindSiteMapNode (string rawUrl)
-		{
-			foreach (var node in AllNodes) {
-				if(node.Url == rawUrl){
-					return node;
-				}
-			}
-			return null;
-		}
-
-		/// <Docs>
-		/// To be added.
-		/// </Docs>
-		/// <returns>
-		/// To be added.
-		/// </returns>
-		/// <since version='.NET 2.0'>
-		/// 
-		/// </since>
-		/// <summary>
-		/// Gets the child nodes.
-		/// </summary>
-		/// <param name='node'>
-		/// Node.
-		/// </param>
-		public override System.Web.SiteMapNodeCollection GetChildNodes (System.Web.SiteMapNode node)
-		{
-			var rtn = new SiteMapNodeCollection();
-			var children = AllNodes.Where(child => { return child.ParentKey.ToString() == node.Key;});
-			rtn.AddRange(children.ToArray());
-			return rtn;
-		}
-
-		/// <Docs>
-		/// To be added.
-		/// </Docs>
-		/// <returns>
-		/// To be added.
-		/// </returns>
-		/// <since version='.NET 2.0'>
-		/// 
-		/// </since>
-		/// <summary>
-		/// Gets the parent node.
-		/// </summary>
-		/// <param name='node'>
-		/// Node.
-		/// </param>
-		public override System.Web.SiteMapNode GetParentNode (System.Web.SiteMapNode node)
-		{
-			var pagenode = node as DbSiteMapNode;
-			if (pagenode != null) {
-				foreach(var it in AllNodes){
-					if(it.Key == pagenode.ParentKey.ToString()){
-						return it;
-					}
-				}
-			}
-			return null;
-		}
-
-
 		/// <summary>
 		/// Gets the root node core.
 		/// </summary>
@@ -209,54 +66,147 @@ namespace Vius.Web
 		/// </returns>
 		protected override System.Web.SiteMapNode GetRootNodeCore ()
 		{
-			lock (locker) {
-				if(root == null){
-					root = new DbSiteMapNode(this,"");
-				}
-				return root;
-			}
+			return BuildSiteMap();
 		}
 
 		/// <summary>
 		/// Create this instance.
 		/// </summary>
-		protected void Create ()
+		protected void CreateTable ()
 		{
+			//if the table already exists, we are done
+			if (TableExists) {
+				return;
+			}
+
 			List<string> cmds = new List<string>{
-				"create table tWebPages( \n" +
-				"    PageId, \n" +
+				//create the pages table
+				"if not exists \n" +
+				"create table " + TbName + "( \n" +
+				"    PageId integer primary key autoincrement, \n" +
 				"    MenuLabel varchar(20), \n" +
 				"    Url varchar(255), \n" +
 				"    Parent, \n" +
 				"    Desc, \n" +
-				"    Meta \n" +
+				"    Meta, \n " + 
+				"    foreign key(Parent) references " + TbName + "(PageId) \n" +
 				")\n"
 				,
-				"create table tWebPageCapabilities( \n" +
+				//create the permissions table
+				"if not exists \n" +
+				"create table " + TbChild + "( \n" +
 				"    PageId, \n" +
-				"    Capability \n" +
+				"    Capability, \n" +
+				"    primary key(PageId, Capability), \n" +
+				"    foreign key(PageId) references " + TbName + "(PageId) \n" +
 				")\n"
-				,
-				"alter table tWebPageCapabilities add constraint (PageId) foreign key tWebPageCapabilities(PageId)"
 			};
 			Db.ExecuteCommand(cmds);
 		}
 
-		/// <summary>
-		/// Adds the node.
-		/// </summary>
-		/// <param name='node'>
-		/// Node.
-		/// </param>
-		protected override void AddNode (System.Web.SiteMapNode node)
+		public override System.Web.SiteMapNode BuildSiteMap ()
 		{
-			DbSiteMapNode newnode = node as DbSiteMapNode;
+			CheckDataFreshness();
+			// Use a lock to provide thread safety
+			if(root == null){
+				lock (locker) {
+					if (root == null) {
+						NextLoad = DateTime.Now.Add(ExpiryRate);
+						base.Clear();
 
-			if (AllNodes.Contains(newnode)) {
-				return;
+						root = new DbSiteMapNode(this, "");
+						root.Url = "~/default.aspx";
+						root.Title = "Home";
+						AddNode(root);
+
+						LoadSiteMapNodes();
+					}
+				}
 			}
-			AllNodes.Add(newnode);
-			base.AddNode(node);
+			return root;
+		}
+
+        private void LoadSiteMapNodes ()
+		{
+			CreateTable();
+
+			var allnodes = new List<DbSiteMapNode>();
+
+			Db.UseCommand(cmd => {
+				cmd.CommandText = "select * from " + TbName;
+				using (var rs = cmd.ExecuteReader()) {
+					while (rs.Read()) {
+						allnodes.Add(LoadNode(rs));
+					}
+					rs.Close();
+				}
+			}
+			);
+
+			foreach (var node in allnodes) {
+				System.Web.SiteMapNode parent = null;
+				foreach(var n in allnodes){
+					if(n.Key == node.ParentKey.ToString()){
+						parent = n;
+						break;
+					}
+				}
+				if(parent == null){
+					parent = root;
+				}
+				AddNode(node,parent);
+			}
+		}
+
+		private bool? tableexists = null;
+		protected bool TableExists {
+			get {
+				if(tableexists == null){
+					tableexists = Db.TableExists(TbName);
+				}
+				return tableexists.Value;
+			}
+		}
+
+		private DbSiteMapNode LoadNode(System.Data.IDataRecord rec)
+		{
+			string key = rec["PageId"].ToString();
+			DbSiteMapNode node = new DbSiteMapNode(this,key);
+
+			for (int fld=0; fld<rec.FieldCount; fld++) {
+				if(rec.IsDBNull(fld)){
+					continue;
+				}
+				switch(rec.GetName(fld)){
+					case "MenuLabel":
+						node.Title = rec.GetString(fld);
+						break;
+					case "Url":
+						node.Url = rec.GetString(fld);
+						break;
+					case "Capabilities":
+
+						break;
+					case "Parent":
+						node.ParentKey = rec.GetInt32(fld);
+						break;
+					case "Desc":
+						node.Description = rec.GetString(fld);
+						break;
+				}
+			}
+
+			return node;
+		}
+
+		private void CheckDataFreshness ()
+		{
+			if (DateTime.Now > NextLoad) {
+				lock(locker){
+					root = null;
+					base.Clear();
+				}
+			}
 		}
 
 	}

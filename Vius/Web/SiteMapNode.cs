@@ -73,7 +73,6 @@ namespace Vius.Web
 		public SiteMapNode(SiteMapProvider provider, string key)
 			:base(provider, key)
 		{
-
 		}
 
 		/// <Docs>
@@ -93,9 +92,29 @@ namespace Vius.Web
 		/// </param>
 		public override bool IsAccessibleToUser (HttpContext ctx)
 		{
+			//if the base Sitemap node says "no" then it is "no"
 			if (!base.IsAccessibleToUser(ctx)) {
 				return false;
 			}
+
+			//if we don't have any capabilities specified for this, 
+			//then we assume it is OK
+			if (this.Capabilities.Count < 1) {
+				return true;
+			}
+
+			//check each role, if any of them are present, then the user
+			//has some reason to see this page
+			//	foreach (var role in System.Web.Security.Roles.GetRolesForUser(ctx.User.Identity.Name)) {
+			//		if(this.Roles.Contains(role)){
+			//			return true;
+			//		}
+			//	}
+			if (Vius.Capabilities.CheckAny(Vius.Capabilities.GetUserCapabilities(ctx.User), this.Capabilities)) {
+				return true;
+			}
+
+			//at this point, I see no reason they should see the page
 			return false;
 		}
 	}

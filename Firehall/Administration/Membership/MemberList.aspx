@@ -1,4 +1,4 @@
-<%@ Page Language="C#" Inherits="Firehall.RoleBasedAuthorization" MasterPageFile="~/Site.master" %>
+<%@ Page Language="C#" Inherits="Firehall.Admnistration.Membership.MemberList" MasterPageFile="~/Site.master" %>
 <asp:Content ContentPlaceHolderID="MainContent" ID="MainContentContent" runat="server">
 	<asp:LoginView ID="LoginView1" runat="server">
 	  <RoleGroups>

@@ -8,6 +8,8 @@ namespace Vius.Data
 {
 	public class DataProvider
 	{
+		private object locker = new object();
+
 		#region Singleton
 		private static object staticLocker = new object();
 		private static DataProvider instance = null;
@@ -60,23 +62,37 @@ namespace Vius.Data
 			return cnn;
 		}
 
-		private System.Collections.Generic.Dictionary<string,string> ParsedConnectionString {
+		private QuickDict parsedConnectionString = null;
+		protected QuickDict ParsedConnectionString {
 			get {
-				QuickDict dict = new QuickDict();
-				foreach (var elem in ConnectionString.Split(";".ToCharArray())) {
-					var pair = elem.Split("=".ToCharArray());
-					dict.Add(pair[0], pair[1]);
+				lock(locker){
+					if(parsedConnectionString == null){
+						parsedConnectionString = new QuickDict();
+						string[] elems = ConnectionString.Split(";".ToCharArray());
+						foreach (var elem in elems) {
+							if(!string.IsNullOrEmpty(elem)){
+								var pair = elem.Split("=".ToCharArray());
+								parsedConnectionString.Add(pair[0].ToLower(), pair[1]);
+							}
+						}
+					}
+					return parsedConnectionString;
 				}
-				return dict;
 			}
 		}
 
-		private DbProviderFactory Factory {
+		private DbProviderFactory factory = null;
+		protected DbProviderFactory Factory {
 			get {
-				DbProviderFactory factory;
-
-				factory = Activator.CreateInstance(Type.GetType(ParsedConnectionString["Provider"])) as DbProviderFactory;
-				return factory;
+				lock(locker){
+					if(factory == null){
+						var name = ParsedConnectionString["provider"];
+						//var type = Type.GetType(name);
+						var type = typeof(Mono.Data.Sqlite.SqliteFactory);
+						factory = Activator.CreateInstance(type) as DbProviderFactory;
+					}
+					return factory;
+				}
 			}
 		}
 
@@ -103,25 +119,56 @@ namespace Vius.Data
 			var cmds = new System.Collections.Generic.List<string>();
 			cmds.Add(Command);
 			ExecuteCommand(cmds);
-
 		}
+
+
 		public void ExecuteCommand (System.Collections.Generic.IEnumerable<string> Commands)
 		{
 			UseCommand(cmd => {
+				string errsql="";
 				using (var trans = cmd.Connection.BeginTransaction()) {
 					try {
 						foreach (var sql in Commands) {
+							errsql = sql;
 							cmd.CommandText = sql;
 							cmd.ExecuteNonQuery();
 						}
+						errsql = "";
 						trans.Commit();
-					} catch (Exception ex) {
+					} catch (System.Data.Common.DbException ex) {
 						trans.Rollback();
+						Console.Out.WriteLine("Invalid SQL Command:");
+						Console.Out.WriteLine(errsql);
+						Console.Out.WriteLine(ex.Message);
+						Console.Out.WriteLine(ex.StackTrace);
 						throw ex;
 					}
 				}
 			}
 			);
 		}
+
+		public bool TableExists (string tablename)
+		{
+			var illegalchar = "\"'.,";
+			foreach (var ch in illegalchar.ToCharArray()) {
+				tablename = tablename.Replace(ch.ToString(), "");
+			}
+			bool doesexist = false;
+			this.UseCommand(cmd => {
+				cmd.CommandText = "select * from " + tablename + " where 1=2";
+				try{
+					using(var rs = cmd.ExecuteReader(CommandBehavior.SingleRow)){
+						rs.Read();
+					}
+					doesexist = true;
+				} catch {
+					doesexist = false;
+				}
+			});
+			return doesexist;
+
+		}
+
 	}
 }

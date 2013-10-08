@@ -54,6 +54,8 @@
     <Compile Include="Web\PageSiteMapProvider.cs" />
     <Compile Include="Web\SiteMapNode.cs" />
     <Compile Include="Web\Page.cs" />
+    <Compile Include="Web\DbSiteMapNode.cs" />
+    <Compile Include="Tuple.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

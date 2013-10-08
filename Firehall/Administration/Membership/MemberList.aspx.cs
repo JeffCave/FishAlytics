@@ -4,7 +4,7 @@ using System.Web.UI;
 using System.Web.Security;
 using System.Web.UI.WebControls;
 
-namespace Firehall
+namespace Firehall.Admnistration.Membership
 {
 	public partial class MemberList : Firehall.Page
 	{
@@ -77,13 +77,13 @@ namespace Firehall
 
 
 			// Return information about the user
-			MembershipUser UserInfo = Membership.GetUser (UserName);
+			MembershipUser UserInfo = System.Web.Security.Membership.GetUser (UserName);
 
 			// Update the User account information
 			UserInfo.Email = EmailTextBox.Text.Trim ();
 			UserInfo.Comment = CommentTextBox.Text.Trim ();
 
-			Membership.UpdateUser (UserInfo);
+			System.Web.Security.Membership.UpdateUser (UserInfo);
 
 			// Revert the grid's EditIndex to -1 and rebind the data
 			UserGrid.EditIndex = -1;
@@ -102,7 +102,7 @@ namespace Firehall
 			string UserName = UserGrid.DataKeys[e.RowIndex].Value.ToString();
 			
 			// Delete the user
-			Membership.DeleteUser(UserName);
+			System.Web.Security.Membership.DeleteUser(UserName);
 
 			// Revert the grid's EditIndex to -1 and rebind the data
 			UserGrid.EditIndex = -1;
@@ -111,7 +111,7 @@ namespace Firehall
 
 		private void BindUserGrid ()
 		{    
-			MembershipUserCollection allUsers = Membership.GetAllUsers ();
+			MembershipUserCollection allUsers = System.Web.Security.Membership.GetAllUsers ();
 			UserGrid.DataSource = allUsers;
 			UserGrid.DataBind ();
 		}
