@@ -54,6 +54,8 @@
     <Compile Include="utils\PooledWebDriver.cs" />
     <Compile Include="Administration\Roles\RoleCapabilities.cs" />
     <Compile Include="utils\SeleniumHelper.cs" />
+    <Compile Include="Administration\Membership\MemberList.cs" />
+    <Compile Include="Administration\Membership\UserRoles.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -61,8 +63,15 @@
     <Folder Include="lib\" />
     <Folder Include="Administration\" />
     <Folder Include="Administration\Roles\" />
+    <Folder Include="Administration\Membership\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="lib\readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Vius\Vius.csproj">
+      <Project>{9C5BB174-9F70-460F-AF21-3A7DB21F88B7}</Project>
+      <Name>Vius</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>

@@ -18,19 +18,12 @@ namespace Firehall.Administration.Members
 	/// </remarks>
 	public partial class UserRoles : Firehall.Page
 	{
-		/// <summary>
-		/// Creates the site map node.
-		/// </summary>
-		/// <returns>
-		/// The site map node.
-		/// </returns>
-		public new static Vius.Web.SiteMapNode CreateSiteMapNode(){
-			return null;
-		}
+		private string userName;
 
 		protected void Page_Load (object sender, EventArgs e)
 		{ 
 			UserList.SelectedIndexChanged += HandleUserChanged;
+			userName = UserList.SelectedValue; 
 			if (!Page.IsPostBack) { 
 				// Bind the users and roles 
 				BindUsersToUserList (); 
@@ -44,12 +37,29 @@ namespace Firehall.Administration.Members
 			CheckRolesForSelectedUser();
 		}
 
+		protected void HandleRoleChanged (object sender, EventArgs e)
+		{
+			var chkbox = sender as CheckBox;
+			try{
+				if (chkbox.Checked) {
+					System.Web.Security.Roles.AddUserToRole(userName, chkbox.Text);
+				} else {
+					System.Web.Security.Roles.RemoveUserFromRole(userName, chkbox.Text);
+				}
+			} catch (System.Configuration.Provider.ProviderException ex){
+				//Nothing to do...
+			}
+		}
+
 		private void BindUsersToUserList ()
 		{ 
 			// Get all of the user accounts 
-			MembershipUserCollection users = Membership.GetAllUsers (); 
+			MembershipUserCollection users = Membership.GetAllUsers(); 
 			UserList.DataSource = users; 
-			UserList.DataBind (); 
+			UserList.DataBind();
+
+			var username = Request["u"];
+			UserList.SelectedValue = username;
 		}
  
 		private void BindRolesToList ()

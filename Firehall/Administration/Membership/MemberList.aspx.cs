@@ -45,13 +45,26 @@ namespace Firehall.Admnistration.Membership
 
 		protected void HandleRowDataBound (object sender, GridViewRowEventArgs e)
 		{
-			if (e.Row.RowType == DataControlRowType.DataRow) {
-				LinkButton del = e.Row.FindControl ("DeleteButton") as LinkButton;
+			var row = e.Row;
+			if (row.RowType == DataControlRowType.DataRow) {
 				var user = (MembershipUser)e.Row.DataItem;
 
-				del.OnClientClick = string.Format (
-					"return confirm('Confirm delete of user {0}.');",
-					user.UserName.Replace ("'", @"\'"));
+				//Delete button
+				LinkButton del = row.FindControl("DeleteButton") as LinkButton;
+				if(del != null){
+					del.OnClientClick = string.Format (
+						"return confirm('Confirm delete of user {0}.');",
+						user.UserName.Replace ("'", @"\'"));
+				}
+
+				//role button
+				HyperLink link = row.FindControl("RolesButton") as HyperLink;
+				if(link != null){
+					link.NavigateUrl = String.Format(
+						"UserRoles.aspx?u={0}",
+						Server.UrlEncode(user.UserName)
+					);
+				}
 			}
 		}
 

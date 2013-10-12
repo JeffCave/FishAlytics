@@ -20,6 +20,10 @@ namespace Firehall{
 		{
 			Login1.Authenticate += this.HandleAuthenticate;
 			Login1.LoginError += HandleLoginError;
+
+			if (!IsPostBack) {
+				Login1.CreateUserUrl = "~/Administration/Membership/CreatingUserAccounts.aspx";
+			}
 		}
 
 		protected void HandleAuthenticate (object sender, AuthenticateEventArgs e)

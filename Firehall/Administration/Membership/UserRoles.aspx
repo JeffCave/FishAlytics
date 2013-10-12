@@ -15,6 +15,4 @@
 			</ItemTemplate> 
 		</asp:Repeater>
 	</p>
-	
-
 </asp:Content>

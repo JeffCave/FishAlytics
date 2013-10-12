@@ -1,4 +1,5 @@
 using System;
+using System.Collections.ObjectModel;
 using System.Net;
 using System.IO;
 using NUnit.Framework;
@@ -10,6 +11,7 @@ namespace FirehallTests.General
 	{
 		//a web element object for generic use
 		protected IWebElement elem = null;
+		protected ReadOnlyCollection<IWebElement> elems = null;
 
 		public virtual string BaseUrl {
 			get {

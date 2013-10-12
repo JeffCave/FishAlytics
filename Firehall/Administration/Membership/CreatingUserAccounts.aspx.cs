@@ -1,4 +1,3 @@
-
 using System;
 using System.Web;
 using System.Web.UI;
@@ -24,14 +23,14 @@ namespace Firehall
 		void HandleActiveStepChanged (object sender, EventArgs e)
 		{
 			if (RegisterUser.ActiveStep.Title == "Complete") {
-				var roles = new List<string> ();
+				var roles = new List<string>();
 				// Add the checked roles to the just-added user 
 				foreach (ListItem li in RoleList.Items) { 
 					if (li.Selected) { 
-						roles.Add (li.Text);
+						roles.Add(li.Text);
 					}
 				} 
-				Roles.AddUserToRoles (RegisterUser.UserName, roles.ToArray ()); 
+				Roles.AddUserToRoles(RegisterUser.UserName, roles.ToArray()); 
 			}
 		}
 

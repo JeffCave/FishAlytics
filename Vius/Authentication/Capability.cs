@@ -2,6 +2,8 @@ using System;
 
 namespace Vius
 {
+	public sealed class Public:Capability{}
+
 	public abstract class Capability
 	{
 		public static Type FromString(string activity){

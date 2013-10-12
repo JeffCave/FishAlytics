@@ -30,12 +30,11 @@
 					<asp:LinkButton ID="LinkButton2" runat="server" CausesValidation="False" CommandName="Cancel" Text="Cancel"></asp:LinkButton>
 				</EditItemTemplate>
 				<ItemTemplate>
-					<asp:LinkButton ID="EditButton" runat="server" CausesValidation="False" CommandName="Edit" Text="Edit"></asp:LinkButton>
-					<asp:LinkButton ID="DeleteButton" runat="server" CausesValidation="False" CommandName="Delete" Text="Delete"></asp:LinkButton>
-					<asp:LinkButton ID="RolesButton" runat="server" CausesValidation="False" CommandName="Roles" Text="Roles"></asp:LinkButton>
+					<asp:LinkButton ID="EditButton" runat="server" CausesValidation="False" CommandName="Edit" Text="e"></asp:LinkButton>
+					<asp:LinkButton Id="DeleteButton" runat="server" CausesValidation="False" CommandName="Delete" Text="d"></asp:LinkButton>
+					<asp:HyperLink Id="RolesButton" runat="server">[r]</asp:HyperLink>
 				</ItemTemplate>
 			</asp:TemplateField>
-			<asp:CommandField DeleteText="[X]" EditText="[e]" ShowDeleteButton="true" ShowEditButton="true" />
 			<asp:boundfield datafield="UserName" readonly="true" headertext="User"/>
 			<asp:boundfield datafield="LastLoginDate" readonly="true" headertext="Last" HtmlEncode="false" DataFormatString="{0:d}" />
 			<asp:TemplateField HeaderText="Email">    

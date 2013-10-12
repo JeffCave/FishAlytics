@@ -6,6 +6,13 @@ using System.Configuration;
 
 namespace Vius.Data
 {
+	/// <summary>
+	/// Data provider.
+	/// </summary>
+	/// <remarks>
+	/// $Id$
+	/// $URL$
+	/// </remarks>
 	public class DataProvider
 	{
 		private object locker = new object();

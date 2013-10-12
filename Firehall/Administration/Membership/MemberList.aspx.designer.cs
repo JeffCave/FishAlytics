@@ -27,7 +27,7 @@ namespace Firehall.Admnistration.Membership {
 		
 		protected System.Web.UI.WebControls.LinkButton DeleteButton;
 		
-		protected System.Web.UI.WebControls.LinkButton RolesButton;
+		protected System.Web.UI.WebControls.HyperLink RolesButton;
 		
 		protected System.Web.UI.WebControls.Label Label1;
 		

@@ -6,6 +6,13 @@ using System.Collections.ObjectModel;
 
 namespace Vius.Web
 {
+	/// <summary>
+	/// Site map node.
+	/// </summary>
+	/// <remarks>
+	/// $Id$
+	/// $URL$
+	/// </remarks>
 	public class SiteMapNode: System.Web.SiteMapNode
 	{
 		private object locker = new object();

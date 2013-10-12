@@ -6,6 +6,13 @@ using System.Web.Security;
 
 namespace Vius
 {
+	/// <summary>
+	/// Capabilities.
+	/// </summary>
+	/// <remarks>
+	/// $Id$
+	/// $URL$
+	/// </remarks>
 	public class Capabilities
 	{
 		private static CapabilityProvider Instance {
