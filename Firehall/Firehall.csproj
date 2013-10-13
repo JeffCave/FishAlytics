@@ -60,6 +60,9 @@
     <Content Include="Administration\Membership\UserRoles.aspx" />
     <Content Include="Administration\Roles\RoleCapabilities.aspx" />
     <Content Include="Administration\Membership\MemberList.aspx" />
+    <Content Include="Calls\CallSheet.aspx" />
+    <Content Include="Fishing\Catch.aspx" />
+    <Content Include="Fishing\Catches.aspx" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Global.asax.cs">
@@ -161,6 +164,25 @@
       <DependentUpon>MemberList.aspx</DependentUpon>
     </Compile>
     <Compile Include="App_Code\BasePage.cs" />
+    <Compile Include="Calls\CallSheet.aspx.cs">
+      <DependentUpon>CallSheet.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Calls\CallSheet.aspx.designer.cs">
+      <DependentUpon>CallSheet.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Fishing\Catch.aspx.cs">
+      <DependentUpon>Catch.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Fishing\Catch.aspx.designer.cs">
+      <DependentUpon>Catch.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Fishing\Catches.aspx.cs">
+      <DependentUpon>Catches.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Fishing\Catches.aspx.designer.cs">
+      <DependentUpon>Catches.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="App_Code\Model\Catch.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
@@ -180,6 +202,7 @@
     <Folder Include="Administration\" />
     <Folder Include="Administration\Membership\" />
     <Folder Include="App_Code\Model\" />
+    <Folder Include="Fishing\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App_LocalResources\InstallMembership.sql" />

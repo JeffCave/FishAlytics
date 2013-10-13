@@ -4,6 +4,14 @@ namespace Vius
 {
 	public abstract class BaseDataElement<PK>:IDataElement<PK>
 	{
+		protected PK primarykey;
+
+		protected Vius.Data.DataProvider Db {
+			get {
+				return Vius.Data.DataProvider.Instance;
+			}
+		}
+
 		public BaseDataElement ()
 		{
 		}
