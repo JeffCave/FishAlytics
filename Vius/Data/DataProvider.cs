@@ -16,6 +16,7 @@ namespace Vius.Data
 	public class DataProvider
 	{
 		private object locker = new object();
+		private static DbTransaction tran = null;
 
 		#region Singleton
 		private static object staticLocker = new object();
@@ -34,25 +35,24 @@ namespace Vius.Data
 
 		public delegate void CommandUsage(IDbCommand cmd);
 
-		private string pConnectionString = "";
+		private ConnectionStringSettings _settings = new ConnectionStringSettings("Vius","","Npgsql");
 
 		/// <summary>Gets the connection string.</summary>
 		/// <value>The connection string.</value>
 		public string ConnectionString {
 			get {
-				lock(pConnectionString){
-					if(string.IsNullOrEmpty(pConnectionString)){
-						ConnectionStringSettings settings = ConfigurationManager.ConnectionStrings["Vius"];
-						if (settings==null || string.IsNullOrEmpty(settings.ConnectionString)) {
+				lock(_settings){
+					if(string.IsNullOrEmpty(_settings.ConnectionString)){
+						_settings = ConfigurationManager.ConnectionStrings["Vius"];
+						if (_settings==null || string.IsNullOrEmpty(_settings.ConnectionString)) {
 							throw new Exception("Connection string is empty for 'Vius'. Check the configuration file (web.config).");
 						}
-						pConnectionString = settings.ConnectionString;
 					}
-					return pConnectionString;
+					return _settings.ConnectionString;
 				}
 			}
 			set{
-				pConnectionString = value;
+				_settings.ConnectionString = value;
 			}
 		}
 
@@ -62,7 +62,7 @@ namespace Vius.Data
 		/// <value>
 		/// The connection.
 		/// </value>
-		private IDbConnection GetConnection ()
+		public DbConnection GetConnection ()
 		{
 			var cnn = Factory.CreateConnection();
 			cnn.ConnectionString = this.ConnectionString;
@@ -89,14 +89,11 @@ namespace Vius.Data
 		}
 
 		private DbProviderFactory factory = null;
-		protected DbProviderFactory Factory {
+		internal DbProviderFactory Factory {
 			get {
 				lock(locker){
 					if(factory == null){
-						var name = ParsedConnectionString["provider"];
-						//var type = Type.GetType(name);
-						var type = typeof(Mono.Data.Sqlite.SqliteFactory);
-						factory = Activator.CreateInstance(type) as DbProviderFactory;
+						factory = System.Data.Common.DbProviderFactories.GetFactory(_settings.ProviderName);
 					}
 					return factory;
 				}
@@ -111,11 +108,24 @@ namespace Vius.Data
 		/// </param>
 		public void UseCommand (CommandUsage usage)
 		{
+			//get the connection
 			using (var cnn = GetConnection()) {
 				cnn.Open();
-				using (var cmd = cnn.CreateCommand()) {
-					usage(cmd);
+				//start a transaction
+				using(var tran = cnn.BeginTransaction()){
+					try{
+						//run the users commands
+						using (var cmd = cnn.CreateCommand()) {
+							usage(cmd);
+						}
+						//commit the transaction
+						tran.Commit();
+					} catch {
+						//failure == rollback
+						tran.Rollback();
+					}
 				}
+				//close out
 				cnn.Close();
 			}
 		}
@@ -175,6 +185,20 @@ namespace Vius.Data
 			});
 			return doesexist;
 
+		}
+
+		public bool IsTransactionInProgress ()
+		{
+			if (System.Web.HttpContext.Current != null){
+				tran = (DbTransaction)System.Web.HttpContext.Current.Items[_settings.ToString()];
+			}
+
+
+			if ((tran != null) && String.Equals(tran.Connection.ConnectionString, this.ConnectionString)) {
+				return true;
+			} else {
+				return false;
+			}
 		}
 
 	}

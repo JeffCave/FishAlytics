@@ -182,7 +182,7 @@
     <Compile Include="Fishing\Catches.aspx.designer.cs">
       <DependentUpon>Catches.aspx</DependentUpon>
     </Compile>
-    <Compile Include="App_Code\Model\Catch.cs" />
+    <Compile Include="App_Code\Globals.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
@@ -213,6 +213,10 @@
     <ProjectReference Include="..\Vius\Vius.csproj">
       <Project>{9C5BB174-9F70-460F-AF21-3A7DB21F88B7}</Project>
       <Name>Vius</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Fishing\Fishing.csproj">
+      <Project>{1113BB0B-92CE-46D0-9060-E3E6D636DBEF}</Project>
+      <Name>Fishing</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

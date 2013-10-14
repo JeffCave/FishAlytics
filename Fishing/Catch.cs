@@ -1,19 +1,23 @@
 using System;
 using System.Collections.Generic;
 
-namespace Firehall.Data.Fishing
+using Vius.Data;
+
+namespace Vius.Fishing.Data
 {
 	public class Catch: Vius.BaseDataElement<int>
 	{
 		private bool pIsDirty;
+		private Catches parent;
 
 		#region Initialize
-		public Catch ()
+		internal Catch (Catches parent)
 		{
+			this.parent = parent;
 		}
 
-		public Catch (int catchid)
-			:this()
+		internal Catch (Catches parent, int catchid)
+			:this(parent)
 		{
 			Load(CatchId);
 		}
@@ -68,17 +72,27 @@ namespace Firehall.Data.Fishing
 
 		public override void Create ()
 		{
-			List<string> cmds = new List<string>(){
+			List<string> cmds = new List<string>();
+			cmds.Add(
 				"create table tFishCatch(" +
 				"    CatchId int primary key autgenerate, " +
 				"    Time Timestamp not null, " +
 				"    UserId int not null" +
 				")"
-			};
+				);
 			Db.ExecuteCommand(cmds);
 		}
 
 		public override void Delete ()
+		{
+
+		}
+
+		public override void Dispose ()
+		{
+		}
+
+		public override void Load ()
 		{
 			Db.UseCommand(cmd => {
 				cmd.CommandText =
@@ -93,23 +107,23 @@ namespace Firehall.Data.Fishing
 
 				cmd.Parameters.Add(param);
 
-				cmd.ExecuteNonQuery();
+				using(var rs = cmd.ExecuteReader(System.Data.CommandBehavior.SingleRow)){
+					Load(rs);
+					rs.Close();
+				}
 
 			});
-		}
-
-		public override void Dispose ()
-		{
-		}
-
-		public override void Load ()
-		{
 
 		}
 
-		public override void Load (int primarykey)
+		public override void Load (int catchid)
 		{
-			throw new System.NotImplementedException();
+			try {
+				CatchId = catchid;
+				Load();
+			} catch {
+				CatchId = 0;
+			}
 		}
 
 		internal void Load (System.Data.IDataRecord rec)

@@ -47,7 +47,14 @@ namespace Firehall.Administration.Members
 					System.Web.Security.Roles.RemoveUserFromRole(userName, chkbox.Text);
 				}
 			} catch (System.Configuration.Provider.ProviderException ex){
-				//Nothing to do...
+				//This is likely just the system complaining that the user was already
+				//added or removed. This is a stupid message because if that is the case,
+				//then job done?
+
+				//silence IDE warnings
+				var msg = ex.Message;
+				msg = "";
+				System.Console.Write(msg);
 			}
 		}
 

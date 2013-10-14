@@ -36,6 +36,10 @@
     <Reference Include="Mono.Data.Sqlite" />
     <Reference Include="System.Web" />
     <Reference Include="System.Core" />
+    <Reference Include="Npgsql">
+      <HintPath>lib\Npgsql.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
@@ -57,6 +61,10 @@
     <Compile Include="Web\DbSiteMapNode.cs" />
     <Compile Include="Tuple.cs" />
     <Compile Include="Utils.cs" />
+    <Compile Include="Data\BaseDataCollection.cs" />
+    <Compile Include="Authentication\MembershipProvider.cs" />
+    <Compile Include="Authentication\ProfileProvider.cs" />
+    <Compile Include="Authentication\RoleProvider.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
