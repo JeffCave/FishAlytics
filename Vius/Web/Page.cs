@@ -16,7 +16,7 @@ namespace Vius.Web
 	{
 		private string pSitePageTitle = "";
 		private string pSiteHTMLTitle = "";
-		private ReadOnlyCollection<string> pCapabilities = new ReadOnlyCollection<string>(new List<string>());
+		private ReadOnlyCollection<string> pRequirements = new ReadOnlyCollection<string>(new List<string>());
 
 		private static object staticlocker = new object();
 
@@ -86,15 +86,15 @@ namespace Vius.Web
 		/// <value>
 		/// The required capabilities.
 		/// </value>
-		public ReadOnlyCollection<string> Capabilities {
+		public ReadOnlyCollection<string> Requirements {
 			get {
-				return pCapabilities;
+				return pRequirements;
 			}
 			protected set {
 				if(value == null){
 					return;
 				}
-				pCapabilities = value;
+				pRequirements = value;
 			}
 		}
 

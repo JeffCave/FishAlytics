@@ -1,8 +1,10 @@
 using System;
 using System.Web;
-using Vius.Data;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+
+using Auth = Vius.Authentication;
+using Vius.Data;
 
 namespace Vius.Web
 {
@@ -55,7 +57,7 @@ namespace Vius.Web
 							//capabilities, its an *any* type match
 							foreach (var rolename in allroles) {
 								foreach (var capability in Capabilities) {
-									var role = Role.GetRole(rolename);
+									var role = Auth.Role.GetRole(rolename);
 									if (role.Contains(capability)) {
 										roles.Add(role);
 									}
@@ -117,7 +119,7 @@ namespace Vius.Web
 			//			return true;
 			//		}
 			//	}
-			if (Vius.Capabilities.CheckAny(Vius.Capabilities.GetUserCapabilities(ctx.User), this.Capabilities)) {
+			if (Vius.Authentication.Capabilities.CheckAny(Vius.Authentication.Capabilities.GetUserCapabilities(ctx.User), this.Capabilities)) {
 				return true;
 			}
 

@@ -7,18 +7,25 @@ using System.Configuration;
 using System.Configuration.Provider;
 using System.Data;
 using System.Data.Common;
+using System.Linq;
 using System.Reflection;
 using System.Web.Configuration;
 using System.Web.Security;
 using Mono.Data.Sqlite;
 
-namespace Vius
+namespace Vius.Authentication
 {
 	public class Role:HashSet<string>,IDataElement<string>
 	{
 		private object localLocker = new object();
 		private static object staticLocker = new object();
 		private List<string> origCapabilities = new List<string>();
+
+		private static Vius.Data.DataProvider Db {
+			get {
+				return Vius.Data.DataProvider.Instance;
+			}
+		}
 
 		#region Config
 		private bool immediatesave=false;
@@ -106,6 +113,34 @@ namespace Vius
 			}
 		}
 
+		private int? _id;
+		private object idlocker = new object();
+		public int Id {
+			get{
+				if(!_id.HasValue){
+					lock(idlocker){
+						if(!_id.HasValue){
+							Db.UseCommand(cmd=>{
+								cmd.CommandText = 
+									"select roleid " +
+									"from " + ROLE_TB_NAME + " " +
+									"where rolename = :rolename";
+								var p = cmd.CreateParameter();
+								p.DbType = DbType.String;
+								p.ParameterName = ":rolename";
+								p.Value = this.Name;
+								cmd.Parameters.Add(p);
+
+								_id = (int)cmd.ExecuteScalar();
+
+							});
+						}
+					}
+				}
+				return _id.Value;
+			}
+		}
+
 		public static implicit operator string (Role role)  
 		{ 
 			return role.Name;
@@ -116,25 +151,6 @@ namespace Vius
 			return new Role(name);
 		}
 
-		private static string cnnstr = null;
-		private static string CnnStr {
-			get {
-				if(cnnstr == null){
-					// Initialize SqliteConnection.
-					var tmpProvider = Config.Providers[Config.DefaultProvider];
-					ProviderSettings provider = tmpProvider as ProviderSettings;
-					ConnectionStringSettings connectionStringSettings = ConfigurationManager.ConnectionStrings[provider.Parameters["connectionStringName"]];
-
-					if (connectionStringSettings==null || string.IsNullOrEmpty(connectionStringSettings.ConnectionString)) {
-						throw new Exception("Connection string is empty for SqliteRoleProvider. Check the web configuration file (web.config).");
-					}
-
-					cnnstr = connectionStringSettings.ConnectionString;
-
-				}
-				return cnnstr;
-			}
-		}
 		#endregion
 
 		#region Operators And Casting
@@ -169,7 +185,7 @@ namespace Vius
 			}
 
 			//is it a valid thing to add?
-			if (!Capabilities.AllCapabilities.Contains(capability)) {
+			if (!Vius.Authentication.Capabilities.AllCapabilities.Contains(capability)) {
 				throw new Exception("Invalid Capability");
 			}
 
@@ -231,7 +247,7 @@ namespace Vius
 				throw new Exception("Invalid role ("+this.Name+") specified");
 			}
 			foreach (var capability in this) {
-				if(!Capabilities.Exists(capability)){
+				if(!Vius.Authentication.Capabilities.Exists(capability)){
 					throw new Exception("Capability ("+capability+") does not exist");
 				}
 			}
@@ -259,17 +275,17 @@ namespace Vius
 				sqlIn.AppendFormat(",'{0}'", capability);
 			}
 			sql = sqlIn.ToString();
-			ExecDataCmd((cmd) => {
+			Db.UseCommand((cmd) => {
 				cmd.CommandText =
-					 "delete \n" +
-					"from  tAuthRoleCapabilities \n" +
+					"delete \n" +
+					"from  " + CAPABILITY_TB_NAME + " \n" +
 					"where RoleId = @role and \n" +
 					"      capability not in (''" + sql + ") \n";
 
 				var param = cmd.CreateParameter();
-				param.DbType = System.Data.DbType.AnsiString;
+				param.DbType = DbType.Int32;
 				param.ParameterName = "@role";
-				param.Value = Name;
+				param.Value = Id;
 
 				cmd.Parameters.Add(param);
 				cmd.ExecuteNonQuery();
@@ -278,13 +294,13 @@ namespace Vius
 
 			//then we insert all the items that have been added
 			sqlIn = new StringBuilder(
-				"insert into tAuthRoleCapabilities(RoleId,Capability) values \n");
+				"insert into "+CAPABILITY_TB_NAME+"(RoleId,Capability) values \n");
 			//create list of adds
 			var InsertExists = false;
 			foreach (var capability in this) {
 				//don't include capabilities that were already in the list
 				if (!origCapabilities.Contains(capability)) {
-					sqlIn.AppendFormat("    ('{0}','{1}'),\n", Name, capability);
+					sqlIn.AppendFormat("    ({0},'{1}'),\n", Id, capability);
 					InsertExists = true;
 				}
 			}
@@ -292,7 +308,7 @@ namespace Vius
 			if (InsertExists) {
 				sql = sqlIn.ToString();
 				sql = sql.Substring(0, sql.Length - ",\n".Length);
-				ExecDataCmd((cmd) => {
+				Db.UseCommand(cmd => {
 					cmd.CommandText = sql;
 					cmd.ExecuteNonQuery();
 				}
@@ -308,9 +324,14 @@ namespace Vius
 			if (TableExists) {
 				return;
 			}
-			ExecDataCmd(cmd => {
+
+			Db.UseCommand(cmd => {
 				cmd.CommandText = 
-				"create table tAuthRoleCapabilities (RoleId varchar(255), Capability varchar(255))";
+					"create table " + CAPABILITY_TB_NAME + " ( \n" +
+					"    RoleId int references(RoleId), \n" +
+					"    Capability varchar(255), \n" +
+					"    primary key (RoleId, Capability) \n" +
+					") \n";
 				cmd.ExecuteNonQuery();
 			});
 
@@ -325,11 +346,11 @@ namespace Vius
 				return;
 			}
 
-			ExecDataCmd(cmd=>{
+			Db.UseCommand(cmd=>{
 				cmd.CommandText = 
-					"delete " +
-					"from tAuthRoleCapabilities " +
-					"where role not in (select roles from roletable)";
+					"delete \n" +
+					"from " + CAPABILITY_TB_NAME + " \n" +
+					"where roleid not in (select roleid from roletable) \n";
 				cmd.ExecuteNonQuery();
 			});
 		}
@@ -343,22 +364,25 @@ namespace Vius
 				return;
 			}
 
-			ExecDataCmd(cmd=>{
+			Db.UseCommand(cmd=>{
 				cmd.CommandText = 
-					"select capability " +
-					"from tAuthRoleCapabilities " +
-					"where RoleId = @role";
+					"select capability \n" +
+					"from " + CAPABILITY_TB_NAME + " \n" +
+					"where RoleId = :roleid \n";
 				
 				var param = cmd.CreateParameter();
-				param.DbType = System.Data.DbType.AnsiString;
-				param.ParameterName = "@role";
-				param.Value = Name;
+				param.DbType = System.Data.DbType.Int32;
+				param.ParameterName = ":roleid";
+				param.Value = this.Id;
 				cmd.Parameters.Add(param);
 
+				if(cmd.Connection.State != System.Data.ConnectionState.Open){
+					cmd.Connection.Open();
+				}
 				using(var rs = cmd.ExecuteReader()){
 					while(rs.Read()){
 						var capability = rs.GetString(0);
-						if(!base.Contains(capability)){
+						if(!base.Contains(capability) && Capabilities.AllCapabilities.Contains(capability)){
 							base.Add(capability);
 						}
 					}
@@ -367,7 +391,7 @@ namespace Vius
 			});
 
 			origCapabilities.Clear();
-			origCapabilities.AddRange(this);
+			origCapabilities.AddRange(this.ToArray());
 		}
 
 		public void Load (string role)
@@ -384,7 +408,7 @@ namespace Vius
 		{
 			var roles = new List<Role>();
 
-			if (!Capabilities.Exists(capability)) {
+			if (!Vius.Authentication.Capabilities.Exists(capability)) {
 				throw new ArgumentOutOfRangeException("capability", "Capability does not exist");
 			}
 
@@ -393,30 +417,24 @@ namespace Vius
 				return roles;
 			}
 
-			SqliteConnection cn = GetDbConnectionForCapabilities();
-			try {
-				using (SqliteCommand cmd = cn.CreateCommand()) {
-					cmd.CommandText = 
-						"SELECT RoleId " +
-						"FROM   " + ROLE_TB_NAME + " r " +
-						"       INNER JOIN " + CAPABILITY_TB_NAME + " cr ON r.RoleId = cr.RoleId " +
-						"WHERE  cr.Capability = $CapabilityName";
-					cmd.Parameters.AddWithValue("$CapabilityName", capability);
+			Db.UseCommand(cmd =>{
+				cmd.CommandText = 
+					"SELECT RoleId " +
+					"FROM   " + ROLE_TB_NAME + " r " +
+					"       INNER JOIN " + CAPABILITY_TB_NAME + " cr ON r.RoleId = cr.RoleId " +
+					"WHERE  cr.Capability = :CapabilityName";
+				var p = cmd.CreateParameter();
+				p.DbType = DbType.String;
+				p.ParameterName = ":CapabilityName";
+				p.Value = capability;
+				cmd.Parameters.Add(p);
 
-					if (cn.State == ConnectionState.Closed){
-						cn.Open();
-					}
-
-					using (SqliteDataReader dr = cmd.ExecuteReader()) {
-						while (dr.Read()) {
-							roles.Add(Role.GetRole(dr.GetString(0)));
-						}
+				using (var dr = cmd.ExecuteReader()) {
+					while (dr.Read()) {
+						roles.Add(Role.GetRole(dr.GetString(0)));
 					}
 				}
-			} finally {
-				if (!IsTransactionInProgress())
-					cn.Dispose();
-			}
+			});
 
 			return roles;
 		}
@@ -426,20 +444,7 @@ namespace Vius
 			get {
 				lock(staticLocker){
 					if(!tableExists){
-						ExecDataCmd(cmd=>{
-							cmd.CommandText = 
-								"select * " +
-								"from tAuthRoleCapabilities " +
-								"where 1=2";
-							try{
-								using(var rs = cmd.ExecuteReader()){
-									rs.Read();
-								}
-								tableExists = true;
-							} catch {
-								tableExists = false;
-							}
-						});
+						tableExists = Db.TableExists(CAPABILITY_TB_NAME);
 					}
 				}
 				return tableExists;
@@ -490,65 +495,17 @@ namespace Vius
 			AddRoleToCapability(capabilities, roles);
 		}
 
-		private delegate void DataCmd(System.Data.Common.DbCommand cmd);
-		private static void ExecDataCmd (DataCmd cmdfunc)
-		{
-			using (DbConnection cnn = GetDbConnectionForCapabilities()) {
-				using(DbCommand cmd= cnn.CreateCommand()){
-					if(cnn.State == System.Data.ConnectionState.Closed){
-						cnn.Open();
-					}
-					try{
-						cmdfunc(cmd);
-					} catch (Exception ex){
-						Console.Error.WriteLine(ex.Message);
-						Console.Error.WriteLine(ex.StackTrace);
-						Console.Error.WriteLine(cmd.CommandText);
-						throw ex;
-					}
-					cnn.Close();
-				}
-			}
-		}
-
 		#endregion
 
 		#region Private Fields
 
-		private const string HTTP_TRANSACTION_ID = "SqliteTran";
-		private const string APP_TB_NAME = "[aspnet_Applications]";
-		private const string CAPABILITY_TB_NAME = "[aspnet_RoleCapabilities]";
-		private const string ROLE_TB_NAME = "[aspnet_Roles]";
+		private const string CAPABILITY_TB_NAME = "AuthRoleCapabilities";
+		private const string ROLE_TB_NAME = "AuthRoles";
 
 		#endregion
 
 
 		#region Private Methods
-
-		/// <summary>
-		/// Get a reference to the database connection used for Role. If a transaction is currently in progress, and the
-		/// connection string of the transaction connection is the same as the connection string for the Role provider,
-		/// then the connection associated with the transaction is returned, and it will already be open. If no transaction is in progress,
-		/// a new <see cref="SqliteConnection"/> is created and returned. It will be closed and must be opened by the caller
-		/// before using.
-		/// </summary>
-		/// <returns>A <see cref="SqliteConnection"/> object.</returns>
-		/// <remarks>The transaction is stored in <see cref="System.Web.HttpContext.Current"/>. That means transaction support is limited
-		/// to web applications. For other types of applications, there is no transaction support unless this code is modified.</remarks>
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
-		protected static SqliteConnection GetDbConnectionForCapabilities ()
-		{
-			// Look in the HTTP context bag for a previously created connection and transaction. Return if found and its connection
-			// string matches that of the Role connection string; otherwise return a fresh connection.
-			if (System.Web.HttpContext.Current != null) {
-				const string HTTP_TRANSACTION_ID = "SqliteTran";
-				SqliteTransaction tran = (SqliteTransaction)System.Web.HttpContext.Current.Items[HTTP_TRANSACTION_ID];
-				if ((tran != null) && (String.Equals(tran.Connection.ConnectionString, CnnStr)))
-					return tran.Connection;
-			}
-
-			return new SqliteConnection(CnnStr);
-		}
 
 		/// <summary>
 		/// Determines whether a database transaction is in progress for the Role provider.
@@ -566,15 +523,7 @@ namespace Vius
 		/// this method always returns false.</remarks>
 		private static bool IsTransactionInProgress()
 		{
-			if (System.Web.HttpContext.Current == null)
-				return false;
-
-			SqliteTransaction tran = (SqliteTransaction)System.Web.HttpContext.Current.Items[HTTP_TRANSACTION_ID];
-
-			if ((tran != null) && (String.Equals(tran.Connection.ConnectionString, CnnStr)))
-				return true;
-			else
-				return false;
+			return Vius.Data.DataProvider.Instance.IsTransactionInProgress();
 		}	
 		#endregion
 

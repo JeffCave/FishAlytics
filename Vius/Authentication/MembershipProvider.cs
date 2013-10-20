@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
 using System.Configuration.Provider;
@@ -15,17 +16,20 @@ namespace Vius.Authentication
 	/// <summary>
 	/// Provides a Membership implementation whose data is stored in a Sqlite database.
 	/// </summary>
-	public sealed class SqliteMembershipProvider : MembershipProvider
+	public sealed class ViusMembershipProvider : MembershipProvider
 	{
 		#region Private Fields
 
 		private static readonly Vius.Data.DataProvider Db = Vius.Data.DataProvider.Instance;
 
-		private const string _httpTransactionId = "SqliteTran";
+		internal static class TbNames
+		{
+			public const string User = "AuthUsers";
+			public const string Profile = "AuthUserProfile";
+			public const string Roles = ViusRoleProvider.TbNames.Roles;
+		}
+
 		private const int NEW_PASSWORD_LENGTH = 8;
-		private const string USER_TB_NAME = "[Users]";
-		private const string USERS_IN_ROLES_TB_NAME = "[UserRoles]";
-		private const string PROFILE_TB_NAME = "[UserProfile]";
 		private const int MAX_APPLICATION_NAME_LENGTH = 256;
 		private const int MAX_USERNAME_LENGTH = 256;
 		private const int MAX_PASSWORD_LENGTH = 128;
@@ -33,17 +37,15 @@ namespace Vius.Authentication
 		private const int MAX_EMAIL_LENGTH = 256;
 		private const int MAX_PASSWORD_QUESTION_LENGTH = 256;
 
-		private static bool _enablePasswordReset;
-		private static bool _enablePasswordRetrieval;
-		private static bool _requiresQuestionAndAnswer;
-		private static bool _requiresUniqueEmail;
-		private static int _maxInvalidPasswordAttempts;
-		private static int _passwordAttemptWindow;
-		private static MembershipPasswordFormat _passwordFormat;
-		private static int _minRequiredNonAlphanumericCharacters;
-		private static int _minRequiredPasswordLength;
-		private static string _passwordStrengthRegularExpression;
-		private static readonly DateTime _minDate = DateTime.ParseExact ("01/01/1753", "d", CultureInfo.InvariantCulture);
+		private bool _enablePasswordReset;
+		private bool _requiresQuestionAndAnswer;
+		private bool _requiresUniqueEmail;
+		private int _maxInvalidPasswordAttempts;
+		private int _passwordAttemptWindow;
+		private int _minRequiredNonAlphanumericCharacters;
+		private int _minRequiredPasswordLength;
+		private string _passwordStrengthRegularExpression;
+		private readonly DateTime _minDate = DateTime.ParseExact ("01/01/1753", "d", CultureInfo.InvariantCulture);
 
 		#endregion
 
@@ -72,13 +74,13 @@ namespace Vius.Authentication
 		}
 
 		/// <summary>
-		/// Indicates whether the membership provider is configured to allow users to retrieve their passwords.
+		/// The database layer encrypts all passwords, therefore this is always false
 		/// </summary>
 		/// <value></value>
 		/// <returns>true if the membership provider is configured to support password retrieval; otherwise, false. The default is false.
 		/// </returns>
 		public override bool EnablePasswordRetrieval {
-			get { return _enablePasswordRetrieval; }
+			get { return false; }
 		}
 
 		/// <summary>
@@ -131,7 +133,7 @@ namespace Vius.Authentication
 		/// One of the <see cref="T:System.Web.Security.MembershipPasswordFormat"/> values indicating the format for storing passwords in the data store.
 		/// </returns>
 		public override MembershipPasswordFormat PasswordFormat {
-			get { return _passwordFormat; }
+			get { return MembershipPasswordFormat.Hashed; }
 		}
 
 		/// <summary>
@@ -196,7 +198,7 @@ namespace Vius.Authentication
 
 			if (String.IsNullOrEmpty (config ["description"])) {
 				config.Remove ("description");
-				config.Add ("description", "Sqlite Membership provider");
+				config.Add ("description", "Vius Postgres Membership provider");
 			}
 
 			// Initialize the abstract base class.
@@ -208,67 +210,13 @@ namespace Vius.Authentication
 			_minRequiredPasswordLength = Convert.ToInt32 (GetConfigValue (config ["minRequiredPasswordLength"], "7"));
 			_passwordStrengthRegularExpression = Convert.ToString (GetConfigValue (config ["passwordStrengthRegularExpression"], ""));
 			_enablePasswordReset = Convert.ToBoolean (GetConfigValue (config ["enablePasswordReset"], "true"));
-			_enablePasswordRetrieval = Convert.ToBoolean (GetConfigValue (config ["enablePasswordRetrieval"], "false"));
 			_requiresQuestionAndAnswer = Convert.ToBoolean (GetConfigValue (config ["requiresQuestionAndAnswer"], "false"));
 			_requiresUniqueEmail = Convert.ToBoolean (GetConfigValue (config ["requiresUniqueEmail"], "false"));
 
 			ValidatePwdStrengthRegularExpression ();
 
 			if (_minRequiredNonAlphanumericCharacters > _minRequiredPasswordLength) {
-				throw new System.Web.HttpException ("SqliteMembershipProvider configuration error: minRequiredNonalphanumericCharacters can not be greater than minRequiredPasswordLength. Check the web configuration file (web.config).");
-			}
-
-			string temp_format = config ["passwordFormat"];
-			if (temp_format == null) {
-				temp_format = "Hashed";
-			}
-
-			switch (temp_format) {
-			case "Clear":
-				_passwordFormat = MembershipPasswordFormat.Clear;
-				break;
-			case "Hashed":
-				_passwordFormat = MembershipPasswordFormat.Hashed;
-				break;
-			case "Encrypted":
-				_passwordFormat = MembershipPasswordFormat.Encrypted;
-				break;
-			default:
-				throw new ProviderException ("Password format not supported.");
-			}
-
-			if ((PasswordFormat == MembershipPasswordFormat.Hashed) && EnablePasswordRetrieval) {
-				throw new ProviderException ("SqliteMembershipProvider configuration error: enablePasswordRetrieval can not be set to true when passwordFormat is set to \"Hashed\". Check the web configuration file (web.config).");
-			}
-
-			// Initialize DbConnection.
-			ConnectionStringSettings ConnectionStringSettings = ConfigurationManager.ConnectionStrings [config ["connectionStringName"]];
-
-			if (ConnectionStringSettings == null || ConnectionStringSettings.ConnectionString == null || ConnectionStringSettings.ConnectionString.Trim ().Length == 0) {
-				throw new ProviderException ("Connection string is empty for SqliteMembershipProvider. Check the web configuration file (web.config).");
-			}
-
-			// Check for invalid parameters in the config
-			config.Remove ("connectionStringName");
-			config.Remove ("enablePasswordRetrieval");
-			config.Remove ("enablePasswordReset");
-			config.Remove ("requiresQuestionAndAnswer");
-			config.Remove ("applicationName");
-			config.Remove ("requiresUniqueEmail");
-			config.Remove ("maxInvalidPasswordAttempts");
-			config.Remove ("passwordAttemptWindow");
-			config.Remove ("commandTimeout");
-			config.Remove ("passwordFormat");
-			config.Remove ("name");
-			config.Remove ("minRequiredPasswordLength");
-			config.Remove ("minRequiredNonalphanumericCharacters");
-			config.Remove ("passwordStrengthRegularExpression");
-
-			if (config.Count > 0) {
-				string key = config.GetKey (0);
-				if (!string.IsNullOrEmpty (key)) {
-					throw new ProviderException (String.Concat ("SqliteMembershipProvider configuration error: Unrecognized attribute: ", key));
-				}
+				_minRequiredNonAlphanumericCharacters = _minRequiredPasswordLength;
 			}
 
 		}
@@ -288,9 +236,7 @@ namespace Vius.Authentication
 			SecUtility.CheckParameter (ref oldPassword, true, true, false, MAX_PASSWORD_LENGTH, "oldPassword");
 			SecUtility.CheckParameter (ref newPassword, true, true, false, MAX_PASSWORD_LENGTH, "newPassword");
 
-			string salt;
-			MembershipPasswordFormat passwordFormat;
-			if (!CheckPassword (username, oldPassword, true, out salt, out passwordFormat))
+			if (!CheckPassword (username, oldPassword, true))
 				return false;
 
 			if (newPassword.Length < this.MinRequiredPasswordLength) {
@@ -310,11 +256,6 @@ namespace Vius.Authentication
 				throw new ArgumentException ("The password does not match the regular expression in the config file.");
 			}
 
-			string encodedPwd = EncodePassword (newPassword, passwordFormat, salt);
-			if (encodedPwd.Length > MAX_PASSWORD_LENGTH) {
-				throw new ArgumentException (String.Format (CultureInfo.CurrentCulture, "The password is too long: it must not exceed {0} chars after encrypting.", MAX_PASSWORD_LENGTH));
-			}
-
 			ValidatePasswordEventArgs args = new ValidatePasswordEventArgs (username, newPassword, false);
 
 			OnValidatingPassword (args);
@@ -330,28 +271,28 @@ namespace Vius.Authentication
 			try {
 				using (var cmd = cn.CreateCommand()) {
 					cmd.CommandText = 
-						"UPDATE " + USER_TB_NAME +
-						"SET    Password = $Password, " +
-						"       LastPasswordChangedDate = $LastPasswordChangedDate " +
-						"WHERE  LoweredUsername = $Username AND " +
-						"       ApplicationId = $ApplicationId";
+						"UPDATE " + TbNames.User +
+						"SET    Password = :newpass, " +
+						"       LastPasswordChangedDate = current_timestamp " +
+						"WHERE  LoweredUsername = :Username and \n" +
+						"       :oldpass = crypt(password,:oldpass)";
 
 					DbParameter param;
 
 					param = cmd.CreateParameter();
-					param.ParameterName = "$Password";
+					param.ParameterName = ":newpass";
 					param.DbType = DbType.AnsiString;
-					param.Value = encodedPwd;
+					param.Value = newPassword;
 					cmd.Parameters.Add(param);
 
 					param = cmd.CreateParameter();
-					param.ParameterName = "$LastPasswordChangedDate";
-					param.DbType = DbType.DateTime;
-					param.Value = encodedPwd;
+					param.ParameterName = ":oldpass";
+					param.DbType = DbType.AnsiString;
+					param.Value = oldPassword;
 					cmd.Parameters.Add(param);
 
 					param = cmd.CreateParameter();
-					param.ParameterName = "$Username";
+					param.ParameterName = ":username";
 					param.DbType = DbType.AnsiString;
 					param.Value = username.ToLower();
 					cmd.Parameters.Add(param);
@@ -381,13 +322,12 @@ namespace Vius.Authentication
 		/// </returns>
 		public override bool ChangePasswordQuestionAndAnswer (string username, string password, string newPasswordQuestion, string newPasswordAnswer)
 		{
-			SecUtility.CheckParameter (ref username, true, true, true, MAX_USERNAME_LENGTH, "username");
-			SecUtility.CheckParameter (ref password, true, true, false, MAX_PASSWORD_LENGTH, "password");
+			SecUtility.CheckParameter(ref username, true, true, true, MAX_USERNAME_LENGTH, "username");
+			SecUtility.CheckParameter(ref password, true, true, false, MAX_PASSWORD_LENGTH, "password");
 
-			string salt, encodedPasswordAnswer;
-			MembershipPasswordFormat passwordFormat;
-			if (!CheckPassword (username, password, true, out salt, out passwordFormat))
+			if (!CheckPassword(username, password, true)) {
 				return false;
+			}
 
 			SecUtility.CheckParameter (ref newPasswordQuestion, this.RequiresQuestionAndAnswer, this.RequiresQuestionAndAnswer, false, MAX_PASSWORD_QUESTION_LENGTH, "newPasswordQuestion");
 			if (newPasswordAnswer != null) {
@@ -395,38 +335,31 @@ namespace Vius.Authentication
 			}
 
 			SecUtility.CheckParameter (ref newPasswordAnswer, this.RequiresQuestionAndAnswer, this.RequiresQuestionAndAnswer, false, MAX_PASSWORD_ANSWER_LENGTH, "newPasswordAnswer");
-			if (!string.IsNullOrEmpty (newPasswordAnswer)) {
-				encodedPasswordAnswer = EncodePassword (newPasswordAnswer.ToLower (CultureInfo.InvariantCulture), passwordFormat, salt);
-			} else {
-				encodedPasswordAnswer = newPasswordAnswer;
-			}
-			SecUtility.CheckParameter (ref encodedPasswordAnswer, this.RequiresQuestionAndAnswer, this.RequiresQuestionAndAnswer, false, MAX_PASSWORD_ANSWER_LENGTH, "newPasswordAnswer");
-
 
 			DbConnection cn = GetDBConnectionForMembership ();
 			try {
 				using (DbCommand cmd = cn.CreateCommand()) {
 					cmd.CommandText = 
-						"UPDATE " + USER_TB_NAME + " \n" +
-						"SET    PasswordQuestion = $Question, " +
-						"       PasswordAnswer = $Answer \n" +
-						"WHERE  LoweredUsername = $Username \n";
+						"UPDATE " + TbNames.User + " \n" +
+						"SET    PasswordQuestion = :Question, " +
+						"       PasswordAnswer   = :Answer \n" +
+						"WHERE  LoweredUsername  = lower(:Username) \n";
 
 					var param = cmd.CreateParameter();
 					param.DbType = DbType.String;
 					param.Value = newPasswordQuestion;
-					param.ParameterName = "$Question";
+					param.ParameterName = ":Question";
 					cmd.Parameters.Add(param);
 
 					param = cmd.CreateParameter();
 					param.DbType = DbType.String;
-					param.ParameterName = "$Answer";
-					param.Value = encodedPasswordAnswer;
+					param.ParameterName = ":Answer";
+					param.Value = newPasswordAnswer;
 					cmd.Parameters.Add(param);
 
 					param = cmd.CreateParameter();
 					param.DbType = DbType.String;
-					param.ParameterName = "$Username";
+					param.ParameterName = ":Username";
 					param.Value = username.ToLower();
 					cmd.Parameters.Add(param);
 
@@ -465,14 +398,11 @@ namespace Vius.Authentication
 				return null;
 			}
 
-			string salt = GenerateSalt ();
-			string encodedPassword = EncodePassword (password, PasswordFormat, salt);
-			if (encodedPassword.Length > MAX_PASSWORD_LENGTH) {
+			if (password.Length > MAX_PASSWORD_LENGTH) {
 				status = MembershipCreateStatus.InvalidPassword;
 				return null;
 			}
 
-			string encodedPasswordAnswer;
 			if (!string.IsNullOrEmpty (passwordAnswer)) {
 				passwordAnswer = passwordAnswer.Trim ();
 			}
@@ -481,14 +411,6 @@ namespace Vius.Authentication
 					status = MembershipCreateStatus.InvalidAnswer;
 					return null;
 				}
-				encodedPasswordAnswer = EncodePassword (passwordAnswer.ToLower (CultureInfo.InvariantCulture), PasswordFormat, salt);
-			} else {
-				encodedPasswordAnswer = passwordAnswer;
-			}
-
-			if (!SecUtility.ValidateParameter (ref encodedPasswordAnswer, RequiresQuestionAndAnswer, true, false, MAX_PASSWORD_ANSWER_LENGTH)) {
-				status = MembershipCreateStatus.InvalidAnswer;
-				return null;
 			}
 
 			if (!SecUtility.ValidateParameter (ref username, true, true, true, MAX_USERNAME_LENGTH)) {
@@ -536,9 +458,7 @@ namespace Vius.Authentication
 			#endregion
 
 			ValidatePasswordEventArgs args = new ValidatePasswordEventArgs (username, password, true);
-
 			OnValidatingPassword (args);
-
 			if (args.Cancel) {
 				status = MembershipCreateStatus.InvalidPassword;
 				return null;
@@ -550,181 +470,141 @@ namespace Vius.Authentication
 			}
 
 			MembershipUser u = GetUser (username, false);
-
 			if (u != null) {
 				status = MembershipCreateStatus.DuplicateUserName;
 				return null;
-			} 
-
-
+			}
 
 			DateTime createDate = DateTime.UtcNow;
 
-			if (providerUserKey == null) {
-				providerUserKey = Guid.NewGuid ();
-			} else {
-				if (!(providerUserKey is Guid)) {
-					status = MembershipCreateStatus.InvalidProviderUserKey;
-					return null;
-				}
-			}
+			MembershipCreateStatus lStatus = MembershipCreateStatus.ProviderError;
+			try{
+				Db.UseCommand(cmd => {
 
-			DbConnection cn = GetDBConnectionForMembership ();
-			try {
-				using (DbCommand cmd = cn.CreateCommand()) {
-
-					cmd.CommandText = "INSERT INTO " + USER_TB_NAME + "( \n" +
-						"    UserId, Username, LoweredUsername, ApplicationId, Email, LoweredEmail, Comment, Password, " +
-						"    PasswordFormat, PasswordSalt, PasswordQuestion, PasswordAnswer, IsApproved, IsAnonymous, " +
-						"    LastActivityDate, LastLoginDate, LastPasswordChangedDate, CreateDate, " +
-						"    IsLockedOut, LastLockoutDate, FailedPasswordAttemptCount, FailedPasswordAttemptWindowStart, " +
-						"    FailedPasswordAnswerAttemptCount, FailedPasswordAnswerAttemptWindowStart" +
-						") " +
-						"Values (" +
-						"    $UserId, $Username, $LoweredUsername, $ApplicationId, $Email, $LoweredEmail, $Comment, $Password, " +
-						"    $PasswordFormat, $PasswordSalt, $PasswordQuestion, $PasswordAnswer, $IsApproved, $IsAnonymous, " +
-						"    $LastActivityDate, $LastLoginDate, $LastPasswordChangedDate, $CreateDate, " +
-						"    $IsLockedOut, $LastLockoutDate, $FailedPasswordAttemptCount, $FailedPasswordAttemptWindowStart, " +
-						"    $FailedPasswordAnswerAttemptCount, $FailedPasswordAnswerAttemptWindowStart" +
-						")";
+					cmd.CommandText = 
+						"INSERT INTO " + TbNames.User + "( \n" +
+						"    Username, \n" +
+						"    Email, \n" +
+						"    Pass, \n" +
+						"    PassQuestion, \n" +
+						"    PassAnswer, \n" +
+						"    IsApproved, \n" +
+						"    IsAnonymous, \n" +
+						"    LastActivityDate, \n" +
+						"    LastLoginDate, \n" +
+						"    LastPasswordChangedDate, \n" +
+						"    FailedPasswordAttemptCount, \n" +
+						"    FailedPasswordAttemptWindowStart, \n" +
+						"    FailedPasswordAnswerAttemptCount, \n" +
+						"    FailedPasswordAnswerAttemptWindowStart \n" +
+						") \n" +
+						"Values ( \n" +
+						"    :Username, \n" +
+						"    :Email, \n" +
+						"    :Password, \n" +
+						"    :PasswordQuestion, \n" +
+						"    :PasswordAnswer, \n" +
+						"    :IsApproved, \n" +
+						"    :IsAnonymous, \n" +
+						"    :LastActivityDate, \n" +
+						"    :LastLoginDate, \n" +
+						"    :LastPasswordChangedDate, \n" +
+						"    :FailedPasswordAttemptCount, \n" +
+						"    :FailedPasswordAttemptWindowStart, \n" +
+						"    :FailedPasswordAnswerAttemptCount, \n" +
+						"    :FailedPasswordAnswerAttemptWindowStart \n" +
+						") \n";
 
 					DateTime nullDate = _minDate;
-					DbParameter p;
+					IDbDataParameter p;
 
 					p = cmd.CreateParameter();
-					p.ParameterName = "$UserId";
-					p.Value = providerUserKey.ToString();
-					cmd.Parameters.Add(p);
-
-					p = cmd.CreateParameter();
-					p.ParameterName = "$Username";
+					p.ParameterName = ":Username";
 					p.Value = username;
 					cmd.Parameters.Add(p);
 
 					p = cmd.CreateParameter();
-					p.ParameterName = "$LoweredUsername";
-					p.Value = username.ToLowerInvariant();
-					cmd.Parameters.Add(p);
-
-					p = cmd.CreateParameter();
-					p.ParameterName = "$Email";
+					p.ParameterName = ":Email";
 					p.Value = email;
 					cmd.Parameters.Add(p);
 
 					p = cmd.CreateParameter();
-					p.ParameterName = "$LoweredEmail";
-					p.Value = (email!=null) ? email.ToLowerInvariant () : null;
+					p.ParameterName = ":Password";
+					p.Value = password;
 					cmd.Parameters.Add(p);
 
 					p = cmd.CreateParameter();
-					p.ParameterName = "$Comment";
-					p.Value = null;
-					cmd.Parameters.Add(p);
-
-					p = cmd.CreateParameter();
-					p.ParameterName = "$Password";
-					p.Value = encodedPassword;
-					cmd.Parameters.Add(p);
-
-					p = cmd.CreateParameter();
-					p.ParameterName = "$PasswordFormat";
+					p.ParameterName = ":PasswordFormat";
 					p.Value = PasswordFormat.ToString ();
 					cmd.Parameters.Add(p);
 
 					p = cmd.CreateParameter();
-					p.ParameterName = "$PasswordSalt";
-					p.Value = salt;
-					cmd.Parameters.Add(p);
-
-					p = cmd.CreateParameter();
-					p.ParameterName = "$PasswordQuestion";
+					p.ParameterName = ":PasswordQuestion";
 					p.Value = passwordQuestion;
 					cmd.Parameters.Add(p);
 
 					p = cmd.CreateParameter();
-					p.ParameterName = "$PasswordAnswer";
-					p.Value = encodedPasswordAnswer;
+					p.ParameterName = ":PasswordAnswer";
+					p.Value = passwordAnswer;
 					cmd.Parameters.Add(p);
 
 					p = cmd.CreateParameter();
-					p.ParameterName = "$IsApproved";
+					p.ParameterName = ":IsApproved";
 					p.Value = isApproved;
 					cmd.Parameters.Add(p);
 
 					p = cmd.CreateParameter();
-					p.ParameterName = "$IsAnonymous";
+					p.ParameterName = ":IsAnonymous";
 					p.Value = false;
 					cmd.Parameters.Add(p);
 
 					p = cmd.CreateParameter();
-					p.ParameterName = "$LastActivityDate";
+					p.ParameterName = ":LastActivityDate";
 					p.Value = createDate;
 					cmd.Parameters.Add(p);
 
 					p = cmd.CreateParameter();
-					p.ParameterName = "$LastLoginDate";
+					p.ParameterName = ":LastLoginDate";
 					p.Value = createDate;
 					cmd.Parameters.Add(p);
 
 					p = cmd.CreateParameter();
-					p.ParameterName = "$LastPasswordChangedDate";
+					p.ParameterName = ":LastPasswordChangedDate";
 					p.Value = createDate;
 					cmd.Parameters.Add(p);
 
 					p = cmd.CreateParameter();
-					p.ParameterName = "$CreateDate";
-					p.Value = createDate;
-					cmd.Parameters.Add(p);
-
-					p = cmd.CreateParameter();
-					p.ParameterName = "$IsLockedOut";
-					p.Value = false;
-					cmd.Parameters.Add(p);
-
-					p = cmd.CreateParameter();
-					p.ParameterName = "$LastLockoutDate";
-					p.Value = nullDate;
-					cmd.Parameters.Add(p);
-
-					p = cmd.CreateParameter();
-					p.ParameterName = "$FailedPasswordAttemptCount";
+					p.ParameterName = ":FailedPasswordAttemptCount";
 					p.Value = 0;
 					cmd.Parameters.Add(p);
 
 					p = cmd.CreateParameter();
-					p.ParameterName = "$FailedPasswordAttemptWindowStart";
+					p.ParameterName = ":FailedPasswordAttemptWindowStart";
 					p.Value = nullDate;
 					cmd.Parameters.Add(p);
 
 					p = cmd.CreateParameter();
-					p.ParameterName = "$FailedPasswordAnswerAttemptCount";
+					p.ParameterName = ":FailedPasswordAnswerAttemptCount";
 					p.Value = 0;
 					cmd.Parameters.Add(p);
 
 					p = cmd.CreateParameter();
-					p.ParameterName = "$FailedPasswordAnswerAttemptWindowStart";
+					p.ParameterName = ":FailedPasswordAnswerAttemptWindowStart";
 					p.Value = nullDate;
 					cmd.Parameters.Add(p);
-
-					if (cn.State == ConnectionState.Closed){
-						cn.Open ();
-					}
 
 					if (cmd.ExecuteNonQuery () > 0) {
-						status = MembershipCreateStatus.Success;
+						lStatus = MembershipCreateStatus.Success;
 					} else {
-						status = MembershipCreateStatus.UserRejected;
+						lStatus = MembershipCreateStatus.UserRejected;
 					}
-				}
+				});
 			} catch {
 				status = MembershipCreateStatus.ProviderError;
-
 				throw;
-			} finally {
-				if (!IsTransactionInProgress ())
-					cn.Dispose ();
 			}
 
+			status = lStatus;
 			return GetUser (username, false);
 		}
 
@@ -750,11 +630,11 @@ namespace Vius.Authentication
 					string userId = null;
 					cmd.CommandText = 
 						"SELECT UserId " +
-						"FROM   " + USER_TB_NAME + " " +
-						"WHERE  LoweredUsername = $Username ";
+						"FROM   " + TbNames.User + " " +
+						"WHERE  LoweredUsername = :Username ";
 
 					p = cmd.CreateParameter();
-					p.ParameterName = "$Username";
+					p.ParameterName = ":Username";
 					p.Value = username.ToLowerInvariant ();
 					cmd.Parameters.Add(p);
 
@@ -762,30 +642,30 @@ namespace Vius.Authentication
 
 					cmd.Parameters.Clear();
 					p = cmd.CreateParameter();
-					p.ParameterName = "$UserId";
+					p.ParameterName = ":UserId";
 					p.Value = username.ToLowerInvariant ();
 					cmd.Parameters.Add(p);
 
 					// start deleting
 					cmd.CommandText = 
 						"DELETE " +
-						"FROM   " + USER_TB_NAME + " " +
-						"WHERE  UserId = $UserId ";
+						"FROM   " + TbNames.User + " " +
+						"WHERE  UserId = :UserId ";
 					int rowsAffected = cmd.ExecuteNonQuery ();
 
 					if (deleteAllRelatedData && (!String.IsNullOrEmpty ((userId)))) {
 						// Delete from user/role relationship table.
 						cmd.CommandText = 
 							"DELETE " +
-							"FROM   " + USERS_IN_ROLES_TB_NAME + " " +
-							"WHERE  UserId = $UserId";
+							"FROM   " + TbNames.Roles + " " +
+							"WHERE  UserId = :UserId";
 						cmd.ExecuteNonQuery ();
 
 						// Delete from profile table.
 						cmd.CommandText = 
 							"DELETE " +
-							"FROM " + PROFILE_TB_NAME + " " +
-							"WHERE UserId = $UserId";
+							"FROM   " + TbNames.Profile + " " +
+							"WHERE  UserId = :UserId";
 						cmd.ExecuteNonQuery ();
 					}
 
@@ -808,58 +688,45 @@ namespace Vius.Authentication
 		/// </returns>
 		public override MembershipUserCollection GetAllUsers (int pageIndex, int pageSize, out int totalRecords)
 		{
-			DbConnection cn = GetDBConnectionForMembership();
-			try {
-				using (DbCommand cmd = cn.CreateCommand()) {
-					cmd.CommandText = 
-						"SELECT Count(*) " +
-						"FROM   " + USER_TB_NAME + " " +
-						"WHERE  IsAnonymous='0'";
+			MembershipUserCollection users = new MembershipUserCollection();
+			int total = 0;
+			Db.UseCommand( cmd => {
+				cmd.CommandText = 
+					"SELECT Count(*) " +
+					"FROM   " + TbNames.User + " " +
+					"WHERE  IsAnonymous='0'";
 
-					if (cn.State == ConnectionState.Closed) {
-						cn.Open();
-					}
-
-					totalRecords = Convert.ToInt32(cmd.ExecuteScalar());
-
-					MembershipUserCollection users = new MembershipUserCollection();
-
-					if (totalRecords <= 0) {
-						return users;
-					}
-
-					cmd.CommandText = "SELECT UserId, Username, Email, PasswordQuestion," +
-						" Comment, IsApproved, IsLockedOut, CreateDate, LastLoginDate," +
-						" LastActivityDate, LastPasswordChangedDate, LastLockoutDate " +
-						" FROM " + USER_TB_NAME +
-						" WHERE IsAnonymous='0' " +
-						" ORDER BY Username Asc";
-
-					using (DbDataReader reader = cmd.ExecuteReader()) {
-						int counter = 0;
-						int startIndex = pageSize * pageIndex;
-						int endIndex = startIndex + pageSize - 1;
-
-						while (reader.Read()) {
-							if (counter >= startIndex) {
-								MembershipUser u = GetUserFromReader(reader);
-								users.Add(u);
-							}
-
-							if (counter >= endIndex) {
-								cmd.Cancel();
-							}
-
-							counter++;
-						}
-
-						return users;
-					}
+				total = Convert.ToInt32(cmd.ExecuteScalar());
+				if (total <= 0) {
+					return;
 				}
-			} finally {
-				if (!IsTransactionInProgress())
-					cn.Dispose();
-			}
+
+				cmd.CommandText = 
+					"SELECT * \n" +
+					"FROM   " + TbNames.User + "\n" +
+					"WHERE  IsAnonymous=false \n" +
+					"ORDER BY Username Asc \n";
+
+				using (var reader = cmd.ExecuteReader()) {
+					int counter = 0;
+					int startIndex = pageSize * pageIndex;
+					int endIndex = startIndex + pageSize - 1;
+
+					while (reader.Read()) {
+						if (counter >= startIndex) {
+							MembershipUser u = GetUserFromReader(reader);
+							users.Add(u);
+						}
+						if (counter >= endIndex) {
+							cmd.Cancel();
+						}
+						counter++;
+					}
+
+				}
+			});
+			totalRecords = total;
+			return users;
 		}
 
 		/// <summary>
@@ -875,15 +742,15 @@ namespace Vius.Authentication
 				using (DbCommand cmd = cn.CreateCommand()) {
 					cmd.CommandText = 
 						"SELECT Count(*) " +
-						"FROM   " + USER_TB_NAME +
-						"WHERE  LastActivityDate > $LastActivityDate AND " +
-						"       ApplicationId = $ApplicationId";
+						"FROM   " + TbNames.User +
+						"WHERE  LastActivityDate > :LastActivityDate AND " +
+						"       ApplicationId = :ApplicationId";
 
 					TimeSpan onlineSpan = new TimeSpan (0, Membership.UserIsOnlineTimeWindow, 0);
 					DateTime compareTime = DateTime.UtcNow.Subtract (onlineSpan);
 
 					var p = cmd.CreateParameter();
-					p.ParameterName = "$LastActivityDate";
+					p.ParameterName = ":LastActivityDate";
 					p.Value = compareTime;
 					cmd.Parameters.Add(p);
 
@@ -910,70 +777,7 @@ namespace Vius.Authentication
 		/// </returns>
 		public override string GetPassword (string username, string answer)
 		{
-			if (!EnablePasswordRetrieval) {
-				throw new ProviderException ("Password retrieval not enabled.");
-			}
-
-			if (PasswordFormat == MembershipPasswordFormat.Hashed) {
-				throw new ProviderException ("Cannot retrieve hashed passwords.");
-			}
-
-			DbConnection cn = GetDBConnectionForMembership ();
-			try {
-				using (DbCommand cmd = cn.CreateCommand()) {
-					cmd.CommandText = 
-						"SELECT Password, " +
-						"       PasswordFormat, " +
-						"       PasswordSalt, " +
-						"       PasswordAnswer, " +
-						"       IsLockedOut " +
-						"FROM " + USER_TB_NAME + " \n" +
-						"WHERE LoweredUsername = $Username ";
-
-					var p = cmd.CreateParameter();
-					p.ParameterName = "$Username";
-					p.Value = username.ToLowerInvariant();
-					cmd.Parameters.Add(p);
-
-					if (cn.State == ConnectionState.Closed){
-						cn.Open ();
-					}
-
-					using (DbDataReader dr = cmd.ExecuteReader((CommandBehavior.SingleRow))) {
-						string password, passwordAnswer, passwordSalt;
-						MembershipPasswordFormat passwordFormat;
-
-						if (dr.HasRows) {
-							dr.Read ();
-
-							if (dr.GetBoolean (4))
-								throw new MembershipPasswordException ("The supplied user is locked out.");
-
-							password = dr.GetString (0);
-							passwordFormat = (MembershipPasswordFormat)Enum.Parse (typeof(MembershipPasswordFormat), dr.GetString (1));
-							passwordSalt = dr.GetString (2);
-							passwordAnswer = (dr.GetValue (3) == DBNull.Value ? String.Empty : dr.GetString (3));
-						} else {
-							throw new MembershipPasswordException ("The supplied user name is not found.");
-						}
-
-						if (RequiresQuestionAndAnswer && !ComparePasswords (answer, passwordAnswer, passwordSalt, passwordFormat)) {
-							UpdateFailureCount (username, "passwordAnswer", false);
-
-							throw new MembershipPasswordException ("Incorrect password answer.");
-						}
-
-						if (passwordFormat == MembershipPasswordFormat.Encrypted) {
-							password = UnEncodePassword (password, passwordFormat);
-						}
-
-						return password;
-					}
-				}
-			} finally {
-				if (!IsTransactionInProgress ())
-					cn.Dispose ();
-			}
+			throw new ProviderException ("Cannot retrieve hashed passwords.");
 		}
 
 		/// <summary>
@@ -986,55 +790,49 @@ namespace Vius.Authentication
 		/// </returns>
 		public override MembershipUser GetUser (string username, bool userIsOnline)
 		{
-			DbConnection cn = GetDBConnectionForMembership ();
-			try {
-				DbParameter p;
-				using (DbCommand cmd = cn.CreateCommand()) {
+				MembershipUser user = null;
+				IDbDataParameter p;
+				Db.UseCommand(cmd =>{
 					cmd.CommandText = 
-						"SELECT UserId, Username, Email, PasswordQuestion, " +
-						"       Comment, IsApproved, IsLockedOut, CreateDate, LastLoginDate,"
-						+ " LastActivityDate, LastPasswordChangedDate, LastLockoutDate"
-						+ " FROM " + USER_TB_NAME + " " +
-							"WHERE LoweredUsername = $Username";
-
+						"SELECT UserId, \n" +
+						"       Username, " +
+						"       Email, \n" +
+						"       PassQuestion, \n" +
+						"       Comment, \n" +
+						"       IsApproved, \n" +
+						"       CreateDate, LastLoginDate, \n" +
+						"       LastActivityDate, \n" +
+						"       LastPasswordChangedDate \n" +
+						"FROM   " + TbNames.User + " \n" +
+						"WHERE  UsernameLowered = lower(:Username) \n";
+					
 					p = cmd.CreateParameter();
-					p.ParameterName = "$Username";
+					p.ParameterName = ":Username";
 					p.Value = username.ToLowerInvariant();
 					cmd.Parameters.Add(p);
-
-					MembershipUser user = null;
-
-					if (cn.State == ConnectionState.Closed){
-						cn.Open();
-					}
-
-					using (DbDataReader dr = cmd.ExecuteReader()) {
-						if (dr.HasRows) {
-							dr.Read ();
+					
+					using (var dr = cmd.ExecuteReader()) {
+						if (dr.Read()) {
 							user = GetUserFromReader (dr);
 						}
 					}
-
+					
 					if (userIsOnline) {
 						cmd.CommandText =
-							"UPDATE " + USER_TB_NAME + " \n" +
-							"SET    LastActivityDate = $LastActivityDate \n" +
-							"WHERE  LoweredUsername = $Username \n";
-
+							"UPDATE " + TbNames.User + " \n" +
+							"SET    LastActivityDate = :LastActivityDate \n" +
+							"WHERE  LoweredUsername = lower(:Username) \n";
+						
 						p = cmd.CreateParameter();
-						p.ParameterName = "$LastActivityDate";
+						p.ParameterName = ":LastActivityDate";
 						p.Value = DateTime.UtcNow;
 						cmd.Parameters.Add(p);
-
+						
 						cmd.ExecuteNonQuery();
 					}
-
-					return user;
-				}
-			} finally {
-				if (!IsTransactionInProgress ())
-					cn.Dispose ();
-			}
+					
+				});
+				return user;
 		}
 
 		/// <summary>
@@ -1054,11 +852,12 @@ namespace Vius.Authentication
 					cmd.CommandText = "SELECT UserId, Username, Email, PasswordQuestion,"
 						+ " Comment, IsApproved, IsLockedOut, CreateDate, LastLoginDate,"
 						+ " LastActivityDate, LastPasswordChangedDate, LastLockoutDate"
-						+ " FROM " + USER_TB_NAME + " WHERE UserId = $UserId";
+						+ " FROM " + TbNames.User + " WHERE UserId = :UserId";
 
 					p = cmd.CreateParameter();
-					p.ParameterName = "$UserId";
-					p.Value = providerUserKey.ToString ();
+					p.DbType = DbType.Int32;
+					p.ParameterName = ":UserId";
+					p.Value = Convert.ToInt32(providerUserKey);
 					cmd.Parameters.Add(p);
 
 					MembershipUser user = null;
@@ -1076,12 +875,12 @@ namespace Vius.Authentication
 
 					if (userIsOnline) {
 						cmd.CommandText = 
-							"UPDATE " + USER_TB_NAME+ " " +
-							"SET    LastActivityDate = $LastActivityDate " +
-							"WHERE  UserId = $UserId";
+							"UPDATE " + TbNames.User+ " " +
+							"SET    LastActivityDate = :LastActivityDate " +
+							"WHERE  UserId = :UserId";
 
 						p = cmd.CreateParameter();
-						p.ParameterName = "$LastActivityDate";
+						p.ParameterName = ":LastActivityDate";
 						p.Value = DateTime.UtcNow;
 						cmd.Parameters.Add(p);
 
@@ -1109,21 +908,21 @@ namespace Vius.Authentication
 			try {
 				using (DbCommand cmd = cn.CreateCommand()) {
 					cmd.CommandText = 
-						"UPDATE " + USER_TB_NAME + " " +
+						"UPDATE " + TbNames.User + " " +
 						"SET    IsLockedOut = '0', " +
 						"       FailedPasswordAttemptCount = 0, " +
-						"       FailedPasswordAttemptWindowStart = $MinDate, " +
+						"       FailedPasswordAttemptWindowStart = :MinDate, " +
 						"       FailedPasswordAnswerAttemptCount = 0," +
-						"       FailedPasswordAnswerAttemptWindowStart = $MinDate " +
-						"WHERE  LoweredUsername = $Username";
+						"       FailedPasswordAnswerAttemptWindowStart = :MinDate " +
+						"WHERE  LoweredUsername = :Username";
 
 					p = cmd.CreateParameter();
-					p.ParameterName = "$MinDate";
+					p.ParameterName = ":MinDate";
 					p.Value = _minDate;
 					cmd.Parameters.Add(p);
 
 					p = cmd.CreateParameter();
-					p.ParameterName = "$Username";
+					p.ParameterName = ":Username";
 					p.Value = username.ToLowerInvariant();
 					cmd.Parameters.Add(p);
 
@@ -1159,11 +958,11 @@ namespace Vius.Authentication
 				using (DbCommand cmd = cn.CreateCommand()) {
 					cmd.CommandText = 
 						"SELECT Username" +
-						"FROM   " + USER_TB_NAME + " " +
-						"WHERE LoweredEmail = $Email ";
+						"FROM   " + TbNames.User + " " +
+						"WHERE LoweredEmail = :Email ";
 
 					p = cmd.CreateParameter();
-					p.ParameterName = "$Email";
+					p.ParameterName = ":Email";
 					p.Value = email.ToLowerInvariant();
 					cmd.Parameters.Add(p);
 
@@ -1200,40 +999,22 @@ namespace Vius.Authentication
 		/// <exception cref="T:System.Web.Security.MembershipPasswordException">passwordAnswer is invalid. - or -The user account is currently locked out.</exception>
 		public override string ResetPassword (string username, string passwordAnswer)
 		{
-			DbParameter p;
-			string salt;
-			MembershipPasswordFormat passwordFormat;
-			string passwordFromDb;
-			int status;
-			int failedPwdAttemptCount;
-			int failedPwdAnswerAttemptCount;
-			bool isApproved;
-			DateTime lastLoginDate;
-			DateTime lastActivityDate;
+//			string salt;
+//			MembershipPasswordFormat passwordFormat;
+//			string passwordFromDb;
+//			int failedPwdAttemptCount;
+//			int failedPwdAnswerAttemptCount;
+//			bool isApproved;
+//			DateTime lastLoginDate;
+//			DateTime lastActivityDate;
 			if (!this.EnablePasswordReset) {
 				throw new NotSupportedException ("This provider is not configured to allow password resets. To enable password reset, set enablePasswordReset to \"true\" in the configuration file.");
 			}
 			SecUtility.CheckParameter (ref username, true, true, true, 0x100, "username");
 
-			GetPasswordWithFormat (username, out status, out passwordFromDb, out passwordFormat, out salt, out failedPwdAttemptCount, out failedPwdAnswerAttemptCount, out isApproved, out lastLoginDate, out lastActivityDate);
-
-			if (status != 0) {
-				if (IsStatusDueToBadPassword (status)) {
-					throw new MembershipPasswordException (GetExceptionText (status));
-				}
-				throw new ProviderException (GetExceptionText (status));
-			}
-
-			string encodedPwdAnswer;
 			if (passwordAnswer != null) {
 				passwordAnswer = passwordAnswer.Trim ();
 			}
-			if (!string.IsNullOrEmpty (passwordAnswer)) {
-				encodedPwdAnswer = EncodePassword (passwordAnswer.ToLower (CultureInfo.InvariantCulture), passwordFormat, salt);
-			} else {
-				encodedPwdAnswer = passwordAnswer;
-			}
-			SecUtility.CheckParameter (ref encodedPwdAnswer, this.RequiresQuestionAndAnswer, this.RequiresQuestionAndAnswer, false, MAX_PASSWORD_ANSWER_LENGTH, "passwordAnswer");
 
 			string newPassword = Membership.GeneratePassword (NEW_PASSWORD_LENGTH, MinRequiredNonAlphanumericCharacters);
 
@@ -1247,84 +1028,69 @@ namespace Vius.Authentication
 			}
 
 			// From this point on the only logic I need to implement is that contained in aspnet_Membership_ResetPassword.
-			DbConnection cn = GetDBConnectionForMembership ();
-			try {
-				using (DbCommand cmd = cn.CreateCommand()) {
-					cmd.CommandText = 
-						"SELECT PasswordAnswer, " +
-						"IsLockedOut " +
-						"FROM " + USER_TB_NAME + " " +
-						"WHERE LoweredUsername = $Username ";
+			Db.UseCommand(cmd => {
+				cmd.CommandText = 
+					"SELECT PasswordAnswer = crypt(:SuppliedAnswer,PasswordAnswer) as AnswerMatches, \n" +
+					"       IsLockedOut \n" +
+					"FROM " + TbNames.User + "\n" +
+					"WHERE LoweredUsername = :Username ";
 
-					p = cmd.CreateParameter();
-					p.ParameterName = "$Username";
-					p.Value = username.ToLowerInvariant();
-					cmd.Parameters.Add(p);
+				var p = cmd.CreateParameter();
+				p.ParameterName = ":Username";
+				p.Value = username.ToLowerInvariant();
+				cmd.Parameters.Add(p);
 
-					if (cn.State == ConnectionState.Closed){
-						cn.Open ();
-					}
+				p = cmd.CreateParameter();
+				p.ParameterName = ":SuppliedAnswer";
+				p.Value = passwordAnswer;
+				cmd.Parameters.Add(p);
 
-					using (DbDataReader dr = cmd.ExecuteReader(CommandBehavior.SingleRow)) {
-						string passwordAnswerFromDb;
-						if (dr.HasRows) {
-							dr.Read ();
-
-							if (Convert.ToBoolean (dr.GetValue (1)))
-								throw new MembershipPasswordException ("The supplied user is locked out.");
-
-							passwordAnswerFromDb = dr.GetValue (0) as string;
-						} else {
-							throw new MembershipPasswordException ("The supplied user name is not found.");
+				using (var dr = cmd.ExecuteReader(CommandBehavior.SingleRow)) {
+					if (dr.Read ()){
+						if (dr.GetBoolean(1)){
+							throw new MembershipPasswordException ("The supplied user is locked out.");
 						}
-
-						if (RequiresQuestionAndAnswer && !ComparePasswords (passwordAnswer, passwordAnswerFromDb, salt, passwordFormat)) {
+						if (RequiresQuestionAndAnswer && !dr.GetBoolean(0)) {
 							UpdateFailureCount (username, "passwordAnswer", false);
-
 							throw new MembershipPasswordException ("Incorrect password answer.");
 						}
-					}
-
-					cmd.CommandText = 
-						"UPDATE " + USER_TB_NAME + " " +
-						"SET Password = $Password, LastPasswordChangedDate = $LastPasswordChangedDate, " +
-						"FailedPasswordAttemptCount = 0, FailedPasswordAttemptWindowStart = $MinDate,"
-						+ " FailedPasswordAnswerAttemptCount = 0, FailedPasswordAnswerAttemptWindowStart = $MinDate"
-						+ " " +
-						"WHERE LoweredUsername = $Username AND IsLockedOut = 0";
-
-					cmd.Parameters.Clear ();
-
-					p = cmd.CreateParameter();
-					p.ParameterName = "$Password";
-					p.Value = EncodePassword (newPassword, passwordFormat, salt);
-					cmd.Parameters.Add(p);
-
-					p = cmd.CreateParameter();
-					p.ParameterName = "$LastPasswordChangedDate";
-					p.Value = DateTime.UtcNow;
-					cmd.Parameters.Add(p);
-
-					p = cmd.CreateParameter();
-					p.ParameterName = "$MinDate";
-					p.Value = _minDate;
-					cmd.Parameters.Add(p);
-
-					p = cmd.CreateParameter();
-					p.ParameterName = "$Username";
-					p.Value = username.ToLowerInvariant();
-					cmd.Parameters.Add(p);
-
-					if (cmd.ExecuteNonQuery () > 0) {
-						return newPassword;
 					} else {
-						throw new MembershipPasswordException ("User not found, or user is locked out. Password not reset.");
+						throw new MembershipPasswordException ("The supplied user name is not found.");
 					}
 				}
-			} finally {
-				if (!IsTransactionInProgress ())
-					cn.Dispose ();
-			}
+
+				cmd.CommandText = 
+					"UPDATE " + TbNames.User + " " +
+					"SET    Password = :NewPass, " +
+					"       FailedPasswordAttemptCount = 0, " +
+					"       FailedPasswordAttemptWindowStart = :MinDate, " +
+					"       FailedPasswordAnswerAttemptCount = 0, " +
+					"       FailedPasswordAnswerAttemptWindowStart = :MinDate" +
+					"WHERE  UsernameLowered = lower(:Username) AND " +
+					"       IsLockedOut = false";
+
+				cmd.Parameters.Clear ();
+
+				p = cmd.CreateParameter();
+				p.ParameterName = ":NewPass";
+				p.Value = newPassword;
+				cmd.Parameters.Add(p);
+
+				p = cmd.CreateParameter();
+				p.ParameterName = ":MinDate";
+				p.Value = _minDate;
+				cmd.Parameters.Add(p);
+
+				p = cmd.CreateParameter();
+				p.ParameterName = ":Username";
+				p.Value = username;
+				cmd.Parameters.Add(p);
+
+				if (cmd.ExecuteNonQuery() < 1) {
+					throw new MembershipPasswordException ("User not found, or user is locked out. Password not reset.");
+				}
+			});
+			return newPassword;
 		}
 
 		/// <summary>
@@ -1338,33 +1104,33 @@ namespace Vius.Authentication
 			try {
 				using (DbCommand cmd = cn.CreateCommand()) {
 					cmd.CommandText = 
-						"UPDATE " + USER_TB_NAME + " " +
-						"SET Email = $Email, LoweredEmail = $LoweredEmail, Comment = $Comment," +
-						"    IsApproved = $IsApproved" +
-						"WHERE LoweredUsername = $Username";
+						"UPDATE " + TbNames.User + " " +
+						"SET Email = :Email, LoweredEmail = :LoweredEmail, Comment = :Comment," +
+						"    IsApproved = :IsApproved" +
+						"WHERE LoweredUsername = :Username";
 
 					p = cmd.CreateParameter();
-					p.ParameterName = "$Email";
+					p.ParameterName = ":Email";
 					p.Value = user.Email;
 					cmd.Parameters.Add(p);
 
 					p = cmd.CreateParameter();
-					p.ParameterName = "$LoweredEmail";
+					p.ParameterName = ":LoweredEmail";
 					p.Value = user.Email.ToLowerInvariant();
 					cmd.Parameters.Add(p);
 
 					p = cmd.CreateParameter();
-					p.ParameterName = "$Comment";
+					p.ParameterName = ":Comment";
 					p.Value = user.Comment;
 					cmd.Parameters.Add(p);
 
 					p = cmd.CreateParameter();
-					p.ParameterName = "$IsApproved";
+					p.ParameterName = ":IsApproved";
 					p.Value = user.IsApproved;
 					cmd.Parameters.Add(p);
 
 					p = cmd.CreateParameter();
-					p.ParameterName = "$Username";
+					p.ParameterName = ":Username";
 					p.Value = user.UserName.ToLowerInvariant();
 					cmd.Parameters.Add(p);
 
@@ -1393,41 +1159,23 @@ namespace Vius.Authentication
 				return false;
 			}
 
-			DbParameter p;
-			string salt;
-			MembershipPasswordFormat passwordFormat;
-			bool isAuthenticated = CheckPassword (username, password, true, out salt, out passwordFormat);
+			bool isAuthenticated = CheckPassword (username, password, true);
 			if (isAuthenticated) {
 				// User is authenticated. Update last activity and last login dates.
-				DbConnection cn = GetDBConnectionForMembership ();
-				try {
-					using (DbCommand cmd = cn.CreateCommand()) {
-						cmd.CommandText = 
-							"UPDATE " + USER_TB_NAME + " " +
-							"SET    LastActivityDate = $UtcNow, " +
-							"       LastLoginDate = $UtcNow" + 
-							"WHERE  LoweredUsername = $Username ";
+				Db.UseCommand( cmd =>{
+					cmd.CommandText = 
+						"UPDATE " + TbNames.User + " \n" +
+						"SET    LastActivityDate = current_timestamp, \n" +
+						"       LastLoginDate = current_timestamp \n" + 
+						"WHERE  UsernameLowered = lower(:Username) \n";
 
-						p = cmd.CreateParameter();
-						p.ParameterName = "$UtcNow";
-						p.Value = DateTime.UtcNow;
-						cmd.Parameters.Add(p);
+					var p = cmd.CreateParameter();
+					p.ParameterName = ":Username";
+					p.Value = username.ToLowerInvariant ();
+					cmd.Parameters.Add(p);
 
-						p = cmd.CreateParameter();
-						p.ParameterName = "$Username";
-						p.Value = username.ToLowerInvariant ();
-						cmd.Parameters.Add(p);
-
-						if (cn.State == ConnectionState.Closed){
-							cn.Open ();
-						}
-
-						cmd.ExecuteNonQuery ();
-					}
-				} finally {
-					if (!IsTransactionInProgress ())
-						cn.Dispose ();
-				}
+					cmd.ExecuteNonQuery ();
+				});
 			}
 
 			return isAuthenticated;
@@ -1451,11 +1199,11 @@ namespace Vius.Authentication
 				using (DbCommand cmd = cn.CreateCommand()) {
 					cmd.CommandText = 
 						"SELECT Count(*) " +
-						"FROM " + USER_TB_NAME +
-						"WHERE LoweredUsername LIKE $UsernameSearch";
+						"FROM " + TbNames.User +
+						"WHERE LoweredUsername LIKE :UsernameSearch";
 
 					p = cmd.CreateParameter();
-					p.ParameterName = "$UsernameSearch";
+					p.ParameterName = ":UsernameSearch";
 					p.Value = usernameToMatch.ToLowerInvariant ();
 					cmd.Parameters.Add(p);
 
@@ -1475,7 +1223,7 @@ namespace Vius.Authentication
 						"SELECT UserId, " +
 						"       Username, " +
 						"       Email, " +
-						"       PasswordQuestion," +
+						"       PassQuestion," +
 						"       Comment, " +
 						"       IsApproved, " +
 						"       IsLockedOut, " +
@@ -1484,8 +1232,8 @@ namespace Vius.Authentication
 						"       LastActivityDate, " +
 						"       LastPasswordChangedDate, " +
 						"       LastLockoutDate " + " " +
-						"FROM   " + USER_TB_NAME + " " +
-						"WHERE  LoweredUsername LIKE $UsernameSearch " +
+						"FROM   " + TbNames.User + " " +
+						"WHERE  LoweredUsername LIKE :UsernameSearch " +
 						"ORDER BY Username Asc";
 
 					using (DbDataReader dr = cmd.ExecuteReader()) {
@@ -1533,11 +1281,11 @@ namespace Vius.Authentication
 				using (DbCommand cmd = cn.CreateCommand()) {
 					cmd.CommandText = 
 						"SELECT Count(*) " +
-						"FROM   " + USER_TB_NAME + " " +
-						"WHERE  LoweredEmail LIKE $EmailSearch ";
+						"FROM   " + TbNames.User + " " +
+						"WHERE  LoweredEmail LIKE :EmailSearch ";
 
 					p = cmd.CreateParameter();
-					p.ParameterName = "$EmailSearch";
+					p.ParameterName = ":EmailSearch";
 					p.Value = emailToMatch.ToLowerInvariant();
 					cmd.Parameters.Add(p);
 
@@ -1557,8 +1305,8 @@ namespace Vius.Authentication
 						"SELECT UserId, Username, Email, PasswordQuestion,"
 						+ " Comment, IsApproved, IsLockedOut, CreateDate, LastLoginDate,"
 						+ " LastActivityDate, LastPasswordChangedDate, LastLockoutDate " +
-							"FROM " + USER_TB_NAME + " " +
-							"WHERE LoweredEmail LIKE $EmailSearch "
+							"FROM " + TbNames.User + " " +
+							"WHERE LoweredEmail LIKE :EmailSearch "
 						+ " ORDER BY Username Asc";
 
 					using (DbDataReader dr = cmd.ExecuteReader()) {
@@ -1592,7 +1340,7 @@ namespace Vius.Authentication
 
 		#region Private Methods
 
-		private static void ValidatePwdStrengthRegularExpression ()
+		private void ValidatePwdStrengthRegularExpression ()
 		{
 			// Validate regular expression, if supplied.
 			if (_passwordStrengthRegularExpression == null)
@@ -1619,58 +1367,79 @@ namespace Vius.Authentication
 
 		private MembershipUser GetUserFromReader (IDataRecord reader)
 		{
-			// A helper function that takes the current row from the SqliteDataReader
-			// and hydrates a MembershipUser from the values. Called by the MembershipUser.GetUser implementation.
-			// Datareader is filled with SQL specifying these fields:
-			// SELECT UserId, Username, Email, PasswordQuestion,"
-			// + " Comment, IsApproved, IsLockedOut, CreateDate, LastLoginDate,"
-			// + " LastActivityDate, LastPasswordChangedDate, LastLockoutDate"
-			// + " FROM " + USER_TB_NAME
-			if (reader.GetString (1) == "")
-				return null;
-			object providerUserKey = null;
-			string strGooid = Guid.NewGuid ().ToString ();
+			long providerUserKey = -1;
+			string username = "";
+			string email = "";
+			string passwordQuestion = "";
+			string comment = "";
+			bool isApproved = true;
+			bool isLockedOut = false;
+			DateTime creationDate = DateTime.MinValue;
+			DateTime lastLoginDate = DateTime.MinValue;
+			DateTime lastActivityDate = DateTime.MinValue;
+			DateTime lastPasswordChangedDate = DateTime.MinValue;
+			DateTime lastLockedOutDate = DateTime.MinValue;
 
-			if (reader.GetValue (0).ToString ().Length > 0)
-				providerUserKey = new Guid (reader.GetValue (0).ToString ());
-			else
-				providerUserKey = new Guid (strGooid);
+			for(var fld = 0; fld< reader.FieldCount; fld++){
+				if(reader.IsDBNull(fld)){
+					continue;
+				}
+				switch(reader.GetName(fld).ToLower()){
+					case "userid":
+						providerUserKey = reader.GetInt64(fld);
+						break;
+					case "username":
+						username = reader.GetString(fld);
+						break;
+					case "email":
+						email = reader.GetString(fld);
+						break;
+					case "passquestion":
+						passwordQuestion = reader.GetString(fld);
+						break;
+					case "comment":
+						comment = reader.GetString(fld);
+						break;
+					case "isapproved":
+						isApproved = reader.GetBoolean(fld);
+						break;
+					case "lockedout":
+						//given nulls are skipped, if we got here
+						//there is a value, and they are locked out
+						isLockedOut = true;
+						//we also need to grab the value
+						lastLockedOutDate = reader.GetDateTime(fld);
+						break;
+					case "createdate":
+						creationDate = reader.GetDateTime(fld);
+						break;
+					case "lastlogindate":
+						lastLoginDate = reader.GetDateTime(fld);
+						break;
+					case "lastactivitydate":
+						lastActivityDate = reader.GetDateTime(fld);
+						break;
+					case "lastpasswordchangeddate":
+						lastPasswordChangedDate = reader.GetDateTime (fld);
+						break;
+				}
+			}
 
-			string username = reader.GetString (1);
-
-			string email = (reader.GetValue (2) == DBNull.Value ? String.Empty : reader.GetString (2));
-
-			string passwordQuestion = (reader.GetValue (3) == DBNull.Value ? String.Empty : reader.GetString (3));
-
-			string comment = (reader.GetValue (4) == DBNull.Value ? String.Empty : reader.GetString (4));
-
-			bool isApproved = reader.GetBoolean (5);
-
-			bool isLockedOut = reader.GetBoolean (6);
-
-			DateTime creationDate = reader.GetDateTime (7);
-
-			DateTime lastLoginDate = reader.GetDateTime (8);
-
-			DateTime lastActivityDate = reader.GetDateTime (9);
-
-			DateTime lastPasswordChangedDate = reader.GetDateTime (10);
-
-			DateTime lastLockedOutDate = reader.GetDateTime (11);
-
-			MembershipUser user = new MembershipUser (this.Name,
-																						username,
-																						providerUserKey,
-																						email,
-																						passwordQuestion,
-																						comment,
-																						isApproved,
-																						isLockedOut,
-																						creationDate,
-																						lastLoginDate,
-																						lastActivityDate,
-																						lastPasswordChangedDate,
-																						lastLockedOutDate);
+			MembershipUser user = new MembershipUser (
+				this.Name,
+				username,
+				providerUserKey,
+				email,
+				passwordQuestion,
+				comment,
+				isApproved,
+				isLockedOut,
+				creationDate,
+				lastLoginDate,
+				lastActivityDate,
+				lastPasswordChangedDate,
+				lastLockedOutDate
+			);
 
 			return user;
 		}
@@ -1682,244 +1451,200 @@ namespace Vius.Authentication
 				throw new ArgumentException ("Invalid value for failureType parameter. Must be 'password' or 'passwordAnswer'.", "failureType");
 			}
 
-			DbParameter p;
+			IDbDataParameter p;
+			Db.UseCommand( cmd => {
+				int failedPasswordAttemptCount = 0;
+				int failedPasswordAnswerAttemptCount = 0;
+				DateTime failedPasswordAttemptWindowStart = _minDate;
+				DateTime failedPasswordAnswerAttemptWindowStart = _minDate;
+				bool isLockedOut = false;
+				DateTime LockOutDate = _minDate;
 
-			DbConnection cn = GetDBConnectionForMembership ();
-			try {
-				using (DbCommand cmd = cn.CreateCommand()) {
-					cmd.CommandText = "SELECT FailedPasswordAttemptCount, FailedPasswordAttemptWindowStart, "
-						+ "  FailedPasswordAnswerAttemptCount, FailedPasswordAnswerAttemptWindowStart, IsLockedOut "
-						+ "  FROM " + USER_TB_NAME
-						+ "  WHERE LoweredUsername = $Username";
+				cmd.CommandText = 
+					"SELECT FailedPasswordAttemptCount, \n" +
+					"       FailedPasswordAttemptWindowStart, \n" +
+					"       FailedPasswordAnswerAttemptCount, \n" +
+					"       FailedPasswordAnswerAttemptWindowStart, \n" +
+					"       LockedOut \n" +
+					"FROM   " + TbNames.User + " \n" +
+					"WHERE UsernameLowered = lower(:Username)";
 
-					p = cmd.CreateParameter();
-					p.ParameterName = "$Username";
-					p.Value = username.ToLowerInvariant();
-					cmd.Parameters.Add(p);
+				p = cmd.CreateParameter();
+				p.ParameterName = ":Username";
+				p.Value = username;
+				cmd.Parameters.Add(p);
 
-					int failedPasswordAttemptCount = 0;
-					int failedPasswordAnswerAttemptCount = 0;
-					DateTime failedPasswordAttemptWindowStart = _minDate;
-					DateTime failedPasswordAnswerAttemptWindowStart = _minDate;
-					bool isLockedOut = false;
-
-					if (cn.State == ConnectionState.Closed){
-						cn.Open();
-					}
-
-					using (DbDataReader dr = cmd.ExecuteReader(CommandBehavior.SingleRow)) {
-						if (dr.HasRows) {
-							dr.Read ();
-
-							failedPasswordAttemptCount = dr.GetInt32 (0);
-							failedPasswordAttemptWindowStart = dr.GetDateTime (1);
-							failedPasswordAnswerAttemptCount = dr.GetInt32 (2);
-							failedPasswordAnswerAttemptWindowStart = dr.GetDateTime (3);
-							isLockedOut = dr.GetBoolean (4);
+				using (var dr = cmd.ExecuteReader(CommandBehavior.SingleRow)) {
+					if (dr.Read()) {
+						for(var fld=0; fld<dr.FieldCount; fld++){
+							if(dr.IsDBNull(fld)){
+								continue;
+							}
+							switch(dr.GetName(fld).ToLower()){
+								case "failedpasswordattemptcount":
+									failedPasswordAttemptCount = dr.GetInt16(fld);
+									break;
+								case "failedpasswordattemptwindowstart":
+									failedPasswordAttemptWindowStart = dr.GetDateTime (fld);
+									break;
+								case "failedpasswordanswerattemptcount":
+									failedPasswordAnswerAttemptCount = dr.GetInt16(fld);
+									break;
+								case "failedpasswordanswerattemptwindowstart":
+									failedPasswordAnswerAttemptWindowStart = dr.GetDateTime (fld);
+									break;
+								case "lockedout":
+									isLockedOut = !dr.IsDBNull(fld);
+									if(isLockedOut){
+										LockOutDate = dr.GetDateTime(fld);
+									}
+									break;
+							}
 						}
 					}
+				}
 
-					if (isLockedOut)
-						return; // Just exit without updating any fields if user is locked out.
+				if (isLockedOut){
+					// Just exit without updating any fields if user is 
+					// locked out.
+					return; 
+				}
 
-					if (isAuthenticated) {
-						// User is valid, so make sure certain fields have been reset.
-						if ((failedPasswordAttemptCount > 0) || (failedPasswordAnswerAttemptCount > 0)) {
-							cmd.CommandText = 
-								"UPDATE " + USER_TB_NAME + " " +
-								"SET    FailedPasswordAttemptCount = 0, " +
-								"       FailedPasswordAttemptWindowStart = $MinDate, " +
-								"       FailedPasswordAnswerAttemptCount = 0, " +
-								"       FailedPasswordAnswerAttemptWindowStart = $MinDate, " +
-								"       IsLockedOut = '0' " +
-								"WHERE  LoweredUsername = $Username ";
+				cmd.CommandText = 
+					"UPDATE " + TbNames.User + " \n" +
+					"SET    FailedPasswordAttemptCount = :PassAttemptCount, \n" +
+					"       FailedPasswordAttemptWindowStart = :PassAttemptStart, \n" +
+					"       FailedPasswordAnswerAttemptCount = :AnswerAttemptCount, \n" +
+					"       FailedPasswordAnswerAttemptWindowStart = :AnswerAttemptStart, \n" +
+					"       LockedOut = :LockOut \n" +
+					"WHERE  UsernameLowered = lower(:Username) \n";
 
-							cmd.Parameters.Clear ();
+				var pPassAttemptStart = p = cmd.CreateParameter();
+				p.DbType = DbType.DateTime;
+				p.ParameterName = ":PassAttemptStart";
+				cmd.Parameters.Add(p);
 
-							p = cmd.CreateParameter();
-							p.ParameterName = "$MinDate";
-							p.Value = _minDate;
-							cmd.Parameters.Add(p);
+				var pAnswerAttemptStart = p = cmd.CreateParameter();
+				p.DbType = DbType.DateTime;
+				p.ParameterName = ":AnswerAttemptStart";
+				cmd.Parameters.Add(p);
 
-							p = cmd.CreateParameter();
-							p.ParameterName = "$Username";
-							p.Value = username.ToLowerInvariant();
-							cmd.Parameters.Add(p);
+				var pPassAttemptCount = p = cmd.CreateParameter();
+				p.DbType = DbType.Int32;
+				p.ParameterName = ":PassAttemptCount";
+				cmd.Parameters.Add(p);
 
-							cmd.ExecuteNonQuery ();
-						}
+				var pAnswerAttemptCount = p = cmd.CreateParameter();
+				p.DbType = DbType.Int32;
+				p.ParameterName = ":AnswerAttemptCount";
+				cmd.Parameters.Add(p);
 
-						return;
-					}
+				var pLockout = p = cmd.CreateParameter();
+				p.DbType = DbType.DateTime;
+				p.ParameterName = ":LockOut";
+				cmd.Parameters.Add(p);
 
-					// If we get here that means isAuthenticated = false, which means the user did not log on successfully.
-					// Log the failure and possibly lock out the user if she exceeded the number of allowed attempts.
-					DateTime windowStart = _minDate;
-					int failureCount = 0;
+				//initialize all the values with whatever is currently in them
+				pPassAttemptCount.Value = failedPasswordAttemptCount;
+				pPassAttemptStart.Value = failedPasswordAttemptWindowStart;
+				pAnswerAttemptCount.Value = failedPasswordAnswerAttemptCount;
+				pAnswerAttemptStart.Value = failedPasswordAnswerAttemptWindowStart;
+				pLockout.Value = isLockedOut?LockOutDate:_minDate;
+
+				//if they are validly authenticated, we should reset
+				//everything
+				if (isAuthenticated) {
+					pPassAttemptCount.Value = 0;
+					pPassAttemptStart.Value = null;
+					pAnswerAttemptCount.Value = 0;
+					pAnswerAttemptStart.Value = DBNull.Value;
+					pLockout.Value = null;
+				}
+				// If we get here that means isAuthenticated = false, which means the user did not log on successfully.
+				// Log the failure and possibly lock out the user if she exceeded the number of allowed attempts.
+				else {
+					IDbDataParameter pAttemptCount=null;
+					IDbDataParameter pAttemptStart=null;
+
+					//determine the type of failure
 					if (failureType == "password") {
-						windowStart = failedPasswordAttemptWindowStart;
-						failureCount = failedPasswordAttemptCount;
+						pAttemptCount = pPassAttemptCount;
+						pAttemptStart = pPassAttemptStart;
 					} else if (failureType == "passwordAnswer") {
-						windowStart = failedPasswordAnswerAttemptWindowStart;
-						failureCount = failedPasswordAnswerAttemptCount;
+						pAttemptCount = pAnswerAttemptCount;
+						pAttemptStart = pAnswerAttemptStart;
+					}
+					DateTime windowEnd = 
+						((DateTime)pAnswerAttemptStart.Value)
+							.AddMinutes(PasswordAttemptWindow);
+					if(DateTime.UtcNow > windowEnd){
+						pAttemptCount.Value = 0;
 					}
 
-					DateTime windowEnd = windowStart.AddMinutes (PasswordAttemptWindow);
-
-					if (failureCount == 0 || DateTime.UtcNow > windowEnd) {
-						// First password failure or outside of PasswordAttemptWindow. 
-						// Start a new password failure count from 1 and a new window starting now.
-
-						if (failureType == "password")
-							cmd.CommandText = "UPDATE " + USER_TB_NAME
-								+ "  SET FailedPasswordAttemptCount = $Count, "
-								+ "      FailedPasswordAttemptWindowStart = $WindowStart "
-								+ "  WHERE LoweredUsername = $Username ";
-
-						if (failureType == "passwordAnswer")
-							cmd.CommandText = 
-								"UPDATE " + USER_TB_NAME + " " +
-								"SET    FailedPasswordAnswerAttemptCount = $Count, " +
-								"       FailedPasswordAnswerAttemptWindowStart = $WindowStart " +
-								"WHERE  LoweredUsername = $Username ";
-
-						cmd.Parameters.Clear ();
-
-						p = cmd.CreateParameter();
-						p.ParameterName = "$Count";
-						p.Value = 1;
-						cmd.Parameters.Add(p);
-
-						p = cmd.CreateParameter();
-						p.ParameterName = "$WindowStart";
-						p.Value = DateTime.UtcNow;
-						cmd.Parameters.Add(p);
-
-						p = cmd.CreateParameter();
-						p.ParameterName = "$Username";
-						p.Value = username.ToLowerInvariant();
-						cmd.Parameters.Add(p);
-
-						if (cmd.ExecuteNonQuery () < 0){
-							throw new ProviderException ("Unable to update failure count and window start.");
-						}
-					} else {
-						if (failureCount++ >= MaxInvalidPasswordAttempts) {
-							// Password attempts have exceeded the failure threshold. Lock out the user.
-							cmd.CommandText = 
-								"UPDATE " + USER_TB_NAME + " " +
-								"SET IsLockedOut = '1', LastLockoutDate = $LastLockoutDate, FailedPasswordAttemptCount = $Count " + 
-								"  WHERE LoweredUsername = $Username ";
-
-							cmd.Parameters.Clear ();
-
-							p = cmd.CreateParameter();
-							p.ParameterName = "$LastLockoutDate";
-							p.Value = DateTime.UtcNow;
-							cmd.Parameters.Add(p);
-
-							p = cmd.CreateParameter();
-							p.ParameterName = "$Count";
-							p.Value = failureCount;
-							cmd.Parameters.Add(p);
-
-							p = cmd.CreateParameter();
-							p.ParameterName = "$Username";
-							p.Value = username.ToLowerInvariant();
-							cmd.Parameters.Add(p);
-
-							if (cmd.ExecuteNonQuery () < 0){
-								throw new ProviderException ("Unable to lock out user.");
-							}
-						} else {
-							// Password attempts have not exceeded the failure threshold. Update
-							// the failure counts. Leave the window the same.
-
-							if (failureType == "password"){
-								cmd.CommandText = 
-									"UPDATE " + USER_TB_NAME
-									+ "  SET FailedPasswordAttemptCount = $Count"
-									+ "  WHERE LoweredUsername = $Username ";
-							} else if (failureType == "passwordAnswer"){
-								cmd.CommandText = 
-									"UPDATE " + USER_TB_NAME
-									+ "  SET FailedPasswordAnswerAttemptCount = $Count"
-									+ "  WHERE LoweredUsername = $Username AND ApplicationId = $ApplicationId";
-							}
-
-							cmd.Parameters.Clear ();
-
-							p = cmd.CreateParameter();
-							p.ParameterName = "$Count";
-							p.Value = failureCount;
-							cmd.Parameters.Add(p);
-
-							p = cmd.CreateParameter();
-							p.ParameterName = "$Username";
-							p.Value = username.ToLowerInvariant();
-							cmd.Parameters.Add(p);
-
-							if (cmd.ExecuteNonQuery () < 0){
-								throw new ProviderException ("Unable to update failure count.");
-							}
-						}
+					//The have failed, so increment the failure count
+					pAttemptCount.Value = ((int)pAttemptCount.Value)+1;
+					//if its their first time
+					if(((int)pAttemptCount.Value) ==1){
+						pAttemptStart.Value = DateTime.UtcNow;
+						pAnswerAttemptStart.Value = DateTime.UtcNow;
+					} 
+					//time to lock them out?
+					else if(((int)pAttemptCount.Value)>=MaxInvalidPasswordAttempts){
+						pLockout.Value = DateTime.UtcNow;
 					}
 				}
-			} finally {
-				if (!IsTransactionInProgress ()){
-					cn.Dispose ();
+
+				//sanitize any db values (mostly watch for null markers)
+				if((DateTime)pLockout.Value == _minDate){
+					pLockout.Value = null;
 				}
-			}
+				//run it
+				cmd.ExecuteNonQuery();
+			});
 		}
 
-		private bool ComparePasswords (string password, string dbpassword, string salt, MembershipPasswordFormat passwordFormat)
+		private bool CheckPassword (string username, string password, bool failIfNotApproved =true)
 		{
-			//   Compares password values based on the MembershipPasswordFormat.
-			string pass1 = password;
-			string pass2 = dbpassword;
+			bool isAuthenticated = false;
 
-			switch (passwordFormat) {
-				case MembershipPasswordFormat.Encrypted:
-					pass2 = UnEncodePassword (dbpassword, passwordFormat);
-					break;
-				case MembershipPasswordFormat.Hashed:
-					pass1 = EncodePassword (password, passwordFormat, salt);
-					break;
-				default:
-					break;
-			}
+			Db.UseCommand(cmd => {
+				cmd.CommandText = 
+					"select count(*) \n" +
+					"from   " + TbNames.User + " \n" +
+					"where  UsernameLowered = lower(:username) and \n" +
+					"       pass = crypt(:password,pass) and \n" +
+					"       failedpasswordattemptcount < :maxfailedpass and \n" +
+					"       (IsApproved or not :failnotapprove) \n";
 
-			if (pass1 == pass2) {
-				return true;
-			}
+				var p = cmd.CreateParameter();
+				p.ParameterName = ":username";
+				p.DbType = DbType.String;
+				p.Value = username;
+				cmd.Parameters.Add(p);
 
-			return false;
-		}
+				p = cmd.CreateParameter();
+				p.ParameterName = ":password";
+				p.DbType = DbType.String;
+				p.Value = password;
+				cmd.Parameters.Add(p);
 
-		private bool CheckPassword (string username, string password, bool failIfNotApproved, out string salt, out MembershipPasswordFormat passwordFormat)
-		{
-			string encodedPwdFromDatabase; // If passwordFormat = "Clear", password is not encoded.
-			int status;
-			int failedPwdAttemptCount;
-			int failedPwdAnswerAttemptCount;
-			bool isApproved;
-			DateTime lastLoginDate;
-			DateTime lastActivityDate;
-			GetPasswordWithFormat (username, out status, out encodedPwdFromDatabase, out passwordFormat, out salt, out failedPwdAttemptCount, out failedPwdAnswerAttemptCount, out isApproved, out lastLoginDate, out lastActivityDate);
-			if (status != 0) {
-				return false;
-			}
-			if (!isApproved && failIfNotApproved) {
-				return false;
-			}
-			string encodedPwdFromUser = EncodePassword (password, passwordFormat, salt);
-			bool isAuthenticated = encodedPwdFromDatabase.Equals (encodedPwdFromUser);
-			if ((isAuthenticated && (failedPwdAttemptCount == 0)) && (failedPwdAnswerAttemptCount == 0)) {
-				return true;
-			}
+				p = cmd.CreateParameter();
+				p.ParameterName = ":maxfailedpass";
+				p.DbType = DbType.Int32;
+				p.Value = MaxInvalidPasswordAttempts;
+				cmd.Parameters.Add(p);
+
+				p = cmd.CreateParameter();
+				p.ParameterName = ":failnotapprove";
+				p.DbType = DbType.Boolean;
+				p.Value = failIfNotApproved;
+				cmd.Parameters.Add(p);
+
+				var count = Convert.ToInt32(cmd.ExecuteScalar());
+				isAuthenticated = (1==count);
+			});
 
 			UpdateFailureCount (username, "password", isAuthenticated);
-
 			return isAuthenticated;
 		}
 
@@ -1948,11 +1673,11 @@ namespace Vius.Authentication
 					cmd.CommandText = 
 						"SELECT Password, PasswordFormat, PasswordSalt, FailedPasswordAttemptCount," +
 						"       FailedPasswordAnswerAttemptCount, IsApproved, IsLockedOut, LastLoginDate, LastActivityDate" +
-						"FROM   " + USER_TB_NAME + " " +
-						"WHERE LoweredUsername = $Username";
+						"FROM   " + TbNames.User + " " +
+						"WHERE LoweredUsername = :Username";
 
 					p = cmd.CreateParameter();
-					p.ParameterName = "$Username";
+					p.ParameterName = ":Username";
 					p.Value = username.ToLowerInvariant();
 					cmd.Parameters.Add(p);
 
@@ -1990,83 +1715,6 @@ namespace Vius.Authentication
 				if (!IsTransactionInProgress ())
 					cn.Dispose ();
 			}
-		}
-
-		private string EncodePassword (string password, MembershipPasswordFormat passwordFormat, string salt)
-		{
-			//   Encrypts, Hashes, or leaves the password clear based on the PasswordFormat.
-			if (String.IsNullOrEmpty (password))
-				return password;
-
-			byte[] bytes = Encoding.Unicode.GetBytes (password);
-			byte[] src = Convert.FromBase64String (salt);
-			byte[] dst = new byte[src.Length + bytes.Length];
-			byte[] inArray;
-
-			Buffer.BlockCopy (src, 0, dst, 0, src.Length);
-			Buffer.BlockCopy (bytes, 0, dst, src.Length, bytes.Length);
-
-			switch (passwordFormat) {
-			case MembershipPasswordFormat.Clear:
-				return password;
-			case MembershipPasswordFormat.Encrypted:
-				inArray = EncryptPassword (dst);
-				break;
-			case MembershipPasswordFormat.Hashed:
-				HashAlgorithm algorithm = HashAlgorithm.Create (Membership.HashAlgorithmType);
-				if (algorithm == null) {
-					throw new ProviderException (String.Concat ("SqliteMembershipProvider configuration error: HashAlgorithm.Create() does not recognize the hash algorithm ", Membership.HashAlgorithmType, "."));
-				}
-				inArray = algorithm.ComputeHash (dst);
-
-				break;
-			default:
-				throw new ProviderException ("Unsupported password format.");
-			}
-
-			return Convert.ToBase64String (inArray);
-		}
-
-		private string UnEncodePassword (string encodedPassword, MembershipPasswordFormat passwordFormat)
-		{
-			//   Decrypts or leaves the password clear based on the PasswordFormat.
-			string password = encodedPassword;
-
-			switch (passwordFormat) {
-			case MembershipPasswordFormat.Clear:
-				break;
-			case MembershipPasswordFormat.Encrypted:
-				byte[] bytes = base.DecryptPassword (Convert.FromBase64String (password));
-				if (bytes == null) {
-					password = null;
-				} else {
-					password = Encoding.Unicode.GetString (bytes, 0x10, bytes.Length - 0x10);
-				}
-				break;
-			case MembershipPasswordFormat.Hashed:
-				throw new ProviderException ("Cannot unencode a hashed password.");
-			default:
-				throw new ProviderException ("Unsupported password format.");
-			}
-
-			return password;
-		}
-
-		private static byte[] HexToByte (string hexString)
-		{
-			//   Converts a hexadecimal string to a byte array. Used to convert encryption
-			// key values from the configuration.
-			byte[] returnBytes = new byte[hexString.Length / 2];
-			for (int i = 0; i < returnBytes.Length; i++)
-				returnBytes [i] = Convert.ToByte (hexString.Substring (i * 2, 2), 16);
-			return returnBytes;
-		}
-
-		private static string GenerateSalt ()
-		{
-			byte[] data = new byte[0x10];
-			new RNGCryptoServiceProvider ().GetBytes (data);
-			return Convert.ToBase64String (data);
 		}
 
 		private static bool IsStatusDueToBadPassword (int status)

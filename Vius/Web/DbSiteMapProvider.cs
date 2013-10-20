@@ -21,7 +21,7 @@ namespace Vius.Web
 		private System.Web.SiteMapNode root = null;
 		private object locker = new object();
 
-		private const string TbName = "tWebPages";
+		private const string TbName = "WebPages";
 		private const string TbChild = TbName + "Capabilities";
 
 		private TimeSpan pExpiryRate = new TimeSpan(0,11,30,41,56);
@@ -81,22 +81,22 @@ namespace Vius.Web
 
 			List<string> cmds = new List<string>{
 				//create the pages table
-				"if not exists \n" +
-				"create table " + TbName + "( \n" +
-				"    PageId integer primary key autoincrement, \n" +
-				"    MenuLabel varchar(20), \n" +
-				"    Url varchar(255), \n" +
-				"    Parent, \n" +
-				"    Desc, \n" +
-				"    Meta, \n " + 
+				"create table if not exists " + TbName + "( \n" +
+				"    PageId bigserial, \n" +
+				"    MenuLabel varchar(20) not null, \n" +
+				"    Url varchar(255) not null, \n" +
+				"    Parent bigint, \n" +
+				"    DescLabel text, \n" +
+				"    Meta text, \n " +
+				"    MenuOrder smallint, \n" +
+				"    primary key(PageId), \n" + 
 				"    foreign key(Parent) references " + TbName + "(PageId) \n" +
 				")\n"
 				,
 				//create the permissions table
-				"if not exists \n" +
-				"create table " + TbChild + "( \n" +
-				"    PageId, \n" +
-				"    Capability, \n" +
+				"create table if not exists " + TbChild + "( \n" +
+				"    PageId bigint, \n" +
+				"    Capability varchar(20), \n" +
 				"    primary key(PageId, Capability), \n" +
 				"    foreign key(PageId) references " + TbName + "(PageId) \n" +
 				")\n"
@@ -130,20 +130,25 @@ namespace Vius.Web
 		{
 			CreateTable();
 
+			//load all of the map nodes from the database
 			var allnodes = new List<DbSiteMapNode>();
-
 			Db.UseCommand(cmd => {
-				cmd.CommandText = "select * from " + TbName;
+				cmd.CommandText = 
+					"select * \n" +
+					"from   " + TbName + " \n" +
+					"order by parent, \n" +
+					"         menuorder \n";
 				using (var rs = cmd.ExecuteReader()) {
 					while (rs.Read()) {
 						allnodes.Add(LoadNode(rs));
 					}
 					rs.Close();
 				}
-			}
-			);
+			});
 
+			//for each node
 			foreach (var node in allnodes) {
+				//link up its parent node
 				System.Web.SiteMapNode parent = null;
 				foreach(var n in allnodes){
 					if(n.Key == node.ParentKey.ToString()){
@@ -154,8 +159,11 @@ namespace Vius.Web
 				if(parent == null){
 					parent = root;
 				}
+				//add the node with its parent
 				AddNode(node,parent);
 			}
+
+			LoadNodeCapabilities(allnodes);
 		}
 
 		private bool? tableexists = null;
@@ -177,26 +185,57 @@ namespace Vius.Web
 				if(rec.IsDBNull(fld)){
 					continue;
 				}
-				switch(rec.GetName(fld)){
-					case "MenuLabel":
+				switch(rec.GetName(fld).ToLower()){
+					case "menulabel":
 						node.Title = rec.GetString(fld);
 						break;
-					case "Url":
+					case "url":
 						node.Url = rec.GetString(fld);
 						break;
-					case "Capabilities":
-
+					case "parent":
+						node.ParentKey = rec.GetInt64(fld);
 						break;
-					case "Parent":
-						node.ParentKey = rec.GetInt32(fld);
-						break;
-					case "Desc":
+					case "desclabel":
 						node.Description = rec.GetString(fld);
 						break;
 				}
 			}
 
 			return node;
+		}
+
+		private void LoadNodeCapabilities (List<DbSiteMapNode> nodes)
+		{
+			Db.UseCommand(cmd => {
+				cmd.CommandText = 
+					"select * \n" +
+					"from   " + TbChild + " \n" +
+					"order by PageId \n";
+				using (var rs = cmd.ExecuteReader()) {
+					using(var ns = nodes.OrderBy(o=>{return int.Parse(o.Key);}).GetEnumerator()){
+						//initialize the loop
+						bool nsFin = ns.MoveNext(); //move to the first item
+						bool rsFin = rs.Read(); //move to the first item
+						//check to see if either list is finished, then we are done
+						while(!nsFin && !rsFin){
+							int rsId = (int)rs["PageId"];
+							int nodeId = int.Parse(ns.Current.Key);
+							//if we have a match, use it
+							if(nodeId == rsId){
+								ns.Current.Capabilities.Add(rs["Capability"].ToString());
+							}
+							//increment the item in the list that is further behind
+							if(nodeId >= rsId){
+								rsFin = rs.Read();
+							} else if(nodeId < rsId){
+								nsFin = ns.MoveNext();
+							}
+						}
+					}
+					rs.Close();
+				}
+			});
+
 		}
 
 		private void CheckDataFreshness ()

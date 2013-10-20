@@ -17,7 +17,7 @@ namespace Vius.Web
 	/// </remarks>
 	public class DbSiteMapNode: Vius.Web.SiteMapNode
 	{
-		internal int? ParentKey = null;
+		internal long? ParentKey = null;
 
 		public DbSiteMapNode(DbSiteMapProvider provider, string key)
 			:base(provider, key)

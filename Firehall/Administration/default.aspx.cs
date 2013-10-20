@@ -5,7 +5,7 @@ using System.Web.UI;
 
 namespace Firehall.Administration
 {
-	public partial class Default : System.Web.UI.Page
+	public partial class Default : Firehall.Page
 	{
 	}
 }

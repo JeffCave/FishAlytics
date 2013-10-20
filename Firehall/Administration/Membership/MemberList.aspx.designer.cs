@@ -15,8 +15,6 @@ namespace Firehall.Admnistration.Membership {
 		
 		protected System.Web.UI.WebControls.Content MainContentContent;
 		
-		protected System.Web.UI.WebControls.LoginView LoginView1;
-		
 		protected System.Web.UI.WebControls.GridView UserGrid;
 		
 		protected System.Web.UI.WebControls.LinkButton LinkButton1;

@@ -108,6 +108,7 @@ namespace Vius.Data
 		/// </param>
 		public void UseCommand (CommandUsage usage)
 		{
+			string sql = "";
 			//get the connection
 			using (var cnn = GetConnection()) {
 				cnn.Open();
@@ -116,20 +117,27 @@ namespace Vius.Data
 					try{
 						//run the users commands
 						using (var cmd = cnn.CreateCommand()) {
-							usage(cmd);
+							try{
+								usage(cmd);
+							} finally{
+								sql = cmd.CommandText;
+							}
 						}
 						//commit the transaction
 						tran.Commit();
-					} catch {
+					} catch (Exception ex){
 						//failure == rollback
 						tran.Rollback();
+						var e = new Exception(
+							ex.Message + "\n" + sql,
+							ex);
+						throw e;
 					}
 				}
 				//close out
 				cnn.Close();
 			}
 		}
-
 
 		public void ExecuteCommand (string Command)
 		{
@@ -143,26 +151,20 @@ namespace Vius.Data
 		{
 			UseCommand(cmd => {
 				string errsql="";
-				using (var trans = cmd.Connection.BeginTransaction()) {
-					try {
-						foreach (var sql in Commands) {
-							errsql = sql;
-							cmd.CommandText = sql;
-							cmd.ExecuteNonQuery();
-						}
-						errsql = "";
-						trans.Commit();
-					} catch (System.Data.Common.DbException ex) {
-						trans.Rollback();
-						Console.Out.WriteLine("Invalid SQL Command:");
-						Console.Out.WriteLine(errsql);
-						Console.Out.WriteLine(ex.Message);
-						Console.Out.WriteLine(ex.StackTrace);
-						throw ex;
+				try {
+					foreach (var sql in Commands) {
+						errsql = sql;
+						cmd.CommandText = sql;
+						cmd.ExecuteNonQuery();
 					}
+					errsql = "";
+				} catch (System.Data.Common.DbException ex) {
+					var e = new Exception(
+						ex.Message + "\n" + errsql,
+						ex);
+					throw e;
 				}
-			}
-			);
+			});
 		}
 
 		public bool TableExists (string tablename)

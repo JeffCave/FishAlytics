@@ -18,15 +18,17 @@ namespace Vius.Authentication
 	/// <summary>
 	/// Provides a Profile implementation whose data is stored in a Sqlite database.
 	/// </summary>
-	public sealed class SqliteProfileProvider : ProfileProvider
+	public sealed class ViusProfileProvider : ProfileProvider
 	{
 		#region Private Fields
 
 		private static readonly Vius.Data.DataProvider Db = Vius.Data.DataProvider.Instance;
 
-		private const string USER_TB_NAME = "[aspnet_Users]";
-		private const string PROFILE_TB_NAME = "[aspnet_Profile]";
-		private const string APP_TB_NAME = "[aspnet_Applications]";
+		internal static class TbNames{
+			public const string Profiles = "AuthProfile";
+			public const string Users = ViusMembershipProvider.TbNames.User;
+		}
+
 		private const int MAX_APPLICATION_NAME_LENGTH = 256;
 
 		#endregion
@@ -72,13 +74,13 @@ namespace Vius.Authentication
 				throw new ArgumentNullException("config");
 
 			if (string.IsNullOrEmpty(name))
-				name = "SqliteProfileProvider";
+				name = "ViusProfileProvider";
 
 
 			if (string.IsNullOrEmpty(config["description"]))
 			{
 				config.Remove("description");
-				config.Add("description", "Sqlite Profile Provider");
+				config.Add("description", "Vius Profile Provider");
 			}
 
 			base.Initialize(name, config);
@@ -142,7 +144,7 @@ namespace Vius.Authentication
 			Db.UseCommand(cmd => {
 				cmd.CommandText = 
 					"SELECT UserId " +
-					"FROM " + USER_TB_NAME + " " +
+					"FROM " + TbNames.Users + " " +
 					"WHERE LoweredUsername = $Username;";
 
 				var p = cmd.CreateParameter();
@@ -166,7 +168,7 @@ namespace Vius.Authentication
 
 				cmd.CommandText = 
 					"SELECT COUNT(*) \n" +
-					"FROM " + PROFILE_TB_NAME + " \n" +
+					"FROM " + TbNames.Profiles + " \n" +
 					"WHERE UserId = $UserId";
 				cmd.Parameters.Clear();
 				p = cmd.CreateParameter();
@@ -174,9 +176,14 @@ namespace Vius.Authentication
 				p.Value = userId;
 
 				if (Convert.ToInt64(cmd.ExecuteScalar()) > 0) {
-					cmd.CommandText = "UPDATE " + PROFILE_TB_NAME + " SET PropertyNames = $PropertyNames, PropertyValuesString = $PropertyValuesString, PropertyValuesBinary = $PropertyValuesBinary, LastUpdatedDate = $LastUpdatedDate WHERE UserId = $UserId";
+					cmd.CommandText = "UPDATE " + TbNames.Profiles + " SET PropertyNames = $PropertyNames, PropertyValuesString = $PropertyValuesString, PropertyValuesBinary = $PropertyValuesBinary, LastUpdatedDate = $LastUpdatedDate WHERE UserId = $UserId";
 				} else {
-					cmd.CommandText = "INSERT INTO " + PROFILE_TB_NAME + " (UserId, PropertyNames, PropertyValuesString, PropertyValuesBinary, LastUpdatedDate) VALUES ($UserId, $PropertyNames, $PropertyValuesString, $PropertyValuesBinary, $LastUpdatedDate)";
+					cmd.CommandText = 
+						"INSERT INTO " + TbNames.Profiles + " (" +
+						"    UserId, " +
+						"    PropertyNames, " +
+						"    PropertyValuesString, PropertyValuesBinary, LastUpdatedDate" +
+						") VALUES ($UserId, $PropertyNames, $PropertyValuesString, $PropertyValuesBinary, $LastUpdatedDate)";
 				}
 				cmd.Parameters.Clear();
 				p = cmd.CreateParameter();
@@ -208,7 +215,7 @@ namespace Vius.Authentication
 
 				// Update activity field
 				cmd.CommandText = 
-						"UPDATE " + USER_TB_NAME + " " +
+						"UPDATE " + TbNames.Users + " " +
 					"SET LastActivityDate = $LastActivityDate " +
 					"WHERE UserId = $UserId";
 				cmd.Parameters.Clear();
@@ -276,7 +283,7 @@ namespace Vius.Authentication
 			int profiles = 0;
 				Db.UseCommand(cmd => 
 				{
-					cmd.CommandText = "DELETE FROM " + PROFILE_TB_NAME + " WHERE UserId IN (SELECT UserId FROM " + USER_TB_NAME
+					cmd.CommandText = "DELETE FROM " + TbNames.Profiles + " WHERE UserId IN (SELECT UserId FROM " + TbNames.Users
 														+ " WHERE LastActivityDate <= $LastActivityDate"
 														+ GetClauseForAuthenticationOptions(authenticationOption) + ")";
 
@@ -305,7 +312,7 @@ namespace Vius.Authentication
 				Db.UseCommand( cmd => {
 					cmd.CommandText = 
 						"SELECT COUNT(*) " +
-						"FROM " + USER_TB_NAME + " u, " + PROFILE_TB_NAME + " p " +
+						"FROM " + TbNames.Users + " u, " + TbNames.Profiles + " p " +
 						"WHERE u.LastActivityDate <= $LastActivityDate AND " +
 						"u.UserId = p.UserId" + 
 						GetClauseForAuthenticationOptions(authenticationOption);
@@ -333,7 +340,7 @@ namespace Vius.Authentication
 		public override ProfileInfoCollection GetAllProfiles(ProfileAuthenticationOption authenticationOption, int pageIndex, int pageSize, out int totalRecords)
 		{
 			string sqlQuery = "SELECT u.UserName, u.IsAnonymous, u.LastActivityDate, p.LastUpdatedDate, length(p.PropertyNames) + length(p.PropertyValuesString) FROM "
-												+ USER_TB_NAME + " u, " + PROFILE_TB_NAME + " p WHERE u.ApplicationId = $ApplicationId AND u.UserId = p.UserId "
+												+ TbNames.Users + " u, " + TbNames.Profiles + " p WHERE u.ApplicationId = $ApplicationId AND u.UserId = p.UserId "
 												+ GetClauseForAuthenticationOptions(authenticationOption);
 
 			DbParameter[] args = new DbParameter[0];
@@ -355,8 +362,8 @@ namespace Vius.Authentication
 		{
 			string sqlQuery = 
 				"SELECT u.UserName, u.IsAnonymous, u.LastActivityDate, p.LastUpdatedDate, length(p.PropertyNames) + length(p.PropertyValuesString) " +
-				"FROM   " + USER_TB_NAME + " u, " +
-				"       " + PROFILE_TB_NAME + " p " +
+				"FROM   " + TbNames.Users + " u, " +
+				"       " + TbNames.Profiles + " p " +
 				"WHERE  u.UserId = p.UserId AND " +
 				"       u.LastActivityDate <= $LastActivityDate"
 				+ GetClauseForAuthenticationOptions(authenticationOption);
@@ -387,7 +394,7 @@ namespace Vius.Authentication
 		public override ProfileInfoCollection FindProfilesByUserName(ProfileAuthenticationOption authenticationOption, string usernameToMatch, int pageIndex, int pageSize, out int totalRecords)
 		{
 			string sqlQuery = "SELECT u.UserName, u.IsAnonymous, u.LastActivityDate, p.LastUpdatedDate, length(p.PropertyNames) + length(p.PropertyValuesString) FROM "
-												+ USER_TB_NAME + " u, " + PROFILE_TB_NAME + " p WHERE u.ApplicationId = $ApplicationId AND u.UserId = p.UserId AND u.LoweredUserName LIKE $UserName"
+												+ TbNames.Users + " u, " + TbNames.Profiles + " p WHERE u.ApplicationId = $ApplicationId AND u.UserId = p.UserId AND u.LoweredUserName LIKE $UserName"
 												+ GetClauseForAuthenticationOptions(authenticationOption);
 
 			var p = Db.Factory.CreateParameter();
@@ -418,7 +425,7 @@ namespace Vius.Authentication
 		public override ProfileInfoCollection FindInactiveProfilesByUserName(ProfileAuthenticationOption authenticationOption, string usernameToMatch, DateTime userInactiveSinceDate, int pageIndex, int pageSize, out int totalRecords)
 		{
 			string sqlQuery = "SELECT u.UserName, u.IsAnonymous, u.LastActivityDate, p.LastUpdatedDate, length(p.PropertyNames) + length(p.PropertyValuesString) FROM "
-												+ USER_TB_NAME + " u, " + PROFILE_TB_NAME + " p WHERE u.UserId = p.UserId AND u.UserName LIKE $UserName AND u.LastActivityDate <= $LastActivityDate"
+												+ TbNames.Users + " u, " + TbNames.Profiles + " p WHERE u.UserId = p.UserId AND u.UserName LIKE $UserName AND u.LastActivityDate <= $LastActivityDate"
 												+ GetClauseForAuthenticationOptions(authenticationOption);
 
 			var args = new List<DbParameter>();
@@ -447,7 +454,7 @@ namespace Vius.Authentication
 		private static void CreateAnonymousUser(string username, string userId, IDbCommand cmd)
 		{
 				cmd.CommandText = 
-						"INSERT INTO " + USER_TB_NAME + "(" +
+						"INSERT INTO " + TbNames.Users + "(" +
 						"    UserId, " +
 						"    Username, " +
 						"    LoweredUsername, " +
@@ -701,8 +708,8 @@ namespace Vius.Authentication
 				// User exists?
 				cmd.CommandText = 
 						"SELECT PropertyNames, PropertyValuesString, PropertyValuesBinary " +
-					"FROM   " + PROFILE_TB_NAME + " " +
-					"WHERE  UserId in (SELECT UserId FROM " + USER_TB_NAME + " WHERE LoweredUsername = $UserName)";
+					"FROM   " + TbNames.Profiles + " " +
+					"WHERE  UserId in (SELECT UserId FROM " + TbNames.Users + " WHERE LoweredUsername = $UserName)";
 
 				var p = cmd.CreateParameter();
 				p.ParameterName = "$UserName";
@@ -721,9 +728,9 @@ namespace Vius.Authentication
 				}
 
 				cmd.CommandText = 
-							"UPDATE " + USER_TB_NAME + " " +
+							"UPDATE " + TbNames.Users + " " +
 					"SET LastActivityDate = $LastActivityDate " +
-					"WHERE UserId in (SELECT UserId FROM " + USER_TB_NAME + " WHERE LoweredUsername = $UserName)";
+					"WHERE UserId in (SELECT UserId FROM " + TbNames.Users + " WHERE LoweredUsername = $UserName)";
 				p = cmd.CreateParameter();
 				p.ParameterName = "$LastActivityDate";
 				p.Value = DateTime.UtcNow;
@@ -799,10 +806,10 @@ namespace Vius.Authentication
 			Db.UseCommand(cmd=>{
 				cmd.CommandText = 
 					"DELETE \n" +
-					"FROM   " + PROFILE_TB_NAME + " \n" +
+					"FROM   " + TbNames.Profiles + " \n" +
 					"WHERE  UserId in ( \n" +
 					"           SELECT UserId \n" +
-					"           FROM   " + USER_TB_NAME + " \n" +
+					"           FROM   " + TbNames.Users + " \n" +
 					"           WHERE  LoweredUsername = $Username \n" +
 					"       ) \n";
 

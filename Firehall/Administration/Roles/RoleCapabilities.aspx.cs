@@ -6,12 +6,13 @@ using Security = System.Web.Security;
 using System.Linq;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Vius.Authentication;
 
 namespace Firehall.Administration.Roles
 {
 	public partial class RoleCapabilities : Firehall.Page
 	{
-		private Vius.Role role;
+		private Role role;
 
 		/// <summary>
 		/// Gets the role this page is associated with
@@ -19,10 +20,10 @@ namespace Firehall.Administration.Roles
 		/// <value>
 		/// The role.
 		/// </value>
-		protected Vius.Role Role {
+		protected Role Role {
 			get {
 				if(role == null){
-					role = Vius.Role.GetRole(RoleName.Text);
+					role = Role.GetRole(RoleName.Text);
 				}
 				return role;
 			}
@@ -31,7 +32,11 @@ namespace Firehall.Administration.Roles
 		protected void Page_Load (object sender, EventArgs e)
 		{ 
 			if (!Page.IsPostBack) {
-				RoleName.Text = Request["r"].ToString();
+				var name = Request["r"];
+				if(string.IsNullOrEmpty(name)){
+					Response.Redirect("ManageRoles.aspx",true);
+				}
+				RoleName.Text = name.ToString();
 				BindCapabilitiesToList (); 
 			} 
 		}
@@ -64,7 +69,7 @@ namespace Firehall.Administration.Roles
 		private void BindCapabilitiesToList ()
 		{ 
 			// Get all of the roles 
-			ReadOnlyCollection<string> capabilities = Vius.Capabilities.AllCapabilities;
+			ReadOnlyCollection<string> capabilities = Vius.Authentication.Capabilities.AllCapabilities;
 			CapabilityList.DataSource = capabilities;
 			CapabilityList.DataBind();
 

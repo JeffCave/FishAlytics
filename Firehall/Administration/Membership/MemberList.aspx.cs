@@ -3,6 +3,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.Security;
 using System.Web.UI.WebControls;
+using Auth = Vius.Authentication;
 
 namespace Firehall.Admnistration.Membership
 {
@@ -32,11 +33,11 @@ namespace Firehall.Admnistration.Membership
 			if (e.Row.RowType == DataControlRowType.DataRow && e.Row.RowIndex != UserGrid.EditIndex) {
 				// Programmatically reference the Edit and Delete LinkButtons
 				LinkButton EditButton = e.Row.FindControl ("EditButton") as LinkButton;
-
 				LinkButton DeleteButton = e.Row.FindControl ("DeleteButton") as LinkButton;
 
-				EditButton.Visible = (User.IsInRole ("Administrators") || User.IsInRole ("Supervisors"));
-				DeleteButton.Visible = User.IsInRole ("Administrators");
+				EditButton.Visible = Auth.Capabilities.Check("Firehall.Users.Edit");
+				DeleteButton.Visible = Auth.Capabilities.Check("Firehall.Users.Delete");
+
 				if(!EditButton.Visible && !DeleteButton.Visible){
 					UserGrid.Columns[0].Visible = false;
 				}
@@ -76,6 +77,10 @@ namespace Firehall.Admnistration.Membership
 
 		protected void HandleUserUpdating (object sender, System.Web.UI.WebControls.GridViewUpdateEventArgs e)
 		{
+			if (!Auth.Capabilities.Check("User.Edit")) {
+				return;
+			}
+
 			// Exit if the page is not valid
 			if (!Page.IsValid) {
 				return;
@@ -85,9 +90,8 @@ namespace Firehall.Admnistration.Membership
 			string UserName = UserGrid.DataKeys [e.RowIndex].Value.ToString ();
 
 			// Read in the entered information and update the user
-			TextBox EmailTextBox = UserGrid.Rows [e.RowIndex].FindControl ("Email") as TextBox;
-			TextBox CommentTextBox = UserGrid.Rows [e.RowIndex].FindControl ("Comment") as TextBox;
-
+			TextBox EmailTextBox = UserGrid.Rows[e.RowIndex].FindControl ("Email") as TextBox;
+			TextBox CommentTextBox = UserGrid.Rows[e.RowIndex].FindControl ("Comment") as TextBox;
 
 			// Return information about the user
 			MembershipUser UserInfo = System.Web.Security.Membership.GetUser (UserName);

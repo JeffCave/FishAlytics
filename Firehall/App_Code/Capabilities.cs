@@ -1,6 +1,6 @@
 using System;
 
-namespace Firehall.Capabilities
+namespace Firehall
 {
 	namespace Users{
 		public class View:Vius.Capability{}

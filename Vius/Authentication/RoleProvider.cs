@@ -12,17 +12,18 @@ namespace Vius.Authentication
 	/// <summary>
 	/// Provides a Role implementation whose data is stored in a Sqlite database.
 	/// </summary>
-	public sealed class SqliteRoleProvider : RoleProvider
+	public sealed class ViusRoleProvider : RoleProvider
 	{
 		#region Private Fields
 
 		private static readonly Vius.Data.DataProvider Db = Vius.Data.DataProvider.Instance;
 
-		private const string HTTP_TRANSACTION_ID = "SqliteTran";
-		private const string APP_TB_NAME = "[aspnet_Applications]";
-		private const string ROLE_TB_NAME = "[aspnet_Roles]";
-		private const string USER_TB_NAME = "[aspnet_Users]";
-		private const string USERS_IN_ROLES_TB_NAME = "[aspnet_UsersInRoles]";
+		internal class TbNames {
+			public const string Roles = "AuthRoles";
+			public const string Users = ViusMembershipProvider.TbNames.User;
+			public const string UserRoles = "AuthUserRoles";
+		}
+
 		private const int MAX_USERNAME_LENGTH = 256;
 		private const int MAX_ROLENAME_LENGTH = 256;
 		private const int MAX_APPLICATION_NAME_LENGTH = 256;
@@ -68,11 +69,11 @@ namespace Vius.Authentication
 				throw new ArgumentNullException("config");
 
 			if (name == null || name.Length == 0)
-				name = "SqliteRoleProvider";
+				name = "ViusRoleProvider";
 
 			if (String.IsNullOrEmpty(config["description"])) {
 				config.Remove("description");
-				config.Add("description", "Sqlite Role provider");
+				config.Add("description", "Vius Role provider");
 			}
 
 			// Initialize the abstract base class.
@@ -101,21 +102,26 @@ namespace Vius.Authentication
 
 			Db.UseCommand(cmd => {
 					cmd.CommandText = 
-						"INSERT INTO " + USERS_IN_ROLES_TB_NAME + " (UserId, RoleId)"
-						+ " SELECT u.UserId, r.RoleId"
-						+ " FROM " + USER_TB_NAME + " u, " + ROLE_TB_NAME + " r"
-						+ " WHERE (u.LoweredUsername = $Username)"
-						+ " AND (r.LoweredRoleName = $RoleName) ";
+						"INSERT INTO " + TbNames.UserRoles + " ( \n" +
+						"    UserId, \n" +
+						"    RoleId \n" +
+						") \n " +
+						"SELECT u.UserId, \n" +
+						"       r.RoleId \n" +
+						"FROM   " + TbNames.Users + " u, \n" +
+						"       " + TbNames.Roles + " r \n" +
+						"WHERE u.UsernameLowered = lower(:Username) AND \n" +
+						"      r.LoweredRoleName = lower(:RoleName) \n";
 
 					var p = cmd.CreateParameter();
-					p.ParameterName = "$Username";
+					p.ParameterName = ":Username";
 					p.DbType = DbType.String;
 					p.Size = MAX_USERNAME_LENGTH;
 					cmd.Parameters.Add(p);
 					IDbDataParameter userParam = p;
 
 					p = cmd.CreateParameter();
-					p.ParameterName = "$RoleName";
+					p.ParameterName = ":RoleName";
 					p.DbType = DbType.String;
 					p.Size = MAX_ROLENAME_LENGTH;
 					cmd.Parameters.Add(p);
@@ -155,21 +161,21 @@ namespace Vius.Authentication
 
 					IDataParameter p;
 					cmd.CommandText = 
-						"INSERT INTO " + ROLE_TB_NAME + "(RoleId, RoleName, LoweredRoleName) " +
-						"Values ($RoleId, $RoleName, $LoweredRoleName)";
+						"INSERT INTO " + TbNames.Roles + "(RoleId, RoleName, LoweredRoleName) " +
+						"Values (:RoleId, :RoleName, :LoweredRoleName)";
 
 					p = cmd.CreateParameter();
-					p.ParameterName = "$RoleId";
+					p.ParameterName = ":RoleId";
 					p.Value = Guid.NewGuid().ToString();
 					cmd.Parameters.Add(p);
 
 					p = cmd.CreateParameter();
-					p.ParameterName = "$RoleName";
+					p.ParameterName = ":RoleName";
 					p.Value = roleName;
 					cmd.Parameters.Add(p);
 
 					p = cmd.CreateParameter();
-					p.ParameterName = "$LoweredRoleName";
+					p.ParameterName = ":LoweredRoleName";
 					p.Value = roleName.ToLowerInvariant();
 					cmd.Parameters.Add(p);
 
@@ -197,22 +203,25 @@ namespace Vius.Authentication
 
 			Db.UseCommand(cmd => {
 				IDataParameter p = cmd.CreateParameter();
-				p.ParameterName = "$RoleName";
+				p.ParameterName = ":RoleName";
 				p.Value = roleName.ToLowerInvariant();
 				cmd.Parameters.Add(p);
 
 				cmd.CommandText = 
 					"DELETE " +
-					"FROM   " + USERS_IN_ROLES_TB_NAME + " " +
+					"FROM   " + TbNames.UserRoles + " " +
 					"WHERE  RoleId IN (" +
 					"           SELECT RoleId " +
-					"           FROM   " + ROLE_TB_NAME + " " +
-					"           WHERE  LoweredRoleName = $RoleName" +
+					"           FROM   " + TbNames.Roles + " " +
+					"           WHERE  LoweredRoleName = lower(:RoleName)" +
 					"        )";
 				
 				cmd.ExecuteNonQuery();
 
-				cmd.CommandText = "DELETE FROM " + ROLE_TB_NAME + " WHERE LoweredRoleName = $RoleName AND ApplicationId = $ApplicationId";
+				cmd.CommandText = 
+					"DELETE " +
+					"FROM " + TbNames.Roles + " " +
+					"WHERE LoweredRoleName = :RoleName ";
 				cmd.ExecuteNonQuery();
 
 			});
@@ -232,7 +241,7 @@ namespace Vius.Authentication
 			Db.UseCommand(cmd => {
 				cmd.CommandText = 
 					"SELECT RoleName " +
-					"FROM   " + ROLE_TB_NAME + " "
+					"FROM   " + TbNames.Roles + " "
 					;
 
 				using (var dr = cmd.ExecuteReader()) {
@@ -252,19 +261,24 @@ namespace Vius.Authentication
 		/// <returns>
 		/// A string array containing the names of all the roles that the specified user is in for the configured applicationName.
 		/// </returns>
-		public override string[] GetRolesForUser(string username)
+		public override string[] GetRolesForUser (string username)
 		{
 			var tmpRoleNames = new List<string>();
+
+			if (string.IsNullOrEmpty(username)) {
+				tmpRoleNames.ToArray();
+			}
 
 			Db.UseCommand(cmd => {
 				cmd.CommandText = 
 					"SELECT r.RoleName " +
-					"FROM   " + ROLE_TB_NAME + " r " +
-					"       INNER JOIN " + USERS_IN_ROLES_TB_NAME + " uir ON r.RoleId = uir.RoleId INNER JOIN " + USER_TB_NAME + " u ON uir.UserId = u.UserId " +
-					"WHERE  u.LoweredUsername = $Username ";
+					"FROM   " + TbNames.Roles + " r " +
+					"       INNER JOIN " + TbNames.UserRoles + " uir ON r.RoleId = uir.RoleId " +
+					"       INNER JOIN " + TbNames.Users + " u ON uir.UserId = u.UserId " +
+					"WHERE  u.UsernameLowered = lower(@Username) ";
 
 				var p = cmd.CreateParameter();
-				p.ParameterName = "$Username";
+				p.ParameterName = "@Username";
 				p.Value = username.ToLowerInvariant();
 				cmd.Parameters.Add(p);
 
@@ -292,12 +306,12 @@ namespace Vius.Authentication
 			Db.UseCommand(cmd => {
 				cmd.CommandText = 
 					"SELECT u.Username " +
-					"FROM   " + USER_TB_NAME + " u " +
-					"       INNER JOIN " + USERS_IN_ROLES_TB_NAME + " uir ON u.UserId = uir.UserId INNER JOIN " + ROLE_TB_NAME + " r ON uir.RoleId = r.RoleId  " +
-					"WHERE  r.LoweredRoleName = $RoleName ";
+					"FROM   " + TbNames.Users + " u " +
+					"       INNER JOIN " + TbNames.UserRoles + " uir ON u.UserId = uir.UserId INNER JOIN " + TbNames.Roles + " r ON uir.RoleId = r.RoleId  " +
+					"WHERE  r.LoweredRoleName = lower(:RoleName) ";
 
 				var p = cmd.CreateParameter();
-				p.ParameterName = "$RoleName";
+				p.ParameterName = ":RoleName";
 				p.Value = roleName.ToLowerInvariant();
 				cmd.Parameters.Add(p);
 
@@ -328,18 +342,18 @@ namespace Vius.Authentication
 			Db.UseCommand(cmd => {
 				cmd.CommandText = 
 					"SELECT COUNT(*) " +
-					"FROM " + USERS_IN_ROLES_TB_NAME + " uir INNER JOIN "
-						+ USER_TB_NAME + " u ON uir.UserId = u.UserId INNER JOIN " + ROLE_TB_NAME + " r ON uir.RoleId = r.RoleId "
-						+ " WHERE u.LoweredUsername = $Username "
-						+ " AND r.LoweredRoleName = $RoleName ";
+					"FROM " + TbNames.UserRoles + " uir INNER JOIN "
+						+ TbNames.Users + " u ON uir.UserId = u.UserId INNER JOIN " + TbNames.Roles + " r ON uir.RoleId = r.RoleId "
+						+ " WHERE u.LoweredUsername = :Username "
+						+ " AND r.LoweredRoleName = :RoleName ";
 
 				var p = cmd.CreateParameter();
-				p.ParameterName = "$Username";
+				p.ParameterName = ":Username";
 				p.Value = username.ToLowerInvariant();
 				cmd.Parameters.Add(p);
 
 				p = cmd.CreateParameter();
-				p.ParameterName = "$RoleName";
+				p.ParameterName = ":RoleName";
 				p.Value = roleName.ToLowerInvariant();
 				cmd.Parameters.Add(p);
 
@@ -357,27 +371,27 @@ namespace Vius.Authentication
 		{
 			Db.UseCommand(cmd => {
 				cmd.CommandText = 
-					"DELETE " +
-					"FROM   " + USERS_IN_ROLES_TB_NAME + " " +
-					"WHERE  UserId = (" +
-					"           SELECT UserId " +
-					"           FROM " + USER_TB_NAME + " " +
-					"           WHERE LoweredUsername = $Username " +
-					"       ) AND " +
-					"       RoleId = (" +
-					"           SELECT RoleId " +
-					"           FROM " + ROLE_TB_NAME + " " +
-					"           WHERE LoweredRoleName = $RoleName " +
-					"       )";
+					"DELETE \n" +
+					"FROM   " + TbNames.UserRoles + " \n" +
+					"WHERE  UserId = ( \n" +
+					"           SELECT UserId \n" +
+					"           FROM " + TbNames.Users + " \n" +
+					"           WHERE UsernameLowered = lower(:Username) \n" +
+					"       ) AND \n" +
+					"       RoleId = ( \n" +
+					"           SELECT RoleId \n" +
+					"           FROM " + TbNames.Roles + " \n" +
+					"           WHERE LoweredRoleName = :RoleName \n" +
+					"       ) \n";
 
 				var  userParm = cmd.CreateParameter();
-				userParm.ParameterName = "$Username";
+				userParm.ParameterName = ":Username";
 				userParm.DbType = DbType.String;
 				userParm.Size = MAX_USERNAME_LENGTH;
 				cmd.Parameters.Add(userParm);
 
 				var roleParm = cmd.CreateParameter();
-				roleParm.ParameterName = "$RoleName";
+				roleParm.ParameterName = ":RoleName";
 				roleParm.DbType = DbType.String;
 				roleParm.Size = MAX_ROLENAME_LENGTH;
 				cmd.Parameters.Add(roleParm);
@@ -405,12 +419,12 @@ namespace Vius.Authentication
 
 			Db.UseCommand(cmd => {
 				cmd.CommandText = 
-					"SELECT COUNT(*) " +
-					"FROM   " + ROLE_TB_NAME +
-					"WHERE  LoweredRoleName = $RoleName ";
+					"SELECT COUNT(*) \n" +
+					"FROM   " + TbNames.Roles + " \n" +
+					"WHERE  LoweredRoleName = lower(:RoleName) \n";
 
 				var p = cmd.CreateParameter();
-				p.ParameterName = "$RoleName";
+				p.ParameterName = ":RoleName";
 				p.Value = roleName.ToLowerInvariant();
 				cmd.Parameters.Add(p);
 
@@ -434,18 +448,18 @@ namespace Vius.Authentication
 			Db.UseCommand(cmd =>{
 				cmd.CommandText = 
 					"SELECT u.Username " +
-					"FROM   " + USERS_IN_ROLES_TB_NAME + " uir " +
-					"       INNER JOIN " + USER_TB_NAME + " u ON uir.UserId = u.UserId INNER JOIN " + ROLE_TB_NAME + " r ON r.RoleId = uir.RoleId " +
-					"WHERE  u.LoweredUsername LIKE $UsernameSearch AND " +
-					"       r.LoweredRoleName = $RoleName";
+					"FROM   " + TbNames.UserRoles + " uir " +
+					"       INNER JOIN " + TbNames.Users + " u ON uir.UserId = u.UserId INNER JOIN " + TbNames.Roles + " r ON r.RoleId = uir.RoleId " +
+					"WHERE  u.LoweredUsername LIKE :UsernameSearch AND " +
+					"       r.LoweredRoleName = :RoleName";
 
 				var p = cmd.CreateParameter();
-				p.ParameterName = "$UsernameSearch";
+				p.ParameterName = ":UsernameSearch";
 				p.Value = usernameToMatch;
 				cmd.Parameters.Add(p);
 
 				p = cmd.CreateParameter();
-				p.ParameterName = "$RoleName";
+				p.ParameterName = ":RoleName";
 				p.Value = roleName.ToLowerInvariant();
 				cmd.Parameters.Add(p);
 
@@ -463,126 +477,5 @@ namespace Vius.Authentication
 
 		#endregion
 
-		#region Private Methods
-		/*
-		private static string GetApplicationId(string appName)
-		{
-			DbConnection cn = GetDbConnectionForRole();
-			try
-			{
-				using (SqliteCommand cmd = cn.CreateCommand())
-				{
-					cmd.CommandText = "SELECT ApplicationId FROM aspnet_Applications WHERE ApplicationName = $AppName";
-					cmd.Parameters.AddWithValue("$AppName", appName);
-
-					if (cn.State == ConnectionState.Closed)
-						cn.Open();
-
-					return cmd.ExecuteScalar() as string;
-				}
-			}
-			finally
-			{
-				if (!IsTransactionInProgress())
-					cn.Dispose();
-			}
-		}
-
-		private void VerifyApplication()
-		{
-			// Verify a record exists in the application table.
-			if (String.IsNullOrEmpty(_applicationId) || String.IsNullOrEmpty(_membershipApplicationName))
-			{
-				// No record exists in the application table for either the role application and/or the membership application. Create it.
-				DbConnection cn = GetDbConnectionForRole();
-				try
-				{
-					using (DbCommand cmd = cn.CreateCommand())
-					{
-						cmd.CommandText = "INSERT INTO " + APP_TB_NAME + " (ApplicationId, ApplicationName, Description) VALUES ($ApplicationId, $ApplicationName, $Description)";
-
-						string roleApplicationId = Guid.NewGuid().ToString();
-
-						cmd.Parameters.AddWithValue("$ApplicationId", roleApplicationId);
-						cmd.Parameters.AddWithValue("$ApplicationName", _applicationName);
-						cmd.Parameters.AddWithValue("$Description", String.Empty);
-
-						if (cn.State == ConnectionState.Closed)
-							cn.Open();
-
-						// Insert record for the role application.
-						if (String.IsNullOrEmpty(_applicationId))
-						{
-							cmd.ExecuteNonQuery();
-
-							_applicationId = roleApplicationId;
-						}
-
-						if (String.IsNullOrEmpty(_membershipApplicationId))
-						{
-							if (_applicationName == _membershipApplicationName)
-							{
-								// Use the app name for the membership app name.
-								MembershipApplicationName = ApplicationName;
-							}
-							else
-							{
-								// Need to insert record for the membership application.
-								_membershipApplicationId = Guid.NewGuid().ToString();
-
-								cmd.Parameters["$ApplicationId"].Value = _membershipApplicationId;
-								cmd.Parameters["$ApplicationName"].Value = _membershipApplicationName;
-
-								cmd.ExecuteNonQuery();
-							}
-						}
-					}
-				}
-				finally
-				{
-					if (!IsTransactionInProgress())
-						cn.Dispose();
-				}
-			}
-		}
-*/
-		/// <summary>
-		/// Get a reference to the database connection used for Role. If a transaction is currently in progress, and the
-		/// connection string of the transaction connection is the same as the connection string for the Role provider,
-		/// then the connection associated with the transaction is returned, and it will already be open. If no transaction is in progress,
-		/// a new <see cref="DbConnection"/> is created and returned. It will be closed and must be opened by the caller
-		/// before using.
-		/// </summary>
-		/// <returns>A <see cref="DbConnection"/> object.</returns>
-		/// <remarks>The transaction is stored in <see cref="System.Web.HttpContext.Current"/>. That means transaction support is limited
-		/// to web applications. For other types of applications, there is no transaction support unless this code is modified.</remarks>
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
-		[Obsolete("User 'Db.GetConnection' instead")]
-		private static DbConnection GetDbConnectionForRole()
-		{
-			return Db.GetConnection();
-		}
-
-		/// <summary>
-		/// Determines whether a database transaction is in progress for the Role provider.
-		/// </summary>
-		/// <returns>
-		/// 	<c>true</c> if a database transaction is in progress; otherwise, <c>false</c>.
-		/// </returns>
-		/// <remarks>A transaction is considered in progress if an instance of <see cref="DbTransaction"/> is found in the
-		/// <see cref="System.Web.HttpContext.Current"/> Items property and its connection string is equal to the Role 
-		/// provider's connection string. Note that this implementation of <see cref="SqliteRoleProvider"/> never adds a 
-		/// <see cref="DbTransaction"/> to <see cref="System.Web.HttpContext.Current"/>, but it is possible that 
-		/// another data provider in this application does. This may be because other data is also stored in this Sqlite database,
-		/// and the application author wants to provide transaction support across the individual providers. If an instance of
-		/// <see cref="System.Web.HttpContext.Current"/> does not exist (for example, if the calling application is not a web application),
-		/// this method always returns false.</remarks>
-		[Obsolete("Use 'Db.IsTransactionInProgress' instead")]
-		private static bool IsTransactionInProgress()
-		{
-			return Db.IsTransactionInProgress();
-		}
-
-		#endregion
 	}
 }
