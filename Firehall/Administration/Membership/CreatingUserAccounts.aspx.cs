@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace Firehall
 {
-	public partial class CreatingUserAccounts : System.Web.UI.Page
+	public partial class CreatingUserAccounts : Firehall.Page
 	{
 		protected void Page_Load (object sender, EventArgs e)
 		{

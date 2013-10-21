@@ -5,7 +5,7 @@ using System.Web.UI;
 
 namespace Firehall
 {
-	public partial class AdditionalUserInfo : System.Web.UI.Page
+	public partial class AdditionalUserInfo : Firehall.Page
 	{
 	}
 }

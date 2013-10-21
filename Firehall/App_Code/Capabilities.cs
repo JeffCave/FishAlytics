@@ -1,12 +1,13 @@
 using System;
+using Vius.Authentication;
 
 namespace Firehall
 {
 	namespace Users{
-		public class View:Vius.Capability{}
-		public class Add:Vius.Capability{}
-		public class Edit:Vius.Capability{}
-		public class Remove:Vius.Capability{}
+		public class View          :Capability{}
+		public class Add           :Capability{}
+		public class Edit          :Capability{}
+		public class Remove        :Capability{}
 	}
 }
 

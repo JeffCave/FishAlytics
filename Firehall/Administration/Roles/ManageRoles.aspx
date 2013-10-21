@@ -12,7 +12,7 @@
 		<asp:TemplateField ShowHeader="False">
 			<ItemTemplate>
 				<asp:LinkButton ID="DeleteButton" runat="server" CausesValidation="False" CommandName="Delete" Text="[x]"></asp:LinkButton>
-				<asp:HyperLink Id="RoleButton" runat="server">[r]</asp:HyperLink>
+				<asp:HyperLink Id="RoleButton" runat="server">[c]</asp:HyperLink>
 			</ItemTemplate>
 		</asp:TemplateField>
 		<asp:TemplateField HeaderText="Role">

@@ -1,7 +1,7 @@
 <%@ Master Language="C#" AutoEventWireup="true" CodeFile="Site.master.cs" Inherits="Firehall.Site" %>
 <html>
 <head id="Head1" runat="server">
-	<title id="BrowserTitle" runat="server">Firehall System</title>
+	<title id="BrowserTitle" runat="server">Fishalytics</title>
 	<link href="Style.css" rel="stylesheet" type="text/css" />
 </head>
 <body>

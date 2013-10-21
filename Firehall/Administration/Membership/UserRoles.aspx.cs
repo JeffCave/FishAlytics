@@ -21,7 +21,7 @@ namespace Firehall.Administration.Members
 		private string userName;
 
 		protected void Page_Load (object sender, EventArgs e)
-		{ 
+		{
 			UserList.SelectedIndexChanged += HandleUserChanged;
 			userName = UserList.SelectedValue; 
 			if (!Page.IsPostBack) { 

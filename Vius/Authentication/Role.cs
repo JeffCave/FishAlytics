@@ -294,7 +294,8 @@ namespace Vius.Authentication
 
 			//then we insert all the items that have been added
 			sqlIn = new StringBuilder(
-				"insert into "+CAPABILITY_TB_NAME+"(RoleId,Capability) values \n");
+					"insert into "+CAPABILITY_TB_NAME+" (RoleId,Capability) values \n"
+				);
 			//create list of adds
 			var InsertExists = false;
 			foreach (var capability in this) {

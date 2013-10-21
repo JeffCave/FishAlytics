@@ -68,6 +68,7 @@
     <Compile Include="Authentication\MembershipProvider.cs" />
     <Compile Include="Authentication\ProfileProvider.cs" />
     <Compile Include="Authentication\RoleProvider.cs" />
+    <Compile Include="Web\PageSiteMapNode.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

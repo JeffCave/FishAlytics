@@ -1,4 +1,4 @@
-<%@ Page Language="C#" Inherits="Firehall.Catch" MasterPageFile="~/Site.master" %>
+<%@ Page Language="C#" Inherits="Firehall.Fishing.Catch" MasterPageFile="~/Site.master" %>
 <%@ MasterType VirtualPath="~/Site.master" %>
 <asp:Content ContentPlaceHolderID="MainContent" ID="MainContentContent" runat="server">
 	<table>

@@ -10,21 +10,6 @@ using Vius.Data;
 
 namespace Vius.Web
 {
-	public class PageSiteMapNode: Vius.Web.SiteMapNode
-	{
-		public PageSiteMapNode(PageSiteMapProvider provider, string key)
-			:base(provider, key)
-		{
-
-		}
-
-		public new PageSiteMapProvider Provider {
-			get {
-				return base.Provider as PageSiteMapProvider;
-			}
-		}
-
-	}
 
 	/// <summary>
 	/// Site map provider based on all web pages found
@@ -33,27 +18,48 @@ namespace Vius.Web
 	/// $Id$
 	/// $URL$
 	/// </remarks>
-	public class PageSiteMapProvider:System.Web.SiteMapProvider
+	public class PageSiteMapProvider:System.Web.StaticSiteMapProvider
 	{
-		private List<SiteMapNode> allnodes = null;
+		private SortedDictionary<string,PageSiteMapNode> allnodes = null;
 		private SiteMapNode root = null;
 		private object locker = new object();
 
-		internal List<SiteMapNode> AllNodes {
+		protected SortedDictionary<string,SiteMapNode> allnamespaces = new SortedDictionary<string,SiteMapNode>();
+
+		#region Properties
+		internal SortedDictionary<string,PageSiteMapNode> AllNodes {
 			get {
 				lock(locker){
 					if(allnodes == null){
-						allnodes = new List<SiteMapNode>();
+						allnodes = new SortedDictionary<string,PageSiteMapNode>();
 
 						var allpages = SearchAssemblies();
 
-						foreach(var pagename in allpages){
-							Vius.Web.SiteMapNode node = Type
-									.GetType(pagename)
-									.GetProperty("MenuInformation")
-									.GetValue(null,null) as SiteMapNode;
+						foreach(var page in allpages){
+							if(allnodes.ContainsKey(page.FullName)){
+								continue;
+							}
+							// load the menuinformation from the page
+							// FIXME:
+							//var menuInformation = page.GetProperty("MenuInformation",BindingFlags.Static | BindingFlags.NonPublic);
+							//PageSiteMapNode node = menuInformation.GetValue(null,null) as PageSiteMapNode;
+							PageSiteMapNode node = null;
+							// if the node is null, that means that someone
+							// didn't include the static create in the page
+							// definition
+							if(node == null){
+								//create one for them
+								//TODO: this needs to go away, it should come from the page definition
+								node = new PageSiteMapNode(this,page.FullName);
+								node.Title = ParseKey(page.FullName);
+							}
+							// add it to the list
 							if(node != null){
-								allnodes.Add(node);
+								allnodes.Add(node.Key,node);
+								// while we are here, grab the namespace 
+								// we will need it later
+								var parentkey = ParseParentKey(page.FullName);
+								node.ParentNode = CreateNamespaceMapNode(parentkey);
 							}
 						}
 					}
@@ -62,9 +68,107 @@ namespace Vius.Web
 			}
 		}
 
-		protected static ReadOnlyCollection<string> SearchAssemblies (List<Assembly> assemblies = null, List<Assembly> skip = null)
+		public override System.Web.SiteMapNode RootNode {
+			get {
+				return GetRootNodeCore();
+			}
+		}
+
+		#endregion
+
+		#region Initialization
+		public PageSiteMapProvider ()
 		{
-			var rtn = new List<string>();
+		}
+
+		#endregion
+
+		#region SiteMapProvider
+		public override SiteMapNodeCollection GetChildNodes (System.Web.SiteMapNode parent)
+		{
+			var rtn = new SiteMapNodeCollection();
+			// because this is a *sorted* dictionary, all the keys will
+			// be grouped sequentially. This means that once we stop
+			// finding items, we have found them all and can stop searching
+			var found = false;
+
+			found = false;
+			foreach (var node in AllNodes) {
+				if (parent.Key == ParseParentKey(node.Value.Key)) {
+					rtn.Add(node.Value);
+					found = true;
+				}
+				//FIXME:
+				//so we didn't find a match, if we had previously found
+				//a match, we are outside our range and can stop searching.
+//				else if(found) {
+//					break;
+//				}
+			}
+
+
+			//This needs to be done *after* AllNodes is fetched to make sure allnamespaces is initialized
+			found= false;
+			foreach (var node in allnamespaces) {
+				if(parent.Key == ParseParentKey(node.Value.Key)){
+					rtn.Add(node.Value);
+					found = true;
+				}
+				//so we didn't find a match, if we had previously found
+				//a match, we are outside our range and can stop searching.
+//				else if(found) {
+//					break;
+//				}
+			}
+
+			//return all of the children we found
+			return rtn;
+		}
+
+		public override System.Web.SiteMapNode GetParentNode (System.Web.SiteMapNode node)
+		{
+			var parentkey = ParseParentKey(node.Key);
+			return CreateNamespaceMapNode(parentkey);
+		}
+
+		public Vius.Web.SiteMapNode GetParentNode (Vius.Web.PageSiteMapNode child)
+		{
+			foreach (var node in AllNodes) {
+				throw new NotImplementedException();
+			}
+			return null;
+		}
+
+		protected override System.Web.SiteMapNode GetRootNodeCore ()
+		{
+			lock (locker) {
+				if(root == null){
+					root = new PageSiteMapNode(this,"");
+					root.Url = "";
+					root.Title = "Home";
+					root.ParentNode = null;
+				}
+				return root;
+			}
+		}
+
+		public override System.Web.SiteMapNode FindSiteMapNode (string rawUrl)
+		{
+			//don't use linq when only looking for one item
+			foreach(var node in AllNodes.Values){
+				if(node.Url == rawUrl){
+					//get out as soon as we have found a match
+					return node;
+				}
+			}
+			return null;
+		}
+		#endregion
+
+		#region "Helpers"
+		protected static ReadOnlyCollection<Type> SearchAssemblies (List<Assembly> assemblies = null, List<Assembly> skip = null)
+		{
+			var rtn = new List<Type>();
 			if (assemblies == null) {
 				assemblies = new List<Assembly>();
 				assemblies.AddRange((ICollection<Assembly>)BuildManager.GetReferencedAssemblies());
@@ -90,9 +194,9 @@ namespace Vius.Web
 			return rtn.Distinct().ToList().AsReadOnly(); 
 		}
 
-		protected static ReadOnlyCollection<string> SearchAssemblies (Assembly assembly, List<Assembly> skip = null)
+		protected static ReadOnlyCollection<Type> SearchAssemblies (Assembly assembly, List<Assembly> skip = null)
 		{
-			var rtn = new List<string>();
+			var rtn = new List<Type>();
 
 			if (skip == null) {
 				skip = new List<Assembly>();
@@ -104,7 +208,7 @@ namespace Vius.Web
 			//get all of the items in this assembly
 			foreach (var type in assembly.GetTypes()) {
 				if (type.IsSubclassOf(typeof(Vius.Web.Page))) {
-					rtn.Add(type.FullName);
+					rtn.Add(type);
 				}
 			}
 			// we've checked this assembly, add it to the skip list to ensure
@@ -134,44 +238,86 @@ namespace Vius.Web
 			return rtn.Distinct().ToList().AsReadOnly(); 
 		}
 
-
-		public PageSiteMapProvider ()
+		public override System.Web.SiteMapNode BuildSiteMap ()
 		{
+			return RootNode;
 		}
 
-		public override System.Web.SiteMapNode FindSiteMapNode (string rawUrl)
+		private Vius.Web.SiteMapNode CreateNamespaceMapNode (string name)
 		{
-			//don't use linq when only looking for one item
-			foreach(var node in AllNodes){
-				if(node.Url == rawUrl){
-					//get out as soon as we have found a match
-					return node;
+			//empty key is root node
+			if (string.IsNullOrEmpty(name)) {
+				return RootNode as PageSiteMapNode;
+			}
+			// fill the array with a dud element if necessary
+			if (!allnamespaces.ContainsKey(name)) {
+				lock (allnamespaces) {
+					if (!allnamespaces.ContainsKey(name)) {
+						allnamespaces.Add(name, null);
+					}
 				}
 			}
-			return null;
-		}
+			// if the array has more than a dud element, we are done
+			if (allnamespaces[name] != null) {
+				return allnamespaces[name];
+			}
 
-		public override SiteMapNodeCollection GetChildNodes (System.Web.SiteMapNode node)
-		{
-			throw new NotImplementedException();
-		}
-
-		public override System.Web.SiteMapNode GetParentNode (System.Web.SiteMapNode node)
-		{
-			return node.ParentNode;
-		}
-
-		protected override System.Web.SiteMapNode GetRootNodeCore ()
-		{
 			lock (locker) {
-				if(root == null){
-					root = new PageSiteMapNode(this,"");
-					root.Url = "";
-					root.ParentNode = null;
-				}
-				return root;
+				// need to create the element
+				var node = new Vius.Web.SiteMapNode(this, name);
+				node.Title = ParseKey(name);
+
+				// need to get the parent, possibly creating it
+				var parentkey = ParseParentKey(name);
+				node.ParentNode = CreateNamespaceMapNode(parentkey);
+
+				//fill the array
+				allnamespaces[name] = node;
+				// return the thing we created for recursive parent linking
+				return node;
 			}
 		}
+
+		//maintain a cache of the last calculated value
+		private Pair<string,string> lastParseParentKey = new Pair<string, string>("","");
+		//calculate the parent key of the current one
+		private string ParseParentKey (string key)
+		{
+			//use the cache if we can
+			if (lastParseParentKey.Key != key) {
+				lastParseParentKey.Key = key;
+				//get everything up to the last "."
+				var index = key.LastIndexOf(".");
+				if(index > 0){
+					lastParseParentKey.Value = key.Substring(0, index);
+				} else {
+					lastParseParentKey.Value = "";
+				}
+			}
+			//return the value
+			return lastParseParentKey.Value;
+		}
+
+		//maintain a cache of the last calculated value
+		private Pair<string,string> lastParseKey = new Pair<string, string>("","");
+		//calculate the parent key of the current one
+		private string ParseKey (string fullnamespace)
+		{
+			//use the cache if we can
+			if (lastParseKey.Key != fullnamespace) {
+				lastParseKey.Key = fullnamespace;
+				//get everything up to the last "."
+				var index = fullnamespace.LastIndexOf(".") + 1;
+				if(index >= fullnamespace.Length || index <= 0){
+					index = 0;
+				}
+				lastParseKey.Value = fullnamespace.Substring(index);
+			}
+			//return the value
+			return lastParseKey.Value;
+		}
+
+		#endregion
 
 	}
 }

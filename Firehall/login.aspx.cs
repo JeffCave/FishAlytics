@@ -13,7 +13,7 @@ using System.Linq;
 
 namespace Firehall{
 
-	public partial class Login : System.Web.UI.Page
+	public partial class Login : Firehall.Page
 	{
 
 		protected void Page_Load (object sender, EventArgs e)

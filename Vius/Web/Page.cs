@@ -32,7 +32,11 @@ namespace Vius.Web
 			}
 		}
 		protected static SiteMapNode CreateSiteMapNode(){
-			return null;
+			var classname = System.Reflection.MethodBase
+					.GetCurrentMethod()
+					.DeclaringType
+					.Name;
+			return new PageSiteMapNode(null,classname);
 		}
 
 		/// ----------------------------------------------------------------------------

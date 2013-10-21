@@ -63,6 +63,12 @@
     <Content Include="Calls\CallSheet.aspx" />
     <Content Include="Fishing\Catch.aspx" />
     <Content Include="Fishing\Catches.aspx" />
+    <Content Include="Administration\Sitemap\NodeCapabilities.aspx" />
+    <Content Include="Administration\Sitemap\Sitemap.aspx" />
+    <Content Include="Administration\SystemManagement.aspx" />
+    <Content Include="Fishing\default.aspx" />
+    <Content Include="Fishing\Species.aspx" />
+    <Content Include="Fishing\Trip.aspx" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Global.asax.cs">
@@ -183,6 +189,42 @@
       <DependentUpon>Catches.aspx</DependentUpon>
     </Compile>
     <Compile Include="App_Code\Globals.cs" />
+    <Compile Include="Administration\Sitemap\NodeCapabilities.aspx.cs">
+      <DependentUpon>NodeCapabilities.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Administration\Sitemap\NodeCapabilities.aspx.designer.cs">
+      <DependentUpon>NodeCapabilities.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Administration\Sitemap\Sitemap.aspx.cs">
+      <DependentUpon>Sitemap.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Administration\Sitemap\Sitemap.aspx.designer.cs">
+      <DependentUpon>Sitemap.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Administration\SystemManagement.aspx.cs">
+      <DependentUpon>SystemManagement.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Administration\SystemManagement.aspx.designer.cs">
+      <DependentUpon>SystemManagement.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Fishing\default.aspx.cs">
+      <DependentUpon>default.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Fishing\default.aspx.designer.cs">
+      <DependentUpon>default.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Fishing\Species.aspx.cs">
+      <DependentUpon>Species.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Fishing\Species.aspx.designer.cs">
+      <DependentUpon>Species.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Fishing\Trip.aspx.cs">
+      <DependentUpon>Trip.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Fishing\Trip.aspx.designer.cs">
+      <DependentUpon>Trip.aspx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
@@ -203,6 +245,7 @@
     <Folder Include="Administration\Membership\" />
     <Folder Include="App_Code\Model\" />
     <Folder Include="Fishing\" />
+    <Folder Include="Administration\Sitemap\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App_LocalResources\InstallMembership.sql" />

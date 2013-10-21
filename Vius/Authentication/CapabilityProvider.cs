@@ -155,7 +155,7 @@ namespace Vius
 			}
 
 			foreach (var type in assembly.GetTypes()) {
-				if (type.IsSubclassOf(typeof(Vius.Capability))) {
+				if (type.IsSubclassOf(typeof(Vius.Authentication.Capability))) {
 					rtn.Add(type.FullName);
 				}
 			}

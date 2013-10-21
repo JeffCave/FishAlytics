@@ -74,10 +74,12 @@ namespace Vius.Fishing.Data
 		{
 			List<string> cmds = new List<string>();
 			cmds.Add(
-				"create table tFishCatch(" +
-				"    CatchId int primary key autgenerate, " +
+				"create table Fishing.Catch(" +
+				"    CatchId bigserial primary key autgenerate, " +
 				"    Time Timestamp not null, " +
-				"    UserId int not null" +
+				"    Fisherman bigint not null references public.User(UserId)," +
+				"    Species varchar(50)," +
+				"    primary key (CatchId)" +
 				")"
 				);
 			Db.ExecuteCommand(cmds);
@@ -96,7 +98,7 @@ namespace Vius.Fishing.Data
 		{
 			Db.UseCommand(cmd => {
 				cmd.CommandText =
-					"delete " +
+					"select * " +
 					"from tFishCatch " +
 					"where catchid = @catchid";
 
@@ -118,17 +120,16 @@ namespace Vius.Fishing.Data
 
 		public override void Load (int catchid)
 		{
-			try {
-				CatchId = catchid;
-				Load();
-			} catch {
-				CatchId = 0;
-			}
+			CatchId = catchid;
+			Load();
 		}
 
 		internal void Load (System.Data.IDataRecord rec)
 		{
 			for (var fld=0; fld<rec.FieldCount; fld++) {
+				if(rec.IsDBNull(fld)){
+					continue;
+				}
 				switch(rec.GetName(fld).ToLower()){
 					case "catchid":
 						this.CatchId = rec.GetInt32(fld);

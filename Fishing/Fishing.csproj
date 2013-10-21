@@ -39,6 +39,7 @@
     <Compile Include="Catch.cs" />
     <Compile Include="Catches.cs" />
     <Compile Include="FishingData.cs" />
+    <Compile Include="Capabilities.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

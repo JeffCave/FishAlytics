@@ -1,9 +1,10 @@
 using System;
 
-namespace Vius
-{
-	public sealed class Public:Capability{}
+public sealed class Public:Vius.Authentication.Capability{}
 
+
+namespace Vius.Authentication
+{
 	public abstract class Capability
 	{
 		public static Type FromString(string activity){

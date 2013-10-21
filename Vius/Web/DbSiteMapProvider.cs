@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Linq;
 using System.Web;
@@ -26,6 +27,13 @@ namespace Vius.Web
 
 		private TimeSpan pExpiryRate = new TimeSpan(0,11,30,41,56);
 		private DateTime NextLoad = DateTime.MinValue;
+
+		private static readonly List<DbSiteMapProvider> instances = new List<DbSiteMapProvider>();
+		public static ReadOnlyCollection<DbSiteMapProvider> Instances {
+			get {
+				return instances.AsReadOnly();
+			}
+		}
 
 		public TimeSpan ExpiryRate {
 			get {
@@ -54,8 +62,10 @@ namespace Vius.Web
 			}
 		}
 
-		public DbSiteMapProvider ()
+		public DbSiteMapProvider ():
+			base()
 		{
+			instances.Add(this);
 		}
 
 		/// <summary>
@@ -246,6 +256,46 @@ namespace Vius.Web
 					base.Clear();
 				}
 			}
+		}
+
+		private bool isExpiring = false;
+		private static readonly TimeSpan MinWaitExpire = new TimeSpan(0,0,30);
+		public void Expire ()
+		{
+			var now = DateTime.Now;
+			// if it was too recent, throw an error
+			if (now < NextLoad.Subtract(ExpiryRate).Add(MinWaitExpire)) {
+				throw new Exception("Last Expiry was too recent. Must wait at least 1 minute");
+			}
+			// if someone else is already doing the job, we can stop
+			if (!isExpiring) {
+				// lock it
+				lock (locker) {
+					// announce that we are doing the job
+					isExpiring = true;
+
+					// if there was a race, and this routine was waiting on 
+					// a lock to get here, another routine may have already
+					// done the job. We check again. This time, we don't
+					// trhow an error, becuase the job would have been done
+					// since this function was called
+					if (now < NextLoad.Subtract(ExpiryRate).Add(MinWaitExpire)) {
+						return;
+					}
+
+					//actually do the work
+					var rate = ExpiryRate;
+					ExpiryRate = new TimeSpan(0);
+					System.Threading.Thread.Sleep(1);
+					CheckDataFreshness();
+					ExpiryRate = rate;
+
+					//release the locking
+					isExpiring = false;
+				}
+			}
+
+
 		}
 
 	}
