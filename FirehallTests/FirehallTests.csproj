@@ -56,6 +56,12 @@
     <Compile Include="utils\SeleniumHelper.cs" />
     <Compile Include="Administration\Membership\MemberList.cs" />
     <Compile Include="Administration\Membership\UserRoles.cs" />
+    <Compile Include="Fishing\Catch.cs" />
+    <Compile Include="Fishing\Catches.cs" />
+    <Compile Include="Fishing\Species.cs" />
+    <Compile Include="Fishing\Trip.cs" />
+    <Compile Include="Fishing\TripRecorder.cs" />
+    <Compile Include="Fishing\default.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -64,6 +70,7 @@
     <Folder Include="Administration\" />
     <Folder Include="Administration\Roles\" />
     <Folder Include="Administration\Membership\" />
+    <Folder Include="Fishing\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="lib\readme.txt" />

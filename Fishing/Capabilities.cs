@@ -15,5 +15,19 @@ namespace Fishing
 			public class View                    :Capability{}
 		}
 	}
+
+	namespace Trip {
+		public class Add                  :Capability{}
+		public class Edit                 :Capability{}
+		public class Delete               :Capability{}
+		public class View                 :Capability{}
+
+		namespace Own{
+			public class Add                     :Capability{}
+			public class Edit                    :Capability{}
+			public class Delete                  :Capability{}
+			public class View                    :Capability{}
+		}
+	}
 }
 

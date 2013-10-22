@@ -42,7 +42,7 @@ namespace FirehallTests.Administration.Membership
 		/// <para></para>
 		/// </remarks>
 		[Test]
-		public void Load ()
+		public override void Loaded ()
 		{
 			throw new NotImplementedException();
 		}

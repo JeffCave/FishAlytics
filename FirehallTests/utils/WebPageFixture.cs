@@ -62,6 +62,9 @@ namespace FirehallTests.General
 				Assert.AreEqual (HttpStatusCode.OK, response.StatusCode);
 			}
 		}
+
+		[Test]
+		public abstract void Loaded();
 	}
 }
 

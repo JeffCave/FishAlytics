@@ -5,7 +5,7 @@ using Vius.Data;
 
 namespace Vius.Fishing.Data
 {
-	public class Catch: Vius.BaseDataElement<int>
+	public class Catch: Vius.Data.BaseDataElement<int>
 	{
 		private bool pIsDirty;
 		private Catches parent;

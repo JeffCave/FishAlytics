@@ -5,8 +5,8 @@ namespace Vius.Data
 {
 	public class BaseDataCollection<PK,ELEM>
 		: System.Collections.Generic.List<ELEM>
-			, Vius.IDataCollection<ELEM>
-			where ELEM : Vius.IDataElement<PK>
+			, Vius.Data.IDataCollection<ELEM>
+			where ELEM : Vius.Data.IDataElement<PK>
 	{
 		public BaseDataCollection ()
 		{

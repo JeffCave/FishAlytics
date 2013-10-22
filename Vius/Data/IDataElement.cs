@@ -1,6 +1,6 @@
 using System;
 
-namespace Vius
+namespace Vius.Data
 {
 	public interface IDataElement<PK>: IDataElement{
 		void Load(PK primarykey);

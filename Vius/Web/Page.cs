@@ -20,8 +20,8 @@ namespace Vius.Web
 
 		private static object staticlocker = new object();
 
-		private static SiteMapNode menuinformation=null;
-		public static SiteMapNode MenuInformation {
+		private static PageSiteMapNode menuinformation=null;
+		public static PageSiteMapNode MenuInformation {
 			get {
 				lock(staticlocker){
 					if(menuinformation == null){
@@ -31,7 +31,7 @@ namespace Vius.Web
 				}
 			}
 		}
-		protected static SiteMapNode CreateSiteMapNode(){
+		protected static PageSiteMapNode CreateSiteMapNode(){
 			var classname = System.Reflection.MethodBase
 					.GetCurrentMethod()
 					.DeclaringType

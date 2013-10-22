@@ -1,6 +1,6 @@
 using System;
 
-namespace Vius
+namespace Vius.Data
 {
 	public abstract class BaseDataElement<PK>:IDataElement<PK>
 	{

@@ -1,5 +1,8 @@
 <%@ Page Language="C#" Inherits="Firehall.Fishing.Default" MasterPageFile="~/Site.master" %>
 <asp:Content ContentPlaceHolderID="MainContent" ID="MainContentContent" runat="server">
+<p>Gone Fishing!</p>
+<p><a href="Trip.aspx">Record a Trip</a></p>
+<p>I caught a Fish!!</p>
 <p>
 I need to put some sort of dashboard here. Drop-in widgets would be preferable.
 </p>

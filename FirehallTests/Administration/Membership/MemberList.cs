@@ -75,7 +75,7 @@ namespace FirehallTests.Administration.Membership
 		/// </para>
 		/// </remarks>
 		[Test]
-		public void Loaded ()
+		public override void Loaded ()
 		{
 			using (PooledWebDriver pooled = DriverPool.Checkout()) {
 				IWebDriver driver = pooled.driver;
@@ -113,10 +113,10 @@ namespace FirehallTests.Administration.Membership
 				};
 				elems = elem.FindElements(new ByChained(basechain));
 				foreach(var row in elems){
-					var chain = new List<By>(basechain);
-
-					chain.Add(By.XPath("./td[2]"));
-					var username = row.FindElement(new ByChained(chain.ToArray()));
+//					var chain = new List<By>(basechain);
+//
+//					chain.Add(By.XPath("./td[2]"));
+//					var username = row.FindElement(new ByChained(chain.ToArray()));
 //					var link = row.FindElement(By.LinkText("[r]"));
 //					link.Click();
 //					Assert.IsTrue(driver.Url.Contains("UserRoles.aspx"),"Role Link had invalid destincation. Expected 'UserRoles.aspx' actual '"+driver.Url+"'");

@@ -69,6 +69,8 @@
     <Content Include="Fishing\default.aspx" />
     <Content Include="Fishing\Species.aspx" />
     <Content Include="Fishing\Trip.aspx" />
+    <Content Include="Fishing\Trips.aspx" />
+    <Content Include="Fishing\TripRecorder.aspx" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Global.asax.cs">
@@ -224,6 +226,18 @@
     </Compile>
     <Compile Include="Fishing\Trip.aspx.designer.cs">
       <DependentUpon>Trip.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Fishing\Trips.aspx.cs">
+      <DependentUpon>Trips.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Fishing\Trips.aspx.designer.cs">
+      <DependentUpon>Trips.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Fishing\TripRecorder.aspx.cs">
+      <DependentUpon>TripRecorder.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Fishing\TripRecorder.aspx.designer.cs">
+      <DependentUpon>TripRecorder.aspx</DependentUpon>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

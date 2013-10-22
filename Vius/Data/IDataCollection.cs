@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Vius
+namespace Vius.Data
 {
 	public interface IDataCollection<Element> 
 			where Element:IDataElement

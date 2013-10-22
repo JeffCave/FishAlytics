@@ -34,6 +34,12 @@ namespace FirehallTests
 		}
 
 		[Test]
+		public override void Loaded ()
+		{
+			throw new System.NotImplementedException();
+		}
+
+		[Test]
 		public void Login ()
 		{
 			const string username = "Jeff";

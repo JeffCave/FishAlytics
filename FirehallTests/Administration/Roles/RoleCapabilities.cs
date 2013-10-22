@@ -47,7 +47,7 @@ namespace FirehallTests.Administration.Roles
 		/// </list>
 		/// </remarks>
 		[Test]
-		public void Loaded ()
+		public override void Loaded ()
 		{
 			using (PooledWebDriver pooled = DriverPool.Checkout()) {
 				IWebDriver driver = pooled.driver;

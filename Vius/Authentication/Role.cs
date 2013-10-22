@@ -15,7 +15,7 @@ using Mono.Data.Sqlite;
 
 namespace Vius.Authentication
 {
-	public class Role:HashSet<string>,IDataElement<string>
+	public class Role:HashSet<string>,Vius.Data.IDataElement<string>
 	{
 		private object localLocker = new object();
 		private static object staticLocker = new object();

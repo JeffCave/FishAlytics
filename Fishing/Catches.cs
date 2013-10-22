@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Vius.Fishing.Data
 {
-	public class Catches:IDataCollection<Catch>
+	public class Catches:Vius.Data.IDataCollection<Catch>
 	{
 		private static readonly Vius.Data.DataProvider Db = Vius.Data.DataProvider.Instance;
 

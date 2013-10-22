@@ -40,6 +40,8 @@
     <Compile Include="Catches.cs" />
     <Compile Include="FishingData.cs" />
     <Compile Include="Capabilities.cs" />
+    <Compile Include="Trip.cs" />
+    <Compile Include="Trips.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

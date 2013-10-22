@@ -4,8 +4,10 @@ namespace Vius.Fishing.Data
 {
 	public class FishingData
 	{
-		public static object staticLocker = new object();
-		public static FishingData instance;
+		private static object staticLocker = new object();
+		private object locker = new object();
+
+		private static FishingData instance;
 		public static FishingData Instance {
 			get {
 				if(instance == null){
@@ -19,15 +21,38 @@ namespace Vius.Fishing.Data
 			}
 		}
 
+		#region Initialization
 		protected FishingData ()
 		{
-			catches = new Vius.Fishing.Data.Catches();
 		}
+
+		#endregion
 
 		private Vius.Fishing.Data.Catches catches = null;
 		public Vius.Fishing.Data.Catches Catches {
 			get {
+				if(catches == null){
+					lock(locker){
+						if(catches == null){
+							catches = new Vius.Fishing.Data.Catches();
+						}
+					}
+				}
 				return catches;
+			}
+		}
+
+		private Vius.Fishing.Data.Trips trips = null;
+		public Vius.Fishing.Data.Trips Trips {
+			get {
+				if(trips == null){
+					lock(locker){
+						if(trips == null){
+							trips = new Vius.Fishing.Data.Trips();
+						}
+					}
+				}
+				return trips;
 			}
 		}
 	}
