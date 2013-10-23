@@ -5,10 +5,30 @@ using System.Web.UI;
 namespace Firehall
 {
 	/// <summary>
+	/// Primary entry location for a user to enter information about a fishing excursion.
 	/// </summary>
 	/// <remarks>
+	/// <para>
+	/// The idea behind the trip object is for it to act as a collecting
+	/// point for all the little bits of data. It gives the user a single
+	/// location to start thinking about the problem from.
+	/// </para>
+	/// <para>
+	/// If this is to be the primary interface for the user, then it only
+	/// makes sense that they should be using a map, since all of our data
+	/// is really geo-tagged. We really care where all of this action is
+	/// occuring.
+	/// </para>
+	/// <para>
+	/// http://docs.openlayers.org/library/introduction.html
+	/// </para>
+	/// <para>
+	/// This page should contain summaries of catches, area travelled, and environmental readings.
+	/// </para>
+	/// <para>
 	/// $Id$
 	/// $URL$
+	/// </para>
 	/// </remarks>
 	public partial class Trip : Firehall.Page
 	{
