@@ -40,6 +40,16 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Security" />
     <Reference Include="System.Core" />
+    <Reference Include="AjaxControlToolkit">
+      <HintPath>..\Lib\AjaxControlToolkit.Binary.NET35\AjaxControlToolkit.dll</HintPath>
+    </Reference>
+    <Reference Include="AjaxMin">
+      <HintPath>..\Lib\AjaxControlToolkit.Binary.NET35\AjaxMin.dll</HintPath>
+    </Reference>
+    <Reference Include="HtmlAgilityPack">
+      <HintPath>..\Lib\AjaxControlToolkit.Binary.NET35\HtmlAgilityPack.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Extensions" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Global.asax" />
@@ -71,6 +81,7 @@
     <Content Include="Fishing\Trip.aspx" />
     <Content Include="Fishing\Trips.aspx" />
     <Content Include="Fishing\TripRecorder.aspx" />
+    <Content Include="Fishing\Trip.js" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Global.asax.cs">

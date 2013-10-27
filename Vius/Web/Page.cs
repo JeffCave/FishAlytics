@@ -102,6 +102,34 @@ namespace Vius.Web
 			}
 		}
 
+		public class JavaScriptLib:Pair<string,string>
+		{
+			public JavaScriptLib(string key, string value)
+				:base(key,value)
+			{
+
+			}
+		}
+
+		public static class JavaScriptLibs
+		{
+			public static readonly JavaScriptLib JQuery = new JavaScriptLib("jquery","//code.jquery.com/jquery-latest.min.js");
+			public static readonly JavaScriptLib JQueryUI = new JavaScriptLib("jqueryui","//ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js");
+		}
+
+		public void IncludeJavaLib (JavaScriptLib lib, bool minifiy = true)
+		{
+			if (ClientScript.IsClientScriptIncludeRegistered(lib.Key)) {
+				return;
+			}
+
+			var minstr = (minifiy)?".min":"";
+			ClientScript.RegisterClientScriptInclude(
+					lib.Key,
+					lib.Value
+				);
+		}
+
 	}
 }
 

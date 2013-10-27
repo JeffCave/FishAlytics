@@ -8,18 +8,16 @@ namespace Vius.Fishing.Data
 	public class Catch: Vius.Data.BaseDataElement<int>
 	{
 		private bool pIsDirty;
-		private Catches parent;
 
 		#region Initialize
-		internal Catch (Catches parent)
+		internal Catch ()
 		{
-			this.parent = parent;
 		}
 
-		internal Catch (Catches parent, int catchid)
-			:this(parent)
+		internal Catch (int catchid)
+			:this()
 		{
-			Load(CatchId);
+			Load(catchid);
 		}
 		#endregion
 

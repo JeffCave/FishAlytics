@@ -32,30 +32,19 @@ namespace Firehall
 	/// </remarks>
 	public partial class Trip : Firehall.Page
 	{
-		public int TripId
-		{
-			get
-			{
-				if(null == ViewState["TripId"]){
-					int tripid = 0;
-					try{
-						tripid = int.Parse(Request["t"]);
-					} catch {
-						tripid = 0;
-					}
-					ViewState["TripId"] = tripid;
-				}
-				return((int)ViewState["TripId"]);
-			}
-		}
-
-		private Vius.Fishing.Data.Trip tripData = null;
+		private Vius.Fishing.Data.Trip _TripData = null;
 		public Vius.Fishing.Data.Trip TripData {
 			get {
-				if(tripData == null){
-					tripData = Globals.Fishing.Trips[TripId];
+				if(_TripData == null){
+					try{
+						_TripData = Globals.Fishing.Trips[(int)ViewState["TripData"]];
+					} catch {
+						_TripData = Globals.Fishing.Trips.New();
+						ViewState["TripData"] = null;
+					}
+
 				}
-				return tripData;
+				return(_TripData);
 			}
 		}
 
@@ -70,15 +59,87 @@ namespace Firehall
 			return node;
 		}
 
+
 		public Trip(){
 			PageTitle = "Fishing Trip";
 		}
 
+
+		void SaveTrip (object sender, EventArgs e)
+		{
+			try {
+				UpdateData();
+				TripData.Save();
+				ViewState["TripData"] = TripData.Id;
+			} catch (Exception ex) {
+				System.Collections.Generic.Queue<string> msgs;
+				if(Messages.DataSource == null){
+					Messages.DataSource = new System.Collections.Generic.Queue<string>();
+				}
+				msgs = Messages.DataSource as System.Collections.Generic.Queue<string>;
+				msgs.Enqueue(Server.HtmlEncode(ex.Message));
+				Messages.DataBind();
+			}
+		}
+
 		public void Page_Load ()
 		{
+			BindEvents();
 			if (!IsPostBack) {
 			}
 		}
+
+		private void BindEvents ()
+		{
+			btnSave.Click += SaveTrip;
+			txtTripStart.TextChanged += UpdateData;
+			txtTripDate.TextChanged += UpdateData;
+			txtTripEnd.TextChanged += UpdateData;
+		}
+
+		private bool UpdateDataAlready = false;
+		public void UpdateData (object sender, EventArgs e)
+		{
+			UpdateData();
+		}
+
+		public void UpdateData (bool force = true)
+		{
+			//this may get called multiple times, but really only 
+			//needs to be called once per page load
+			if (UpdateDataAlready && !force) {
+				return;
+			}
+			UpdateDataAlready = true;
+
+			DateTime date;
+			DateTime time;
+
+			//startdate
+			try {
+				date = DateTime.Parse(this.txtTripDate.Text);
+				try {
+					time = DateTime.Parse(this.txtTripStart.Text);
+				} catch {
+					time = DateTime.MinValue;
+				}
+				date = date
+					.Subtract(date.TimeOfDay)
+					.Add(time.TimeOfDay);
+			} catch {
+				date = DateTime.MinValue;
+			}
+			TripData.TripStart = date;
+
+			//end date
+			try {
+				date = DateTime.Parse(this.txtTripEnd.Text);
+			} catch {
+				date = DateTime.MaxValue;
+			}
+			TripData.TripEnd = date;
+		}
+
 
 	}
 }

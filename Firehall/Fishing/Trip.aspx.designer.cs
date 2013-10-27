@@ -15,22 +15,56 @@ namespace Firehall {
 		
 		protected System.Web.UI.WebControls.Content MainContentContent;
 		
-		protected System.Web.UI.WebControls.Button Save;
+		protected AjaxControlToolkit.ToolkitScriptManager ScriptManager1;
+		
+		protected System.Web.UI.WebControls.Repeater Messages;
+		
+		protected System.Web.UI.WebControls.Button btnSave;
+		
+		protected System.Web.UI.WebControls.Button btnCatch;
+		
+		protected System.Web.UI.WebControls.Button btnChangeRig;
+		
+		protected System.Web.UI.WebControls.Label lblTripDate;
+		
+		protected System.Web.UI.WebControls.TextBox txtTripDate;
+		
+		protected AjaxControlToolkit.CalendarExtender ajaxTripDate;
 		
 		protected System.Web.UI.WebControls.Label lblTripStart;
 		
-		protected System.Web.UI.WebControls.TextBox TripStart;
+		protected System.Web.UI.WebControls.TextBox txtTripStart;
 		
 		protected System.Web.UI.WebControls.Label lblTripEnd;
 		
-		protected System.Web.UI.WebControls.TextBox TripEnd;
+		protected System.Web.UI.WebControls.TextBox txtTripEnd;
 		
-		protected System.Web.UI.WebControls.Label lblRoute;
+		protected System.Web.UI.WebControls.Label lblTripDuration;
 		
-		protected System.Web.UI.WebControls.Repeater Route;
+		protected System.Web.UI.WebControls.TextBox TripDuration;
 		
-		protected System.Web.UI.WebControls.TextBox lat;
+		protected System.Web.UI.WebControls.Label lblMap;
 		
-		protected System.Web.UI.WebControls.TextBox @long;
+		protected System.Web.UI.WebControls.Label lblFriends;
+		
+		protected System.Web.UI.WebControls.Label lblCatches;
+		
+		protected System.Web.UI.WebControls.TextBox Time;
+		
+		protected System.Web.UI.WebControls.TextBox Species;
+		
+		protected System.Web.UI.WebControls.TextBox Length;
+		
+		protected System.Web.UI.WebControls.TextBox Weight;
+		
+		protected System.Web.UI.WebControls.Label lblRig;
+		
+		protected System.Web.UI.WebControls.TextBox Time_1;
+		
+		protected System.Web.UI.WebControls.TextBox Rig_1;
+		
+		protected System.Web.UI.WebControls.TextBox Time_2;
+		
+		protected System.Web.UI.WebControls.TextBox Rig_2;
 	}
 }

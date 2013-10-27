@@ -14,7 +14,7 @@ namespace Vius.Fishing.Data
 
 		public Catch this[int pk] {
 			get {
-				return new Catch(this, pk);
+				return new Catch(pk);
 			}
 			set {
 

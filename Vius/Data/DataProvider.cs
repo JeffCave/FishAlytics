@@ -89,7 +89,7 @@ namespace Vius.Data
 		}
 
 		private DbProviderFactory factory = null;
-		internal DbProviderFactory Factory {
+		public DbProviderFactory Factory {
 			get {
 				lock(locker){
 					if(factory == null){
