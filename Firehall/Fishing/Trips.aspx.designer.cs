@@ -13,14 +13,18 @@ namespace Firehall {
 	
 	public partial class Trips {
 		
-		protected System.Web.UI.WebControls.Content LoginContentContent;
-		
 		protected System.Web.UI.WebControls.Content MainContentContent;
 		
-		public new Firehall.Site Master {
-			get {
-				return ((Firehall.Site)(base.Master));
-			}
-		}
+		protected System.Web.UI.WebControls.GridView TripGrid;
+		
+		protected System.Web.UI.WebControls.HyperLink ViewButton;
+		
+		protected System.Web.UI.WebControls.Label StartTime;
+		
+		protected System.Web.UI.WebControls.Label FinishTime;
+		
+		protected System.Web.UI.WebControls.Label Duration;
+		
+		protected System.Web.UI.WebControls.Label Fisherman;
 	}
 }

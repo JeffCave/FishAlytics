@@ -123,10 +123,12 @@ namespace Vius.Web
 				return;
 			}
 
-			var minstr = (minifiy)?".min":"";
+			var minon = ".min.";
+			var minoff = ".";
+			var minstr = (minifiy)?minon:minoff;
 			ClientScript.RegisterClientScriptInclude(
 					lib.Key,
-					lib.Value
+					lib.Value.Replace(minon,minstr)
 				);
 		}
 

@@ -3,33 +3,14 @@ using System.Data.Common;
 using System.Data;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-
-/*namespace Vius.Fishing
-{
-	[Serializable]
-	public class Trip:ISerializable{
-
-		public DateTime Start{
-			get;set;
-		}
-		public DateTime End{
-			get;set;
-		}
-
-		public Trip(SerializationInfo info, StreamingContext context)
-		{
-			foreach(var pInfo in System.Reflection.MemberInfo(typeof(this)).GetProperties()){	
-			}
-		}
-
-
-
-	}
-}*/
+using System.Data.Linq;
+using System.Data.Linq.Mapping;
+using System.Web;
+using System.Web.Security;
 
 namespace Vius.Fishing.Data
 {
-	[Serializable]
+	[Table(Name="Fishing.Trip")]
 	public class Trip
 	{
 		internal DateTime LastActivity = DateTime.Now;
@@ -72,19 +53,25 @@ namespace Vius.Fishing.Data
 			p.ParameterName = "Id";
 			p.DbType = DbType.Int32;
 			p.Value = DBNull.Value;
-			fields.Add("Id",p);
+			fields.Add(p.ParameterName,p);
 
 			p = Db.Factory.CreateParameter();
 			p.ParameterName = "TripStart";
 			p.DbType = DbType.DateTime;
 			p.Value = DBNull.Value;
-			fields.Add("TripStart",p);
+			fields.Add(p.ParameterName,p);
 
 			p = Db.Factory.CreateParameter();
 			p.ParameterName = "TripEnd";
 			p.DbType = DbType.DateTime;
 			p.Value = DBNull.Value;
-			fields.Add("TripEnd",p);
+			fields.Add(p.ParameterName,p);
+
+			p = Db.Factory.CreateParameter();
+			p.ParameterName = "Fisherman";
+			p.DbType = DbType.Int64;
+			p.Value = DBNull.Value;
+			fields.Add(p.ParameterName,p);
 
 		}
 
@@ -103,6 +90,7 @@ namespace Vius.Fishing.Data
 		#region Fields
 		protected Dictionary<string,DbParameter> fields;
 
+		[Column(IsPrimaryKey=true,Name="TripId")]
 		public int Id {
 			get {
 				if (fields["Id"].Value == DBNull.Value) {
@@ -119,7 +107,8 @@ namespace Vius.Fishing.Data
 			}
 		}
 
-		public DateTime TripStart {
+		[Column]
+		public DateTime Start {
 			get {
 				if(fields["TripStart"].Value == DBNull.Value){
 					return DateTime.MinValue;
@@ -135,7 +124,8 @@ namespace Vius.Fishing.Data
 			}
 		}
 
-		public DateTime TripEnd {
+		[Column(Name="Finish")]
+		public DateTime Finish{
 			get {
 				if(fields["TripEnd"].Value == DBNull.Value){
 					return DateTime.MaxValue;
@@ -148,6 +138,51 @@ namespace Vius.Fishing.Data
 				} else {
 					fields["TripEnd"].Value = value;
 				}
+			}
+		}
+
+		[Column(Name="Fisherman")]
+		public long FishermanId {
+			get {
+				return (long)fields["Fisherman"].Value;
+			}
+			set {
+				long id;
+				try{
+					id = long.Parse(fields["Fisherman"].Value.ToString());
+				} catch {
+					id = 0;
+				}
+				if(value != id){
+					fields["Fisherman"].Value = value;
+					_Fisherman = null;
+				}
+			}
+		}
+		#endregion
+
+		#region Other Fields
+		public TimeSpan Duration {
+			get {
+				return Finish.Subtract(Start);
+			}
+			set{
+				Finish = Start.Add(value);
+			}
+		}
+
+		private MembershipUser _Fisherman = null;
+		private object locker = new object();
+		public MembershipUser Fisherman {
+			get {
+				if(_Fisherman == null){
+					lock(locker){
+						if(_Fisherman == null){
+							_Fisherman = Membership.GetUser(FishermanId);
+						}
+					}
+				}
+				return _Fisherman;
 			}
 		}
 		#endregion
@@ -213,10 +248,10 @@ namespace Vius.Fishing.Data
 
 		public void Validate ()
 		{
-			if (TripStart == DateTime.MinValue) {
-				throw new Exception("We at least need to know when you went.");
+			if (Start == DateTime.MinValue) {
+				throw new Exception("No Start given. We at least need to know when you went.");
 			}
-			if (this.TripStart >= this.TripEnd) {
+			if (Start >= Finish) {
 				throw new Exception("Start must be before End");
 			}
 		}
@@ -279,12 +314,13 @@ namespace Vius.Fishing.Data
 						this.Id = rec.GetInt32(fld);
 						break;
 					case "start":
-						this.TripStart = rec.GetDateTime(fld);
+						this.Start = rec.GetDateTime(fld);
 						break;
 					case "finish":
-						this.TripEnd = rec.GetDateTime(fld);
+						this.Finish = rec.GetDateTime(fld);
 						break;
-					case "notes":
+					case "fisherman":
+						this.FishermanId = rec.GetInt64(fld);
 						break;
 				}
 			}

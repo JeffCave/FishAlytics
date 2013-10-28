@@ -45,7 +45,9 @@ namespace Vius.Authentication
 		private int _minRequiredNonAlphanumericCharacters;
 		private int _minRequiredPasswordLength;
 		private string _passwordStrengthRegularExpression;
-		private readonly DateTime _minDate = DateTime.ParseExact ("01/01/1753", "d", CultureInfo.InvariantCulture);
+		private readonly DateTime _minDate = DateTime.MinValue;
+
+		private MembershipUser _UserCache = null;
 
 		#endregion
 
@@ -605,7 +607,7 @@ namespace Vius.Authentication
 			}
 
 			status = lStatus;
-			return GetUser (username, false);
+			return GetUser(username, false);
 		}
 
 		/// <summary>
@@ -618,63 +620,62 @@ namespace Vius.Authentication
 		/// </returns>
 		public override bool DeleteUser (string username, bool deleteAllRelatedData)
 		{
-			DbConnection cn = GetDBConnectionForMembership ();
-			try {
-				DbParameter p;
-				using (DbCommand cmd = cn.CreateCommand()) {
-					if (cn.State == ConnectionState.Closed){
-						cn.Open ();
-					}
+			long userId = 0;
+			IDbDataParameter p;
 
-					// Get UserId if necessary.
-					string userId = null;
-					cmd.CommandText = 
-						"SELECT UserId " +
-						"FROM   " + TbNames.User + " " +
-						"WHERE  LoweredUsername = :Username ";
+			Db.UseCommand( cmd =>{
+				// Get UserId if necessary.
+				cmd.CommandText = 
+					"SELECT UserId " +
+					"FROM   " + TbNames.User + " " +
+					"WHERE  LoweredUsername = lower(:Username) ";
 
-					p = cmd.CreateParameter();
-					p.ParameterName = ":Username";
-					p.Value = username.ToLowerInvariant ();
-					cmd.Parameters.Add(p);
+				p = cmd.CreateParameter();
+				p.ParameterName = ":Username";
+				p.Value = username.ToLowerInvariant ();
+				cmd.Parameters.Add(p);
 
-					userId = cmd.ExecuteScalar () as string;
+				try{
+					userId = (long)cmd.ExecuteScalar();
+				} catch {
+					userId = 0;
+					return;
+				}
 
-					cmd.Parameters.Clear();
-					p = cmd.CreateParameter();
-					p.ParameterName = ":UserId";
-					p.Value = username.ToLowerInvariant ();
-					cmd.Parameters.Add(p);
+				cmd.Parameters.Clear();
+				p = cmd.CreateParameter();
+				p.ParameterName = ":UserId";
+				p.Value = username.ToLowerInvariant ();
+				cmd.Parameters.Add(p);
 
-					// start deleting
+				// start deleting
+				cmd.CommandText = 
+					"DELETE " +
+					"FROM   " + TbNames.User + " " +
+					"WHERE  UserId = :UserId ";
+				cmd.ExecuteNonQuery();
+
+				if (deleteAllRelatedData) {
+					// Delete from user/role relationship table.
 					cmd.CommandText = 
 						"DELETE " +
-						"FROM   " + TbNames.User + " " +
-						"WHERE  UserId = :UserId ";
-					int rowsAffected = cmd.ExecuteNonQuery ();
+						"FROM   " + TbNames.Roles + " " +
+						"WHERE  UserId = :UserId";
+					cmd.ExecuteNonQuery ();
 
-					if (deleteAllRelatedData && (!String.IsNullOrEmpty ((userId)))) {
-						// Delete from user/role relationship table.
-						cmd.CommandText = 
-							"DELETE " +
-							"FROM   " + TbNames.Roles + " " +
-							"WHERE  UserId = :UserId";
-						cmd.ExecuteNonQuery ();
-
-						// Delete from profile table.
-						cmd.CommandText = 
-							"DELETE " +
-							"FROM   " + TbNames.Profile + " " +
-							"WHERE  UserId = :UserId";
-						cmd.ExecuteNonQuery ();
-					}
-
-					return (rowsAffected > 0);
+					// Delete from profile table.
+					cmd.CommandText = 
+						"DELETE " +
+						"FROM   " + TbNames.Profile + " " +
+						"WHERE  UserId = :UserId";
+					cmd.ExecuteNonQuery ();
 				}
-			} finally {
-				if (!IsTransactionInProgress ())
-					cn.Dispose ();
+			});
+
+			if(userId == (long)_UserCache.ProviderUserKey){
+				_UserCache = null;
 			}
+			return true;
 		}
 
 		/// <summary>
@@ -790,49 +791,66 @@ namespace Vius.Authentication
 		/// </returns>
 		public override MembershipUser GetUser (string username, bool userIsOnline)
 		{
-				MembershipUser user = null;
-				IDbDataParameter p;
-				Db.UseCommand(cmd =>{
-					cmd.CommandText = 
-						"SELECT UserId, \n" +
-						"       Username, " +
-						"       Email, \n" +
-						"       PassQuestion, \n" +
-						"       Comment, \n" +
-						"       IsApproved, \n" +
-						"       CreateDate, LastLoginDate, \n" +
-						"       LastActivityDate, \n" +
-						"       LastPasswordChangedDate \n" +
-						"FROM   " + TbNames.User + " \n" +
-						"WHERE  UsernameLowered = lower(:Username) \n";
+			if (_UserCache != null) {
+				lock (_UserCache) {
+					if (_UserCache.UserName == username) {
+						return _UserCache;
+					}
+				}
+			}
+
+			MembershipUser user = null;
+			IDbDataParameter p;
+			Db.UseCommand(cmd => {
+				cmd.CommandText = 
+					"SELECT UserId, \n" +
+					"       Username, " +
+					"       Email, \n" +
+					"       PassQuestion, \n" +
+					"       Comment, \n" +
+					"       IsApproved, \n" +
+					"       CreateDate, LastLoginDate, \n" +
+					"       LastActivityDate, \n" +
+					"       LastPasswordChangedDate \n" +
+					"FROM   " + TbNames.User + " \n" +
+					"WHERE  UsernameLowered = lower(:Username) \n";
+				
+				p = cmd.CreateParameter();
+				p.ParameterName = ":Username";
+				p.Value = username.ToLowerInvariant();
+				cmd.Parameters.Add(p);
+				
+				using (var dr = cmd.ExecuteReader()) {
+					if (dr.Read()) {
+						user = GetUserFromReader(dr);
+					}
+				}
+				
+				if (userIsOnline) {
+					cmd.CommandText =
+						"UPDATE " + TbNames.User + " \n" +
+						"SET    LastActivityDate = :LastActivityDate \n" +
+						"WHERE  LoweredUsername = lower(:Username) \n";
 					
 					p = cmd.CreateParameter();
-					p.ParameterName = ":Username";
-					p.Value = username.ToLowerInvariant();
+					p.ParameterName = ":LastActivityDate";
+					p.Value = DateTime.UtcNow;
 					cmd.Parameters.Add(p);
 					
-					using (var dr = cmd.ExecuteReader()) {
-						if (dr.Read()) {
-							user = GetUserFromReader (dr);
-						}
-					}
-					
-					if (userIsOnline) {
-						cmd.CommandText =
-							"UPDATE " + TbNames.User + " \n" +
-							"SET    LastActivityDate = :LastActivityDate \n" +
-							"WHERE  LoweredUsername = lower(:Username) \n";
-						
-						p = cmd.CreateParameter();
-						p.ParameterName = ":LastActivityDate";
-						p.Value = DateTime.UtcNow;
-						cmd.Parameters.Add(p);
-						
-						cmd.ExecuteNonQuery();
-					}
-					
-				});
-				return user;
+					cmd.ExecuteNonQuery();
+				}
+				
+			}
+			);
+
+			if (_UserCache == null) {
+				_UserCache = user;
+			}
+			lock (_UserCache) {
+				_UserCache = user;
+			}
+
+			return user;
 		}
 
 		/// <summary>
@@ -845,55 +863,54 @@ namespace Vius.Authentication
 		/// </returns>
 		public override MembershipUser GetUser (object providerUserKey, bool userIsOnline)
 		{
-			DbParameter p;
-			DbConnection cn = GetDBConnectionForMembership ();
-			try {
-				using (DbCommand cmd = cn.CreateCommand()) {
-					cmd.CommandText = "SELECT UserId, Username, Email, PasswordQuestion,"
-						+ " Comment, IsApproved, IsLockedOut, CreateDate, LastLoginDate,"
-						+ " LastActivityDate, LastPasswordChangedDate, LastLockoutDate"
-						+ " FROM " + TbNames.User + " WHERE UserId = :UserId";
-
-					p = cmd.CreateParameter();
-					p.DbType = DbType.Int32;
-					p.ParameterName = ":UserId";
-					p.Value = Convert.ToInt32(providerUserKey);
-					cmd.Parameters.Add(p);
-
-					MembershipUser user = null;
-
-					if (cn.State == ConnectionState.Closed){
-						cn.Open ();
-					}
-
-					using (DbDataReader dr = cmd.ExecuteReader()) {
-						if (dr.HasRows) {
-							dr.Read ();
-							user = GetUserFromReader (dr);
+			if (_UserCache != null) {
+				lock (_UserCache) {
+					try{
+						if (Convert.ToInt64(_UserCache.ProviderUserKey) == Convert.ToInt64(providerUserKey)) {
+							return _UserCache;
 						}
-					}
-
-					if (userIsOnline) {
-						cmd.CommandText = 
-							"UPDATE " + TbNames.User+ " " +
-							"SET    LastActivityDate = :LastActivityDate " +
-							"WHERE  UserId = :UserId";
-
-						p = cmd.CreateParameter();
-						p.ParameterName = ":LastActivityDate";
-						p.Value = DateTime.UtcNow;
-						cmd.Parameters.Add(p);
-
-						cmd.ExecuteNonQuery ();
-					}
-
-					return user;
-				}
-			} finally {
-				if (!IsTransactionInProgress()){
-					cn.Dispose();
+					} catch {}
 				}
 			}
+
+			MembershipUser user = null;
+			IDataParameter p;
+			Db.UseCommand( cmd => {
+				cmd.CommandText = 
+					"SELECT * \n" +
+					"FROM " + TbNames.User + " \n" +
+					"WHERE UserId = :UserId \n";
+
+				p = cmd.CreateParameter();
+				p.DbType = DbType.Int32;
+				p.ParameterName = ":UserId";
+				p.Value = Convert.ToInt32(providerUserKey);
+				cmd.Parameters.Add(p);
+
+				using (var dr = cmd.ExecuteReader(CommandBehavior.SingleRow)) {
+					if (dr.Read ()){
+						user = GetUserFromReader (dr);
+					}
+				}
+
+				if (userIsOnline) {
+					cmd.CommandText = 
+						"UPDATE " + TbNames.User+ " " +
+						"SET    LastActivityDate = :LastActivityDate " +
+						"WHERE  UserId = :UserId";
+
+					p = cmd.CreateParameter();
+					p.ParameterName = ":LastActivityDate";
+					p.Value = DateTime.UtcNow;
+					cmd.Parameters.Add(p);
+
+					cmd.ExecuteNonQuery ();
+				}
+
+			});
+
+			_UserCache = user;
+			return user;
 		}
 
 		/// <summary>
@@ -948,8 +965,14 @@ namespace Vius.Authentication
 		/// </returns>
 		public override string GetUserNameByEmail (string email)
 		{
-			if (email == null) {
+			if (string.IsNullOrEmpty(email)) {
 				return null;
+			}
+
+			if (_UserCache != null) {
+				if(_UserCache.Email.ToLowerInvariant() == email.ToLowerInvariant()){
+					return _UserCache.UserName;
+				}
 			}
 
 			DbParameter p;
@@ -959,7 +982,7 @@ namespace Vius.Authentication
 					cmd.CommandText = 
 						"SELECT Username" +
 						"FROM   " + TbNames.User + " " +
-						"WHERE LoweredEmail = :Email ";
+						"WHERE LoweredEmail = lower(:Email) ";
 
 					p = cmd.CreateParameter();
 					p.ParameterName = ":Email";

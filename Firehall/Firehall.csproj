@@ -50,6 +50,7 @@
       <HintPath>..\Lib\AjaxControlToolkit.Binary.NET35\HtmlAgilityPack.dll</HintPath>
     </Reference>
     <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Data.Linq" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Global.asax" />
@@ -81,7 +82,12 @@
     <Content Include="Fishing\Trip.aspx" />
     <Content Include="Fishing\Trips.aspx" />
     <Content Include="Fishing\TripRecorder.aspx" />
-    <Content Include="Fishing\Trip.js" />
+    <Content Include="Fishing\Trip.js">
+      <DependentUpon>Trip.aspx</DependentUpon>
+    </Content>
+    <Content Include="Fishing\Trips.js">
+      <DependentUpon>Trips.aspx</DependentUpon>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Global.asax.cs">

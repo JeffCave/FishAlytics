@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Data.Common;
 
 namespace Vius.Fishing.Data
 {
 	public class Trips
 	{
 		internal static Vius.Data.DataProvider Db = Vius.Data.DataProvider.Instance;
-		internal static readonly string TbName = "\"Fishing\".\"Trips\"";
+		public static readonly string TbName = "\"Fishing\".\"Trips\"";
 
 		protected readonly int UpperPoolSize = 20;
 		protected List<Trip> pool = new List<Trip>();
@@ -50,6 +51,35 @@ namespace Vius.Fishing.Data
 				pool.Remove(trip);
 				numtoremove--;
 			}
+		}
+
+		public List<Trip> Where (string clause = null, List<DbParameter> parameters = null)
+		{
+			if (parameters == null) {
+				parameters = new List<DbParameter>();
+			}
+			if (string.IsNullOrEmpty(clause)) {
+				clause = " 1=1 ";
+				parameters.Clear();
+			}
+
+			var trips = new List<Trip>();
+			Db.UseCommand(cmd => {
+				cmd.CommandText = 
+					string.Format("select * from {0} where {1} ",
+					              TbName,
+					              clause
+					);
+				foreach(var p in parameters){
+					cmd.Parameters.Add(p);
+				}
+				using(var rs = cmd.ExecuteReader()){
+					while(rs.Read()){
+						trips.Add(new Trip(rs));
+					}
+				}
+			});
+			return trips;
 		}
 
 	}

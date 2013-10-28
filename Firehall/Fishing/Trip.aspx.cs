@@ -129,7 +129,7 @@ namespace Firehall
 			} catch {
 				date = DateTime.MinValue;
 			}
-			TripData.TripStart = date;
+			TripData.Start = date;
 
 			//end date
 			try {
@@ -137,7 +137,7 @@ namespace Firehall
 			} catch {
 				date = DateTime.MaxValue;
 			}
-			TripData.TripEnd = date;
+			TripData.Finish = date;
 		}
 
 

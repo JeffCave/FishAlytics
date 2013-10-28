@@ -1,9 +1,12 @@
 using System;
+using System.Data.Linq;
 
 namespace Vius.Fishing.Data
 {
 	public class FishingData
 	{
+		public Table<Trip> Trips2;
+
 		private static object staticLocker = new object();
 		private object locker = new object();
 
@@ -13,7 +16,13 @@ namespace Vius.Fishing.Data
 				if(instance == null){
 					lock(staticLocker){
 						if(instance == null){
-							instance = new FishingData();
+							try{
+								string cnnstr = Vius.Data.DataProvider.Instance.ConnectionString;
+								cnnstr += ";DbLinqProvider=PostgreSql";
+								instance = new FishingData();
+							} catch(Exception e) {
+								System.Console.Out.WriteLine(e.Message);
+							}
 						}
 					}
 				}
@@ -23,9 +32,14 @@ namespace Vius.Fishing.Data
 
 		#region Initialization
 		protected FishingData ()
+//			:base("DbLinqProvider=PostgreSql;" + Vius.Data.DataProvider.Instance.ConnectionString)
 		{
 		}
 
+		protected FishingData(string connection)
+//			:base(connection)
+		{
+		}
 		#endregion
 
 		private Vius.Fishing.Data.Catches catches = null;
@@ -55,6 +69,7 @@ namespace Vius.Fishing.Data
 				return trips;
 			}
 		}
+
 	}
 }
 
