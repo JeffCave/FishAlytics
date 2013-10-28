@@ -5,6 +5,15 @@ using System.Data.Common;
 
 namespace Vius.Fishing.Data
 {
+	/// <summary>
+	/// Trips.
+	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// $Id$
+	/// $URL$
+	/// </para>
+	/// </remarks>
 	public class Trips
 	{
 		internal static Vius.Data.DataProvider Db = Vius.Data.DataProvider.Instance;
@@ -19,11 +28,22 @@ namespace Vius.Fishing.Data
 
 		public Trip this[int pk] {
 			get {
-				Trip trip = pool
-					.Where(i=>{return i.Id == pk;})
-					.First();
+
+				Trip trip = null;
+				foreach(var t in pool){
+					if(t.Id == pk){
+						trip = t;
+						break;
+					}
+				}
 				if(trip == null){
-					trip = New();
+					try{
+						trip = new Trip(pk);
+						ReleaseTrips();
+						pool.Add(trip);
+					} catch {
+						trip = New();
+					}
 				}
 				return trip;
 			}
@@ -31,7 +51,8 @@ namespace Vius.Fishing.Data
 
 		public Trip New(){
 			var trip = new Trip();
-			pool.Add(trip);
+			//TODO: Not sure if these should be added to the pool
+			//pool.Add(trip);
 			return trip;
 		}
 
@@ -69,7 +90,7 @@ namespace Vius.Fishing.Data
 					string.Format("select * from {0} where {1} ",
 					              TbName,
 					              clause
-					);
+						);
 				foreach(var p in parameters){
 					cmd.Parameters.Add(p);
 				}

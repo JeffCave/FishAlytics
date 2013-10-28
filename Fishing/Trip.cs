@@ -213,7 +213,7 @@ namespace Vius.Fishing.Data
 					sql.Add("load",
 						"select * \n" +
 						"from   " + Trips.TbName + " \n" +
-						"where  \"TripId\" = :TripId"
+						"where  \"TripId\" = :TripId \n"
 					);
 				}
 				return sql;
@@ -284,15 +284,13 @@ namespace Vius.Fishing.Data
 		{
 			Db.UseCommand(cmd => {
 				cmd.CommandText = Sql["load"];
-				/*
+
 				var p = cmd.CreateParameter();
 				p.DbType = System.Data.DbType.Int32;
 				p.ParameterName = ":TripId";
 				p.Value = primarykey;
-				*/
-				foreach(var p in fields){
-					cmd.Parameters.Add(p);
-				}
+				cmd.Parameters.Add(p);
+
 
 				using(var rs = cmd.ExecuteReader(System.Data.CommandBehavior.SingleRow)){
 					if(rs.Read()){

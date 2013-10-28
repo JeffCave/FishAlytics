@@ -33,11 +33,23 @@ namespace Firehall
 	public partial class Trip : Firehall.Page
 	{
 		private Vius.Fishing.Data.Trip _TripData = null;
+		/// <summary>
+		/// Gets the trip data.
+		/// </summary>
+		/// <value>
+		/// The trip data.
+		/// </value>
 		public Vius.Fishing.Data.Trip TripData {
 			get {
 				if(_TripData == null){
 					try{
-						_TripData = Globals.Fishing.Trips[(int)ViewState["TripData"]];
+						int tripid = 0;
+						try{
+							tripid = (int)ViewState["TripData"];
+						} catch {
+							tripid = Convert.ToInt32(Request["t"]);
+						}
+						_TripData = Globals.Fishing.Trips[tripid];
 					} catch {
 						_TripData = Globals.Fishing.Trips.New();
 						ViewState["TripData"] = null;
@@ -48,6 +60,12 @@ namespace Firehall
 			}
 		}
 
+		/// <summary>
+		/// Creates the site map node.
+		/// </summary>
+		/// <returns>
+		/// The site map node.
+		/// </returns>
 		public new static Vius.Web.PageSiteMapNode CreateSiteMapNode()
 		{
 			var node = Firehall.Page.CreateSiteMapNode();
@@ -59,13 +77,23 @@ namespace Firehall
 			return node;
 		}
 
-
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Firehall.Trip"/> class.
+		/// </summary>
 		public Trip(){
 			PageTitle = "Fishing Trip";
 		}
 
-
-		void SaveTrip (object sender, EventArgs e)
+		/// <summary>
+		/// Saves the trip.
+		/// </summary>
+		/// <param name='sender'>
+		/// Sender.
+		/// </param>
+		/// <param name='e'>
+		/// E.
+		/// </param>
+		public void SaveTrip (object sender, EventArgs e)
 		{
 			try {
 				UpdateData();
@@ -82,13 +110,20 @@ namespace Firehall
 			}
 		}
 
+		/// <summary>
+		/// Page_s the load.
+		/// </summary>
 		public void Page_Load ()
 		{
-			BindEvents();
 			if (!IsPostBack) {
+				FillForm();
 			}
+			BindEvents();
 		}
 
+		/// <summary>
+		/// Binds the events.
+		/// </summary>
 		private void BindEvents ()
 		{
 			btnSave.Click += SaveTrip;
@@ -97,12 +132,60 @@ namespace Firehall
 			txtTripEnd.TextChanged += UpdateData;
 		}
 
+		/// <summary>
+		/// The update data already.
+		/// </summary>
+		private bool FillFormAlready = false;
+
+		/// <summary>
+		/// Fills the form.
+		/// </summary>
+		public void FillForm (bool force = false)
+		{
+			if (FillFormAlready && !force) {
+				return;
+			}
+
+			// Start Date
+			txtTripDate.Text = "";
+			txtTripStart.Text = "";
+			if (TripData.Start != DateTime.MinValue) {
+				txtTripDate.Text = TripData.Start.Date.ToString("yyyy-MM-dd");
+				txtTripStart.Text = TripData.Start.TimeOfDay.ToString("HH:mm");
+			}
+
+			// End Date
+			txtTripEnd.Text = "";
+			if (TripData.Finish != DateTime.MaxValue) {
+				txtTripEnd.Text = TripData.Finish.ToString();
+			}
+		}
+
+		/// <summary>
+		/// The update data already.
+		/// </summary>
 		private bool UpdateDataAlready = false;
+
+		/// <summary>
+		/// Updates the data.
+		/// </summary>
+		/// <param name='sender'>
+		/// Sender.
+		/// </param>
+		/// <param name='e'>
+		/// E.
+		/// </param>
 		public void UpdateData (object sender, EventArgs e)
 		{
 			UpdateData();
 		}
 
+		/// <summary>
+		/// Updates the data.
+		/// </summary>
+		/// <param name='force'>
+		/// Force.
+		/// </param>
 		public void UpdateData (bool force = true)
 		{
 			//this may get called multiple times, but really only 
