@@ -1,6 +1,8 @@
 using System;
 using System.Web;
 using System.Web.UI;
+using System.Runtime.Serialization;
+using System.Web.Script.Serialization;
 
 namespace Firehall
 {
@@ -119,6 +121,7 @@ namespace Firehall
 				FillForm();
 			}
 			BindEvents();
+			BindClientSide();
 		}
 
 		/// <summary>
@@ -151,7 +154,7 @@ namespace Firehall
 			txtTripStart.Text = "";
 			if (TripData.Start != DateTime.MinValue) {
 				txtTripDate.Text = TripData.Start.Date.ToString("yyyy-MM-dd");
-				txtTripStart.Text = TripData.Start.TimeOfDay.ToString("HH:mm");
+				txtTripStart.Text = TripData.Start.TimeOfDay.ToString();
 			}
 
 			// End Date
@@ -223,6 +226,22 @@ namespace Firehall
 			TripData.Finish = date;
 		}
 
+		private void BindClientSide(){
+			ClientScript.RegisterClientScriptInclude("local","Trip.js");
+
+			string js = 
+					"<script language='javascript'>\n" +
+					"  var txtStartDate = " + txtTripDate.ClientID + "; \n" + 
+					"  var txtStartTime = " + txtTripStart.ClientID + "; \n" + 
+					"  var txtEnd = " + txtTripEnd.ClientID + "; \n" + 
+					"  var txtDuration = " + TripDuration.ClientID + "; \n" + 
+					"  var tripdata = " + TripData.Serialize() + "; \n" + 
+					"  RunPage(); \n" +
+					"</script>\n"
+					;
+			ClientScript.RegisterStartupScript(GetType(),"startup",js);
+
+		}
 
 	}
 }

@@ -13,6 +13,12 @@ namespace Firehall
 	{
 		public Page ()
 		{
+			ClientScripts();
+		}
+
+		public void ClientScripts()
+		{
+			ClientScript.RegisterClientScriptInclude("objectwatch","/jslib/ObjectWatch.js");
 		}
 	}
 }

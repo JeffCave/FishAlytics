@@ -17,12 +17,12 @@ namespace Firehall
 			if (!Page.IsPostBack) {
 				BindDataGrid ();
 			}
+			BindClientSide();
 		}
 
 		protected void BindEventHandlers ()
 		{
 			TripGrid.RowDataBound += HandleRowDataBound;
-
 		}
 
 		public void HandleRowDataBound (object sender, System.Web.UI.WebControls.GridViewRowEventArgs e)
@@ -75,7 +75,7 @@ namespace Firehall
 
 				//Fisherman
 				label = row.FindControl("Fisherman") as Label;
-				if(label != null){
+				if(label != null && trip.Fisherman != null){
 					label.Text = trip.Fisherman.UserName;
 				}
 			}
@@ -87,6 +87,11 @@ namespace Firehall
 				TripGrid.DataSource = Globals.Fishing.Trips.Where();
 			}
 			TripGrid.DataBind ();
+		}
+
+		private void BindClientSide(){
+			ClientScript.RegisterClientScriptInclude("local","Trips.js");
+			//ClientScript.RegisterStartupScript(GetType(),"alert","<script language='javascript'>alert('The');</script>");
 		}
 
 	}

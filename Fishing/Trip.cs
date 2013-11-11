@@ -7,9 +7,12 @@ using System.Data.Linq;
 using System.Data.Linq.Mapping;
 using System.Web;
 using System.Web.Security;
+using System.Web.Script.Serialization;
+using System.Text.RegularExpressions;
 
 namespace Vius.Fishing.Data
 {
+	[Serializable]
 	[Table(Name="Fishing.Trip")]
 	public class Trip
 	{
@@ -39,6 +42,15 @@ namespace Vius.Fishing.Data
 			:this()
 		{
 			Load(rec);
+		}
+
+		internal Trip (string json)
+			:this()
+		{
+			JavaScriptSerializer serializer = new JavaScriptSerializer();
+			var trip = serializer.Deserialize<Trip>(json);
+			Load(trip.Id);
+			Load(trip);
 		}
 
 		private void Initialize ()
@@ -72,7 +84,6 @@ namespace Vius.Fishing.Data
 			p.DbType = DbType.Int64;
 			p.Value = DBNull.Value;
 			fields.Add(p.ParameterName,p);
-
 		}
 
 		public void Dispose ()
@@ -144,12 +155,15 @@ namespace Vius.Fishing.Data
 		[Column(Name="Fisherman")]
 		public long FishermanId {
 			get {
+				if(fields["Fisherman"].Value == DBNull.Value){
+					return -1;
+				}
 				return (long)fields["Fisherman"].Value;
 			}
 			set {
-				long id;
+				long id=0;
 				try{
-					id = long.Parse(fields["Fisherman"].Value.ToString());
+					id = Convert.ToInt64(fields["Fisherman"].Value);
 				} catch {
 					id = 0;
 				}
@@ -161,7 +175,7 @@ namespace Vius.Fishing.Data
 		}
 		#endregion
 
-		#region Other Fields
+		#region Calculated Fields
 		public TimeSpan Duration {
 			get {
 				return Finish.Subtract(Start);
@@ -208,12 +222,12 @@ namespace Vius.Fishing.Data
 						"update " + Trips.TbName + " \n" +
 						"set    \"Start\" = :TripStart, \n" +
 						"       \"Finish\" = :TripEnd \n" +
-						"where  \"TripId\" = :TripId \n"
+						"where  \"TripId\" = :Id \n"
 					);
 					sql.Add("load",
 						"select * \n" +
 						"from   " + Trips.TbName + " \n" +
-						"where  \"TripId\" = :TripId \n"
+						"where  \"TripId\" = :Id \n"
 					);
 				}
 				return sql;
@@ -285,12 +299,10 @@ namespace Vius.Fishing.Data
 			Db.UseCommand(cmd => {
 				cmd.CommandText = Sql["load"];
 
-				var p = cmd.CreateParameter();
-				p.DbType = System.Data.DbType.Int32;
-				p.ParameterName = ":TripId";
-				p.Value = primarykey;
-				cmd.Parameters.Add(p);
-
+				cmd.Parameters.Clear();
+				foreach(var p in fields){
+					cmd.Parameters.Add(p.Value);
+				}
 
 				using(var rs = cmd.ExecuteReader(System.Data.CommandBehavior.SingleRow)){
 					if(rs.Read()){
@@ -318,12 +330,27 @@ namespace Vius.Fishing.Data
 						this.Finish = rec.GetDateTime(fld);
 						break;
 					case "fisherman":
-						this.FishermanId = rec.GetInt64(fld);
+						this.FishermanId = (long)rec.GetInt64(fld);
 						break;
 				}
 			}
 		}
 
+		internal void Load(Trip trip)
+		{
+			Start = trip.Start;
+			Finish = trip.Finish;
+			FishermanId = trip.FishermanId;
+		}
+
+		public string Serialize ()
+		{
+			JavaScriptSerializer serializer = new JavaScriptSerializer();
+			string json = "";
+			json = serializer.Serialize(this);
+			json = Regex.Replace(json,@"\""\\/Date\((-?\d+)\)\\/\""","new Date($1)");
+			return json;
+		}
 		#endregion
 	}
 }

@@ -32,7 +32,7 @@
 <div id="TripEnd" class="bundle" style="display:inline-block">
 	<asp:Label runat="server" id="lblTripEnd">End</asp:Label><br />
 	<asp:TextBox runat="server" id="txtTripEnd" />
-	<input type="button" value="Done" onclick="document.getElementById('TripEnd').visible=true;this.visible=false;"/>
+	<input type="button" value="Done" id="btnTripFin"/>
 </div>	
 <div class="bundle" style="display:block">
 	<asp:Label runat="server" id="lblTripDuration">Duration</asp:Label><br />
@@ -116,7 +116,6 @@ more strongly, but the first bit is about learning.
 
 
 
-<script src='http://dev.virtualearth.net/mapcontrol/v3/mapcontrol.js'></script>
 <script src="http://openlayers.org/api/OpenLayers.js"></script>
 <script defer="defer" type="text/javascript">
 	var map = new OpenLayers.Map('map');
@@ -165,8 +164,8 @@ more strongly, but the first bit is about learning.
 //			  "prov_bound," + 
 //			  "fedlimit," + 
 			  "rail," + 
-//			  "popplace,",
-			  "road" + 
+//			  "popplace," +
+			  "road",
 			transparent: "true",
 			format: "image/png"
 		},
@@ -189,7 +188,7 @@ more strongly, but the first bit is about learning.
 	
 	map.addLayer(layerOpenLayer);
 //	map.addLayer(layerBing);
-	map.addLayer(layerDmData);
+//	map.addLayer(layerDmData);
 	map.addLayer(layerVector);
 	map.addLayer(layerOSM);
 	map.addLayer(layerMapQuest);
