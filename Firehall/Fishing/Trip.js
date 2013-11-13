@@ -121,8 +121,6 @@ function UpdateStart(id, oldval, newval)
  *
  */
 function RunPage(){
-	txtDuration.value = 'test';
-	
 	tripdata.watch("Start",UpdateDuration);	
 	tripdata.watch("Finish",UpdateDuration);
 	
@@ -137,9 +135,13 @@ function RunPage(){
 		}
 		if(str != txtEnd.value){
 			txtEnd.value = str;
+			txtEnd.style.display = "inline";
+			btnTripFin.style.display = "none";
 		}
 		if(str == '31/12/9999 19:59:59'){
 			txtEnd.value = "";
+			txtEnd.style.display = "none";
+			btnTripFin.style.display = "inline";
 		}
 	});
 	
@@ -147,15 +149,22 @@ function RunPage(){
 	txtStartTime.addEventListener('blur', HandleStartChange);
 	txtEnd.addEventListener('blur', HandleEndChange);
 	
-	//end button needs to set teh end value initially
-	txtEnd.style.display = "none";
+	//end button needs to set the end value initially
+	txtEnd.style.display = 
+		(tripdata.Finish == new Date("31/12/9999 19:59:59"))
+		?"none"
+		:"inline";
+	btnTripFin.style.display = 
+		(txtEnd.style.display!="none")
+		?"none"
+		:"inline";
 	btnTripFin.addEventListener('click', function(){
 		var dte = new Date();
 		tripdata.Finish = dte;
 		txtEnd.style.display='inline';
 		btnTripFin.style.display='none';
 	});
-		
+	
 	StartTimer();
 }
 

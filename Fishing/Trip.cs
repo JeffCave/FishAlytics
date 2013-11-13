@@ -62,25 +62,25 @@ namespace Vius.Fishing.Data
 			fields.Clear();
 
 			p = Db.Factory.CreateParameter();
-			p.ParameterName = "Id";
+			p.ParameterName = ":Id";
 			p.DbType = DbType.Int32;
 			p.Value = DBNull.Value;
 			fields.Add(p.ParameterName,p);
 
 			p = Db.Factory.CreateParameter();
-			p.ParameterName = "TripStart";
+			p.ParameterName = ":TripStart";
 			p.DbType = DbType.DateTime;
 			p.Value = DBNull.Value;
 			fields.Add(p.ParameterName,p);
 
 			p = Db.Factory.CreateParameter();
-			p.ParameterName = "TripEnd";
+			p.ParameterName = ":TripEnd";
 			p.DbType = DbType.DateTime;
 			p.Value = DBNull.Value;
 			fields.Add(p.ParameterName,p);
 
 			p = Db.Factory.CreateParameter();
-			p.ParameterName = "Fisherman";
+			p.ParameterName = ":Fisherman";
 			p.DbType = DbType.Int64;
 			p.Value = DBNull.Value;
 			fields.Add(p.ParameterName,p);
@@ -104,16 +104,16 @@ namespace Vius.Fishing.Data
 		[Column(IsPrimaryKey=true,Name="TripId")]
 		public int Id {
 			get {
-				if (fields["Id"].Value == DBNull.Value) {
+				if (fields[":Id"].Value == DBNull.Value) {
 					return -1;
 				}
-				return (int)fields["Id"].Value;
+				return (int)fields[":Id"].Value;
 			}
 			private set {
 				if(value<=0){
-					fields["Id"].Value = DBNull.Value;
+					fields[":Id"].Value = DBNull.Value;
 				} else {
-					fields["Id"].Value = value;
+					fields[":Id"].Value = value;
 				}
 			}
 		}
@@ -121,16 +121,16 @@ namespace Vius.Fishing.Data
 		[Column]
 		public DateTime Start {
 			get {
-				if(fields["TripStart"].Value == DBNull.Value){
+				if(fields[":TripStart"].Value == DBNull.Value){
 					return DateTime.MinValue;
 				}
-				return (DateTime)fields["TripStart"].Value;
+				return (DateTime)fields[":TripStart"].Value;
 			}
 			set {
 				if(value == DateTime.MinValue){
-					fields["TripStart"].Value = DBNull.Value;
+					fields[":TripStart"].Value = DBNull.Value;
 				} else{
-					fields["TripStart"].Value = value;
+					fields[":TripStart"].Value = value;
 				}
 			}
 		}
@@ -138,16 +138,16 @@ namespace Vius.Fishing.Data
 		[Column(Name="Finish")]
 		public DateTime Finish{
 			get {
-				if(fields["TripEnd"].Value == DBNull.Value){
+				if(fields[":TripEnd"].Value == DBNull.Value){
 					return DateTime.MaxValue;
 				}
-				return (DateTime)fields["TripEnd"].Value;
+				return (DateTime)fields[":TripEnd"].Value;
 			}
 			set {
 				if(value == DateTime.MaxValue){
-					fields["TripEnd"].Value = DBNull.Value;
+					fields[":TripEnd"].Value = DBNull.Value;
 				} else {
-					fields["TripEnd"].Value = value;
+					fields[":TripEnd"].Value = value;
 				}
 			}
 		}
@@ -155,20 +155,20 @@ namespace Vius.Fishing.Data
 		[Column(Name="Fisherman")]
 		public long FishermanId {
 			get {
-				if(fields["Fisherman"].Value == DBNull.Value){
+				if(fields[":Fisherman"].Value == DBNull.Value){
 					return -1;
 				}
-				return (long)fields["Fisherman"].Value;
+				return (long)fields[":Fisherman"].Value;
 			}
 			set {
 				long id=0;
 				try{
-					id = Convert.ToInt64(fields["Fisherman"].Value);
+					id = Convert.ToInt64(fields[":Fisherman"].Value);
 				} catch {
 					id = 0;
 				}
 				if(value != id){
-					fields["Fisherman"].Value = value;
+					fields[":Fisherman"].Value = value;
 					_Fisherman = null;
 				}
 			}
@@ -237,7 +237,7 @@ namespace Vius.Fishing.Data
 		public bool IsNew {
 			get {
 				Accessed(this,null);
-				return(fields["Id"].Value == DBNull.Value);
+				return(fields[":Id"].Value == DBNull.Value);
 			}
 		}
 
@@ -299,10 +299,11 @@ namespace Vius.Fishing.Data
 			Db.UseCommand(cmd => {
 				cmd.CommandText = Sql["load"];
 
-				cmd.Parameters.Clear();
-				foreach(var p in fields){
-					cmd.Parameters.Add(p.Value);
-				}
+				var p = cmd.CreateParameter();
+				p.ParameterName = ":Id";
+				p.DbType = DbType.Int32;
+				p.Value = primarykey;
+				cmd.Parameters.Add(p);
 
 				using(var rs = cmd.ExecuteReader(System.Data.CommandBehavior.SingleRow)){
 					if(rs.Read()){
