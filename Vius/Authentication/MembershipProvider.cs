@@ -221,6 +221,8 @@ namespace Vius.Authentication
 				_minRequiredNonAlphanumericCharacters = _minRequiredPasswordLength;
 			}
 
+			CreateTable();
+
 		}
 
 		/// <summary>
@@ -269,17 +271,17 @@ namespace Vius.Authentication
 					throw new MembershipPasswordException ("Change password canceled due to new password validation failure.");
 			}
 
-			DbConnection cn = GetDBConnectionForMembership ();
+			IDbConnection cn = GetDBConnectionForMembership ();
 			try {
 				using (var cmd = cn.CreateCommand()) {
 					cmd.CommandText = 
 						"UPDATE " + TbNames.User +
-						"SET    Password = :newpass, " +
+						"SET    Password = crypt(:newpass, gen_salt('bf',6)), " +
 						"       LastPasswordChangedDate = current_timestamp " +
-						"WHERE  LoweredUsername = :Username and \n" +
+						"WHERE  LoweredUsername = to_lower(:Username) and \n" +
 						"       :oldpass = crypt(password,:oldpass)";
 
-					DbParameter param;
+					IDbDataParameter param;
 
 					param = cmd.CreateParameter();
 					param.ParameterName = ":newpass";
@@ -338,9 +340,9 @@ namespace Vius.Authentication
 
 			SecUtility.CheckParameter (ref newPasswordAnswer, this.RequiresQuestionAndAnswer, this.RequiresQuestionAndAnswer, false, MAX_PASSWORD_ANSWER_LENGTH, "newPasswordAnswer");
 
-			DbConnection cn = GetDBConnectionForMembership ();
+			IDbConnection cn = GetDBConnectionForMembership ();
 			try {
-				using (DbCommand cmd = cn.CreateCommand()) {
+				using (IDbCommand cmd = cn.CreateCommand()) {
 					cmd.CommandText = 
 						"UPDATE " + TbNames.User + " \n" +
 						"SET    PasswordQuestion = :Question, " +
@@ -494,16 +496,16 @@ namespace Vius.Authentication
 						"    IsAnonymous, \n" +
 						"    LastActivityDate, \n" +
 						"    LastLoginDate, \n" +
-						"    LastPasswordChangedDate, \n" +
-						"    FailedPasswordAttemptCount, \n" +
-						"    FailedPasswordAttemptWindowStart, \n" +
-						"    FailedPasswordAnswerAttemptCount, \n" +
-						"    FailedPasswordAnswerAttemptWindowStart \n" +
+						"    LastPassChangedDate, \n" +
+						"    FailedPassAttemptCount, \n" +
+						"    FailedPassAttemptWindowStart, \n" +
+						"    FailedPassAnswerAttemptCount, \n" +
+						"    FailedPassAnswerAttemptWindowStart \n" +
 						") \n" +
 						"Values ( \n" +
 						"    :Username, \n" +
 						"    :Email, \n" +
-						"    :Password, \n" +
+						"    '', \n" + //blank password for now
 						"    :PasswordQuestion, \n" +
 						"    :PasswordAnswer, \n" +
 						"    :IsApproved, \n" +
@@ -606,6 +608,7 @@ namespace Vius.Authentication
 				throw;
 			}
 
+			ChangePassword(username, password, "");
 			status = lStatus;
 			return GetUser(username, false);
 		}
@@ -738,9 +741,9 @@ namespace Vius.Authentication
 		/// </returns>
 		public override int GetNumberOfUsersOnline ()
 		{
-			DbConnection cn = GetDBConnectionForMembership ();
+			IDbConnection cn = GetDBConnectionForMembership ();
 			try {
-				using (DbCommand cmd = cn.CreateCommand()) {
+				using (IDbCommand cmd = cn.CreateCommand()) {
 					cmd.CommandText = 
 						"SELECT Count(*) " +
 						"FROM   " + TbNames.User +
@@ -809,9 +812,10 @@ namespace Vius.Authentication
 					"       PassQuestion, \n" +
 					"       Comment, \n" +
 					"       IsApproved, \n" +
-					"       CreateDate, LastLoginDate, \n" +
+					"       CreateDate, \n" + 
+					"       LastLoginDate, \n" +
 					"       LastActivityDate, \n" +
-					"       LastPasswordChangedDate \n" +
+					"       LastPassChangedDate \n" +
 					"FROM   " + TbNames.User + " \n" +
 					"WHERE  UsernameLowered = lower(:Username) \n";
 				
@@ -840,14 +844,15 @@ namespace Vius.Authentication
 					cmd.ExecuteNonQuery();
 				}
 				
-			}
-			);
+			});
 
 			if (_UserCache == null) {
 				_UserCache = user;
 			}
-			lock (_UserCache) {
-				_UserCache = user;
+			if (user != null) {
+				lock (_UserCache) {
+					_UserCache = user;
+				}
 			}
 
 			return user;
@@ -920,10 +925,10 @@ namespace Vius.Authentication
 		/// <returns>Returns true if user was unlocked; otherwise returns false.</returns>
 		public override bool UnlockUser (string username)
 		{
-			DbParameter p;
-			DbConnection cn = GetDBConnectionForMembership ();
+			IDbDataParameter p;
+			IDbConnection cn = GetDBConnectionForMembership ();
 			try {
-				using (DbCommand cmd = cn.CreateCommand()) {
+				using (IDbCommand cmd = cn.CreateCommand()) {
 					cmd.CommandText = 
 						"UPDATE " + TbNames.User + " " +
 						"SET    IsLockedOut = '0', " +
@@ -975,15 +980,15 @@ namespace Vius.Authentication
 				}
 			}
 
-			DbParameter p;
-			DbConnection cn = GetDBConnectionForMembership ();
+			var cn = GetDBConnectionForMembership ();
 			try {
-				using (DbCommand cmd = cn.CreateCommand()) {
+				using (var cmd = cn.CreateCommand()) {
 					cmd.CommandText = 
 						"SELECT Username" +
 						"FROM   " + TbNames.User + " " +
 						"WHERE LoweredEmail = lower(:Email) ";
 
+					IDbDataParameter p;
 					p = cmd.CreateParameter();
 					p.ParameterName = ":Email";
 					p.Value = email.ToLowerInvariant();
@@ -1122,10 +1127,10 @@ namespace Vius.Authentication
 		/// <param name="user">A <see cref="T:System.Web.Security.MembershipUser"/> object that represents the user to update and the updated information for the user.</param>
 		public override void UpdateUser (MembershipUser user)
 		{
-			DbParameter p;
-			DbConnection cn = GetDBConnectionForMembership ();
+			IDbDataParameter p;
+			IDbConnection cn = GetDBConnectionForMembership ();
 			try {
-				using (DbCommand cmd = cn.CreateCommand()) {
+				using (IDbCommand cmd = cn.CreateCommand()) {
 					cmd.CommandText = 
 						"UPDATE " + TbNames.User + " " +
 						"SET Email = :Email, LoweredEmail = :LoweredEmail, Comment = :Comment," +
@@ -1216,10 +1221,10 @@ namespace Vius.Authentication
 		/// </returns>
 		public override MembershipUserCollection FindUsersByName (string usernameToMatch, int pageIndex, int pageSize, out int totalRecords)
 		{
-			DbParameter p;
-			DbConnection cn = GetDBConnectionForMembership ();
+			IDbDataParameter p;
+			IDbConnection cn = GetDBConnectionForMembership ();
 			try {
-				using (DbCommand cmd = cn.CreateCommand()) {
+				using (var cmd = cn.CreateCommand()) {
 					cmd.CommandText = 
 						"SELECT Count(*) " +
 						"FROM " + TbNames.User +
@@ -1259,7 +1264,7 @@ namespace Vius.Authentication
 						"WHERE  LoweredUsername LIKE :UsernameSearch " +
 						"ORDER BY Username Asc";
 
-					using (DbDataReader dr = cmd.ExecuteReader()) {
+					using (IDataReader dr = cmd.ExecuteReader()) {
 						int counter = 0;
 						int startIndex = pageSize * pageIndex;
 						int endIndex = startIndex + pageSize - 1;
@@ -1298,10 +1303,10 @@ namespace Vius.Authentication
 		/// </returns>
 		public override MembershipUserCollection FindUsersByEmail (string emailToMatch, int pageIndex, int pageSize, out int totalRecords)
 		{
-			DbParameter p;
-			DbConnection cn = GetDBConnectionForMembership ();
+			IDbDataParameter p;
+			IDbConnection cn = GetDBConnectionForMembership ();
 			try {
-				using (DbCommand cmd = cn.CreateCommand()) {
+				using (var cmd = cn.CreateCommand()) {
 					cmd.CommandText = 
 						"SELECT Count(*) " +
 						"FROM   " + TbNames.User + " " +
@@ -1332,7 +1337,7 @@ namespace Vius.Authentication
 							"WHERE LoweredEmail LIKE :EmailSearch "
 						+ " ORDER BY Username Asc";
 
-					using (DbDataReader dr = cmd.ExecuteReader()) {
+					using (var dr = cmd.ExecuteReader()) {
 						int counter = 0;
 						int startIndex = pageSize * pageIndex;
 						int endIndex = startIndex + pageSize - 1;
@@ -1363,6 +1368,87 @@ namespace Vius.Authentication
 
 		#region Private Methods
 
+		/// <summary>
+		/// Gets a value indicating whether this 
+		/// <see cref="Vius.Authentication.ViusRoleProvider"/> 
+		/// table exists.
+		/// </summary>
+		/// <value><c>true</c> if table exists; otherwise, <c>false</c>.</value>
+		internal static bool TableExists {
+			get {
+				if(!tableexistschecked){
+					tableexists = Db.TableExists(TbNames.User);
+					tableexistschecked = true;
+				}
+				return tableexists;
+			}
+		}
+		private static bool tableexists = false;
+		private static bool tableexistschecked = false;
+
+
+		/// <summary>
+		/// Create the underlying tables for the RoleProvider
+		/// </summary>
+		internal static void CreateTable ()
+		{
+			//if the table already exists, we are done
+			if (TableExists) {
+				return;
+			}
+
+			List<string> cmds = new List<string>{
+				"create extension if not exists pgcrypto"
+				,
+				"create table if not exists " + TbNames.User + "( \n" +
+				"    UserId bigserial, \n" +
+				"    Username varchar("+MAX_USERNAME_LENGTH+"), \n" +
+				"    UsernameLowered varchar("+MAX_USERNAME_LENGTH+"), \n" +
+				"    Email varchar(" + MAX_EMAIL_LENGTH + "), \n" +
+				"    Pass varchar(" + MAX_PASSWORD_LENGTH + "), \n" +
+				"    PassQuestion varchar(" + MAX_PASSWORD_QUESTION_LENGTH + "), \n" +
+				"    PassAnswer varchar(" + MAX_PASSWORD_ANSWER_LENGTH + "), \n" +
+				"    Comment text, \n" +
+				"    IsApproved boolean, \n" +
+				"    IsAnonymous boolean, \n" +
+				"    IsLockedOut boolean default FALSE, \n" +
+				"    CreateDate date not null default current_date, \n" +
+				"    LastLoginDate date not null default current_date, \n" +
+				"    LastActivityDate date not null default current_date, \n" +
+				"    LastPassChangedDate date not null default current_date, \n" +
+				"    LastLockoutDate date, \n" +
+				"    FailedPassAttemptCount smallint not null default 0, \n" +
+				"    FailedPassAttemptWindowStart date, \n" +
+				"    FailedPassAnswerAttemptCount smallint not null default 0, \n" +
+				"    FailedPassAnswerAttemptWindowStart date, \n" +
+				"    primary key(UserId) \n" + 
+				") \n"
+				,
+				"drop trigger if exists authusers_update \n"
+				,
+				"create or replace function AuthUsers_update() \n" +
+				"  returns trigger AS $authusers_update$ \n" +
+				"BEGIN \n" +
+				"    -- Check that empname and salary are given \n " +
+				"    IF NEW.username IS NULL or new.username = '' THEN \n" +
+				"        RAISE EXCEPTION 'name cannot be empty'; \n" +
+				"    END IF; \n" +
+				"    \n" +
+				"    NEW.UsernameLowered := lower(new.username); \n" +
+				"    RETURN NEW; \n" +
+				"END; $authusers_update$ LANGUAGE plpgsql; \n"
+				,
+				"CREATE TRIGGER if not exists authusers_update \n" +
+				"BEFORE INSERT OR UPDATE ON authusers \n" +
+				"FOR EACH ROW EXECUTE PROCEDURE authusers_update(); \n"
+			};
+
+			Db.ExecuteCommand(cmds);
+		}
+
+		/// <summary>
+		/// Validates the pwd strength regular expression.
+		/// </summary>
 		private void ValidatePwdStrengthRegularExpression ()
 		{
 			// Validate regular expression, if supplied.
@@ -1484,13 +1570,13 @@ namespace Vius.Authentication
 				DateTime LockOutDate = _minDate;
 
 				cmd.CommandText = 
-					"SELECT FailedPasswordAttemptCount, \n" +
-					"       FailedPasswordAttemptWindowStart, \n" +
-					"       FailedPasswordAnswerAttemptCount, \n" +
-					"       FailedPasswordAnswerAttemptWindowStart, \n" +
-					"       LockedOut \n" +
+					"SELECT FailedPassAttemptCount, \n" +
+					"       FailedPassAttemptWindowStart, \n" +
+					"       FailedPassAnswerAttemptCount, \n" +
+					"       FailedPassAnswerAttemptWindowStart, \n" +
+					"       LastLockOutDate \n" +
 					"FROM   " + TbNames.User + " \n" +
-					"WHERE UsernameLowered = lower(:Username)";
+					"WHERE  UsernameLowered = lower(:Username)";
 
 				p = cmd.CreateParameter();
 				p.ParameterName = ":Username";
@@ -1504,19 +1590,19 @@ namespace Vius.Authentication
 								continue;
 							}
 							switch(dr.GetName(fld).ToLower()){
-								case "failedpasswordattemptcount":
+								case "failedpassattemptcount":
 									failedPasswordAttemptCount = dr.GetInt16(fld);
 									break;
-								case "failedpasswordattemptwindowstart":
+								case "failedpassattemptwindowstart":
 									failedPasswordAttemptWindowStart = dr.GetDateTime (fld);
 									break;
-								case "failedpasswordanswerattemptcount":
+								case "failedpassanswerattemptcount":
 									failedPasswordAnswerAttemptCount = dr.GetInt16(fld);
 									break;
-								case "failedpasswordanswerattemptwindowstart":
+								case "failedpassanswerattemptwindowstart":
 									failedPasswordAnswerAttemptWindowStart = dr.GetDateTime (fld);
 									break;
-								case "lockedout":
+								case "lastlockoutdate":
 									isLockedOut = !dr.IsDBNull(fld);
 									if(isLockedOut){
 										LockOutDate = dr.GetDateTime(fld);
@@ -1535,11 +1621,11 @@ namespace Vius.Authentication
 
 				cmd.CommandText = 
 					"UPDATE " + TbNames.User + " \n" +
-					"SET    FailedPasswordAttemptCount = :PassAttemptCount, \n" +
-					"       FailedPasswordAttemptWindowStart = :PassAttemptStart, \n" +
-					"       FailedPasswordAnswerAttemptCount = :AnswerAttemptCount, \n" +
-					"       FailedPasswordAnswerAttemptWindowStart = :AnswerAttemptStart, \n" +
-					"       LockedOut = :LockOut \n" +
+					"SET    FailedPassAttemptCount = :PassAttemptCount, \n" +
+					"       FailedPassAttemptWindowStart = :PassAttemptStart, \n" +
+					"       FailedPassAnswerAttemptCount = :AnswerAttemptCount, \n" +
+					"       FailedPassAnswerAttemptWindowStart = :AnswerAttemptStart, \n" +
+					"       LastLockoutDate = :LockOut \n" +
 					"WHERE  UsernameLowered = lower(:Username) \n";
 
 				var pPassAttemptStart = p = cmd.CreateParameter();
@@ -1618,7 +1704,7 @@ namespace Vius.Authentication
 				}
 
 				//sanitize any db values (mostly watch for null markers)
-				if((DateTime)pLockout.Value == _minDate){
+				if(pLockout.Value != null && (DateTime)pLockout.Value == _minDate){
 					pLockout.Value = null;
 				}
 				//run it
@@ -1636,7 +1722,7 @@ namespace Vius.Authentication
 					"from   " + TbNames.User + " \n" +
 					"where  UsernameLowered = lower(:username) and \n" +
 					"       pass = crypt(:password,pass) and \n" +
-					"       failedpasswordattemptcount < :maxfailedpass and \n" +
+					"       failedpassattemptcount < :maxfailedpass and \n" +
 					"       (IsApproved or not :failnotapprove) \n";
 
 				var p = cmd.CreateParameter();
@@ -1689,10 +1775,10 @@ namespace Vius.Authentication
 		/// <param name="lastActivityDate">The last activity date.</param>
 		private static void GetPasswordWithFormat (string username, out int status, out string password, out MembershipPasswordFormat passwordFormat, out string passwordSalt, out int failedPasswordAttemptCount, out int failedPasswordAnswerAttemptCount, out bool isApproved, out DateTime lastLoginDate, out DateTime lastActivityDate)
 		{
-			DbParameter p;
-			DbConnection cn = GetDBConnectionForMembership ();
+			IDbDataParameter p;
+			var cn = GetDBConnectionForMembership ();
 			try {
-				using (DbCommand cmd = cn.CreateCommand()) {
+				using (var cmd = cn.CreateCommand()) {
 					cmd.CommandText = 
 						"SELECT Password, PasswordFormat, PasswordSalt, FailedPasswordAttemptCount," +
 						"       FailedPasswordAnswerAttemptCount, IsApproved, IsLockedOut, LastLoginDate, LastActivityDate" +
@@ -1708,10 +1794,8 @@ namespace Vius.Authentication
 						cn.Open();
 					}
 
-					using (DbDataReader dr = cmd.ExecuteReader(CommandBehavior.SingleRow)) {
-						if (dr.HasRows) {
-							dr.Read ();
-
+					using (var dr = cmd.ExecuteReader(CommandBehavior.SingleRow)) {
+						if (dr.Read()) {
 							password = dr.GetString (0);
 							passwordFormat = (MembershipPasswordFormat)Enum.Parse (typeof(MembershipPasswordFormat), dr.GetString (1));
 							passwordSalt = dr.GetString (2);
@@ -1802,7 +1886,7 @@ namespace Vius.Authentication
 		/// <remarks>The transaction is stored in <see cref="System.Web.HttpContext.Current"/>. That means transaction support is limited
 		/// to web applications. For other types of applications, there is no transaction support unless this code is modified.</remarks>
 		//[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
-		private static DbConnection GetDBConnectionForMembership ()
+		private static IDbConnection GetDBConnectionForMembership ()
 		{
 			return Db.GetConnection();
 		}

@@ -1,5 +1,6 @@
 using System;
 using System.Web;
+using System.Security.Principal;
 
 namespace Firehall
 {
@@ -24,6 +25,28 @@ namespace Firehall
 				return HttpContext.Current;
 			}
 		}
+
+		public sealed class ProviderCollection {
+			//public ProviderCollection();
+			public Vius.Authentication.ViusProfileProvider Profiler = new Vius.Authentication.ViusProfileProvider();
+			public Vius.Authentication.ViusRoleProvider Roler = new Vius.Authentication.ViusRoleProvider();
+			public Vius.Authentication.ViusMembershipProvider Memberer = new Vius.Authentication.ViusMembershipProvider();
+			//public Vius.Authentication.IdentityProvider Identities = new Vius.Authentication.IdentityProvider();
+		}
+
+		public static ProviderCollection Providers{
+			get {
+				if(Context.Application["Providers"] == null){
+					lock(locker){
+						if(Context.Application["Providers"] == null){
+							Context.Application["Providers"] = new ProviderCollection();
+						}
+					}
+				}
+				return Context.Application["Providers"] as ProviderCollection;
+			}
+		}
+
 	}
 }
 

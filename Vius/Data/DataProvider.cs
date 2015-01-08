@@ -62,10 +62,12 @@ namespace Vius.Data
 		/// <value>
 		/// The connection.
 		/// </value>
-		public DbConnection GetConnection ()
+		public IDbConnection GetConnection ()
 		{
-			var cnn = Factory.CreateConnection();
-			cnn.ConnectionString = this.ConnectionString;
+			//var cnn = Factory.CreateConnection();
+			string str = this.ConnectionString;
+			IDbConnection cnn = new Npgsql.NpgsqlConnection(str);
+			cnn.ConnectionString = str;
 			return cnn;
 		}
 
@@ -93,7 +95,8 @@ namespace Vius.Data
 			get {
 				lock(locker){
 					if(factory == null){
-						factory = System.Data.Common.DbProviderFactories.GetFactory(_settings.ProviderName);
+						//factory = System.Data.Common.DbProviderFactories.GetFactory(_settings.ProviderName);
+						factory = Npgsql.NpgsqlFactory.Instance;
 					}
 					return factory;
 				}

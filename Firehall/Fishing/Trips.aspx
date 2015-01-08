@@ -1,4 +1,4 @@
-<%@ Page Language="C#" Inherits="Firehall.Trips" MasterPageFile="~/Site.master" %>
+<%@ Page Language="C#" Inherits="Firehall.Fishing.Trips" MasterPageFile="~/Site.master" %>
 <asp:Content ContentPlaceHolderID="MainContent" ID="MainContentContent" runat="server">
 	<asp:GridView runat="server" id="TripGrid" AutoGenerateColumns="false" DataKeyNames="Id">
 		<Columns>

@@ -1,17 +1,17 @@
-/**
- * 
- * <p><pre>
- * $Id$
- * $URL$ 
- * </pre></p>
- */
+/// <remarks>
+/// 
+/// <pre>
+/// $Id$
+/// $URL$ 
+/// </pre>
+/// </remarks
 
 var timer = null;
 
 
-/**
- *
- */
+/// <summary>
+/// Starts the timer that updates the duration
+/// </summary>
 function StartTimer(){
 	//if the timer is already active, we are already done
 	if(timer != null){
@@ -24,21 +24,20 @@ function StartTimer(){
 }
 
 
-/**
- *
- */
+/// <summary>
+/// Stops the timer that updates the duration
+/// </summary>
 function StopTimer(){
 	window.clearInterval(timer);
 	timer = null;
 }
 
 
-/**
- *
- */
+/// <summary>
+/// Recalculates the length of time associated with the trip
+/// </summary>
 function UpdateDuration()
 {
-	
 	var eTime = null;
 	var sTime = null;
 	var lbl = txtDuration;
@@ -77,10 +76,9 @@ function UpdateDuration()
 		;
 }
 
-
-/**
- *
- */
+/// <summary>
+/// Handles a user changing the start date
+/// </summary>
 function HandleStartChange()
 {
 	var date = tripdata.Start;
@@ -91,19 +89,30 @@ function HandleStartChange()
 	}
 	catch(ex){
 	}
-	tripdata.Start = date;
+	if(date != trip.Start){
+		tripdata.Start = date;
+	}
 }
 
-
-/**
- *
- *
- */
+/// <summary>
+/// Handles a user changing the end date
+/// </summary>
 function HandleEndChange()
 {
+	var date = tripdata.Finish
+	try{
+		date = new Date(txtEnd.value);
+	}
+	catch(ex){
+	}
+	if(date != trip.Finish){
+		tripdata.Finish = date;
+	}
 }
 
-
+/// <summary>
+/// Handles a change to the "start" field
+/// </summary>
 function UpdateStart(id, oldval, newval)
 {
 	var str;
@@ -117,9 +126,32 @@ function UpdateStart(id, oldval, newval)
 	}
 }
 
-/**
- *
- */
+/// <summary>
+/// Renders the End Date controls
+/// </summary>
+function RenderEndDate()
+{
+	var MAXDATE = new Date("01 January, 9000 UTC");
+	var val = null;
+	//end button needs to set the end value initially
+	alert("HERE:"+MAXDATE);
+	val = 
+		(tripdata.Finish >= MAXDATE)
+		?"none"
+		:"inline";
+	alert("THERE:"+val);
+	txtEnd.style.display = val;
+	alert("EVERYWHERE");
+	val = 
+		(txtEnd.style.display=="none")
+		?"inline"
+		:"none";
+	btnTripFin.style.display = val;
+}
+
+/// <summary>
+/// Initialiazes the objects on the page
+/// </summary>
 function RunPage(){
 	tripdata.watch("Start",UpdateDuration);	
 	tripdata.watch("Finish",UpdateDuration);
@@ -149,15 +181,8 @@ function RunPage(){
 	txtStartTime.addEventListener('blur', HandleStartChange);
 	txtEnd.addEventListener('blur', HandleEndChange);
 	
-	//end button needs to set the end value initially
-	txtEnd.style.display = 
-		(tripdata.Finish == new Date("31/12/9999 19:59:59"))
-		?"none"
-		:"inline";
-	btnTripFin.style.display = 
-		(txtEnd.style.display!="none")
-		?"none"
-		:"inline";
+	RenderEndDate();
+	
 	btnTripFin.addEventListener('click', function(){
 		var dte = new Date();
 		tripdata.Finish = dte;
@@ -168,7 +193,9 @@ function RunPage(){
 	StartTimer();
 }
 
-
+/// <summary>
+/// Binds the given HTML element to the given object.property
+/// </summary>
 function DataBind(element, obj, property)
 {
 	obj.watch(property,function(){

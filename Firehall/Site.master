@@ -10,15 +10,8 @@
 	<header>
 		<h1><asp:Label id="SiteHtmlTitle" runat="server" /> </h1>
 		<div style="position:absolute;top:0px;right:0px;">
-			<asp:ContentPlaceHolder ID="LoginContent" runat="server">
-				Logged in as: 
-				<asp:LoginView ID="LoginView1" runat="server">
-					<LoggedInTemplate><asp:LoginName ID="LoginName1" runat="server" /></LoggedInTemplate>
-					<AnonymousTemplate>Guest</AnonymousTemplate>
-				</asp:LoginView>
-				|
-				<asp:LoginStatus ID="LoginStatus1" runat="server" LogoutAction="Redirect" LogoutPageUrl="~/logout.aspx" />
-			</asp:ContentPlaceHolder>
+				Logged in as: <%=this.Page.User.Identity.Name %>
+				| <%=LoginHtml%>
 		</div>
 		<div id="navigation">
 			<asp:SiteMapPath ID="BreadCrumb" runat="server" CssClass="breadcrumb" />

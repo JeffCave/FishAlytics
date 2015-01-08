@@ -35,6 +35,10 @@ namespace Vius.Web
 			}
 		}
 
+		/// <summary>
+		/// Gets or sets the expiry rate.
+		/// </summary>
+		/// <value>The expiry rate.</value>
 		public TimeSpan ExpiryRate {
 			get {
 				return pExpiryRate;
@@ -55,13 +59,20 @@ namespace Vius.Web
 				}
 			}
 		}
-		
+
+		/// <summary>
+		/// Gets the db.
+		/// </summary>
+		/// <value>The db.</value>
 		private DataProvider Db {
 			get {
 				return DataProvider.Instance;
 			}
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Vius.Web.DbSiteMapProvider"/> class.
+		/// </summary>
 		public DbSiteMapProvider ():
 			base()
 		{
@@ -114,6 +125,12 @@ namespace Vius.Web
 			Db.ExecuteCommand(cmds);
 		}
 
+		/// <Docs>To be added.</Docs>
+		/// <remarks>To be added.</remarks>
+		/// <summary>
+		/// Builds the site map.
+		/// </summary>
+		/// <returns>The site map.</returns>
 		public override System.Web.SiteMapNode BuildSiteMap ()
 		{
 			CheckDataFreshness();
@@ -136,6 +153,9 @@ namespace Vius.Web
 			return root;
 		}
 
+		/// <summary>
+		/// Loads the site map nodes.
+		/// </summary>
         private void LoadSiteMapNodes ()
 		{
 			CreateTable();
@@ -176,16 +196,27 @@ namespace Vius.Web
 			LoadNodeCapabilities(allnodes);
 		}
 
-		private bool? tableexists = null;
+		/// <summary>
+		/// Gets a value indicating whether this <see cref="Vius.Web.DbSiteMapProvider"/> table exists.
+		/// </summary>
+		/// <value><c>true</c> if table exists; otherwise, <c>false</c>.</value>
 		protected bool TableExists {
 			get {
-				if(tableexists == null){
-					tableexists = Db.TableExists(TbName);
+				if(!tableexistschecked){
+					tableexists = Db.TableExists(TbName) && Db.TableExists(TbChild);
+					tableexistschecked = true;
 				}
-				return tableexists.Value;
+				return tableexists;
 			}
 		}
+		private bool tableexists = false;
+		private bool tableexistschecked = false;
 
+		/// <summary>
+		/// Loads the node.
+		/// </summary>
+		/// <returns>The node.</returns>
+		/// <param name="rec">Rec.</param>
 		private DbSiteMapNode LoadNode(System.Data.IDataRecord rec)
 		{
 			string key = rec["PageId"].ToString();
@@ -224,10 +255,10 @@ namespace Vius.Web
 				using (var rs = cmd.ExecuteReader()) {
 					using(var ns = nodes.OrderBy(o=>{return int.Parse(o.Key);}).GetEnumerator()){
 						//initialize the loop
-						bool nsFin = ns.MoveNext(); //move to the first item
-						bool rsFin = rs.Read(); //move to the first item
+						bool nsMore = ns.MoveNext(); //move to the first item
+						bool rsMore = rs.Read(); //move to the first item
 						//check to see if either list is finished, then we are done
-						while(!nsFin && !rsFin){
+						while(nsMore && rsMore){
 							int rsId = (int)rs["PageId"];
 							int nodeId = int.Parse(ns.Current.Key);
 							//if we have a match, use it
@@ -235,10 +266,11 @@ namespace Vius.Web
 								ns.Current.Capabilities.Add(rs["Capability"].ToString());
 							}
 							//increment the item in the list that is further behind
-							if(nodeId >= rsId){
-								rsFin = rs.Read();
-							} else if(nodeId < rsId){
-								nsFin = ns.MoveNext();
+							while(nodeId >= rsId){
+								rsMore = rs.Read();
+							} 
+							while(nodeId < rsId){
+								nsMore = ns.MoveNext();
 							}
 						}
 					}

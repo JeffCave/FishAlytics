@@ -10,11 +10,11 @@ namespace Vius.Fishing.Data
 		private bool pIsDirty;
 
 		#region Initialize
-		internal Catch ()
+		public Catch ()
 		{
 		}
 
-		internal Catch (int catchid)
+		public Catch (int catchid)
 			:this()
 		{
 			Load(catchid);

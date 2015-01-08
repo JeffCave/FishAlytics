@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>10.0.0</ProductVersion>
+    <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{37D56A25-D17E-4AA1-B7E3-C1D5770DAD14}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -30,10 +30,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="nunit.framework">
-      <Private>False</Private>
-      <Package>mono-nunit</Package>
-    </Reference>
     <Reference Include="Selenium.WebDriverBackedSelenium">
       <HintPath>lib\selenium\Selenium.WebDriverBackedSelenium.dll</HintPath>
     </Reference>
@@ -45,6 +41,12 @@
     </Reference>
     <Reference Include="WebDriver.Support">
       <HintPath>lib\selenium\WebDriver.Support.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.core">
+      <HintPath>..\..\..\..\..\..\usr\lib\cli\nunit.core-2.6.3\nunit.core.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.framework">
+      <HintPath>..\..\..\..\..\..\usr\lib\cli\nunit.framework-2.6.3\nunit.framework.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

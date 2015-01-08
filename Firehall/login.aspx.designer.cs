@@ -14,9 +14,5 @@ namespace Firehall {
 	public partial class Login {
 		
 		protected System.Web.UI.WebControls.Content Content1;
-		
-		protected System.Web.UI.WebControls.Login Login1;
-		
-		protected System.Web.UI.WebControls.ValidationSummary ValidationSummary1;
 	}
 }

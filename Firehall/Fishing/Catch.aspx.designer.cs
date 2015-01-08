@@ -14,27 +14,5 @@ namespace Firehall.Fishing {
 	public partial class Catch {
 		
 		protected System.Web.UI.WebControls.Content MainContentContent;
-		
-		protected System.Web.UI.WebControls.Label lblTime;
-		
-		protected System.Web.UI.WebControls.TextBox Time;
-		
-		protected System.Web.UI.WebControls.Label lblSpecies;
-		
-		protected System.Web.UI.WebControls.TextBox Species;
-		
-		protected System.Web.UI.WebControls.Label lblLength;
-		
-		protected System.Web.UI.WebControls.TextBox Length;
-		
-		protected System.Web.UI.WebControls.Label lblWeight;
-		
-		protected System.Web.UI.WebControls.TextBox Weight;
-		
-		public new Firehall.Site Master {
-			get {
-				return ((Firehall.Site)(base.Master));
-			}
-		}
 	}
 }

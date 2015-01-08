@@ -7,7 +7,7 @@ using System.Data.Linq;
 using System.Linq;
 using System.Data;
 
-namespace Firehall
+namespace Firehall.Fishing
 {
 	public partial class Trips : Firehall.Page
 	{

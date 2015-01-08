@@ -101,9 +101,9 @@ namespace Vius.Web
 				//FIXME:
 				//so we didn't find a match, if we had previously found
 				//a match, we are outside our range and can stop searching.
-//				else if(found) {
+				else if(found) {
 //					break;
-//				}
+				}
 			}
 
 

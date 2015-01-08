@@ -1,10 +1,10 @@
 using System;
-using NUnit.Framework;
 using Selenium;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.Chrome;
 using FirehallTests.General;
+using NUnit.Framework;
 
 namespace FirehallTests
 {

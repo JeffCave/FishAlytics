@@ -33,6 +33,25 @@ namespace Firehall{
 			}
 		}
 
+		protected string LoginLink{
+			get{
+				if (Request.IsAuthenticated) {
+					return "/logout.aspx";
+				}
+				return "/LoginGoogle.aspx";
+			}
+		}
+
+		protected string LoginHtml{
+			get{
+				//Console.WriteLine(this.Page.User.Identity is FormsIdentity);
+				if (Request.IsAuthenticated) {
+					return "<a href='"+ LoginLink+"'>Logout</a>";
+				}
+				return "<a href='" + LoginLink + "'>Login with Google</a>";
+			}
+		}
+
     	protected void Page_Load (object sender, EventArgs e)
 		{
 			//make sure the values agree

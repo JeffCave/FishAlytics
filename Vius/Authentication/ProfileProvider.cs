@@ -182,8 +182,17 @@ namespace Vius.Authentication
 						"INSERT INTO " + TbNames.Profiles + " (" +
 						"    UserId, " +
 						"    PropertyNames, " +
-						"    PropertyValuesString, PropertyValuesBinary, LastUpdatedDate" +
-						") VALUES ($UserId, $PropertyNames, $PropertyValuesString, $PropertyValuesBinary, $LastUpdatedDate)";
+						"    PropertyValuesString, " +
+						"    PropertyValuesBinary, " +
+						"    LastUpdatedDate " +
+						") " +
+						"VALUES (" +
+						"    $UserId, " +
+						"    $PropertyNames, " +
+						"    $PropertyValuesString, " +
+						"    $PropertyValuesBinary, " +
+						"    $LastUpdatedDate" +
+						")";
 				}
 				cmd.Parameters.Clear();
 				p = cmd.CreateParameter();
@@ -215,9 +224,9 @@ namespace Vius.Authentication
 
 				// Update activity field
 				cmd.CommandText = 
-						"UPDATE " + TbNames.Users + " " +
-					"SET LastActivityDate = $LastActivityDate " +
-					"WHERE UserId = $UserId";
+					"UPDATE " + TbNames.Users + " " +
+					"SET    LastActivityDate = $LastActivityDate " +
+					"WHERE  UserId = $UserId";
 				cmd.Parameters.Clear();
 
 				p = cmd.CreateParameter();
@@ -283,9 +292,14 @@ namespace Vius.Authentication
 			int profiles = 0;
 				Db.UseCommand(cmd => 
 				{
-					cmd.CommandText = "DELETE FROM " + TbNames.Profiles + " WHERE UserId IN (SELECT UserId FROM " + TbNames.Users
-														+ " WHERE LastActivityDate <= $LastActivityDate"
-														+ GetClauseForAuthenticationOptions(authenticationOption) + ")";
+					cmd.CommandText = 
+						"DELETE " +
+						"FROM   " + TbNames.Profiles + " " +
+						"WHERE  UserId IN (" +
+						"           SELECT UserId " +
+						"           FROM " + TbNames.Users + " " +
+						"           WHERE LastActivityDate <= $LastActivityDate" + GetClauseForAuthenticationOptions(authenticationOption) + 
+						"       ) ";
 
 					var p = cmd.CreateParameter();
 					p.ParameterName = "$LastActivityDate";
@@ -339,8 +353,16 @@ namespace Vius.Authentication
 		/// </returns>
 		public override ProfileInfoCollection GetAllProfiles(ProfileAuthenticationOption authenticationOption, int pageIndex, int pageSize, out int totalRecords)
 		{
-			string sqlQuery = "SELECT u.UserName, u.IsAnonymous, u.LastActivityDate, p.LastUpdatedDate, length(p.PropertyNames) + length(p.PropertyValuesString) FROM "
-												+ TbNames.Users + " u, " + TbNames.Profiles + " p WHERE u.ApplicationId = $ApplicationId AND u.UserId = p.UserId "
+			string sqlQuery = 
+				"SELECT u.UserName, " +
+				"       u.IsAnonymous, " +
+				"       u.LastActivityDate, " +
+				"       p.LastUpdatedDate, " +
+				"       length(p.PropertyNames) + " +
+				"       length(p.PropertyValuesString) " +
+				"FROM   " + TbNames.Users + " u, " +
+				"       " + TbNames.Profiles + " p " +
+				"WHERE  u.ApplicationId = $ApplicationId AND u.UserId = p.UserId "
 												+ GetClauseForAuthenticationOptions(authenticationOption);
 
 			DbParameter[] args = new DbParameter[0];
@@ -1138,7 +1160,7 @@ namespace Vius.Authentication
 		/// <remarks>The transaction is stored in <see cref="System.Web.HttpContext.Current"/>. That means transaction support is limited
 		/// to web applications. For other types of applications, there is no transaction support unless this code is modified.</remarks>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
-		private static DbConnection GetDbConnectionForProfile()
+		private static IDbConnection GetDbConnectionForProfile()
 		{
 			return Db.GetConnection();
 		}

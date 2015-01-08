@@ -16,7 +16,6 @@ namespace Firehall.Administration.Sitemap
 		}
 
 		private void BindAvailablePages(){
-			// Create an instance of the XmlSiteMapProvider class.
 			var allpages = new PageSiteMapProvider();
 
 			var providerAttributes = new System.Collections.Specialized.NameValueCollection();

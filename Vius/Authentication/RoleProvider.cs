@@ -12,13 +12,13 @@ namespace Vius.Authentication
 	/// <summary>
 	/// Provides a Role implementation whose data is stored in a Sqlite database.
 	/// </summary>
-	public sealed class ViusRoleProvider : RoleProvider
+	public class ViusRoleProvider : RoleProvider
 	{
 		#region Private Fields
 
 		private static readonly Vius.Data.DataProvider Db = Vius.Data.DataProvider.Instance;
 
-		internal class TbNames {
+		internal static class TbNames {
 			public const string Roles = "AuthRoles";
 			public const string Users = ViusMembershipProvider.TbNames.User;
 			public const string UserRoles = "AuthUserRoles";
@@ -65,21 +65,82 @@ namespace Vius.Authentication
 		public override void Initialize (string name, NameValueCollection config)
 		{
 			// Initialize values from web.config.
-			if (config == null)
+			if (config == null) {
 				throw new ArgumentNullException("config");
+			}
 
-			if (name == null || name.Length == 0)
+			if (name == null || name.Length == 0) {
 				name = "ViusRoleProvider";
+			}
 
 			if (String.IsNullOrEmpty(config["description"])) {
 				config.Remove("description");
 				config.Add("description", "Vius Role provider");
 			}
 
+			// Just make sure the table exists
+			CreateTable();
+
 			// Initialize the abstract base class.
 			base.Initialize(name, config);
 
 		}
+
+		/// <summary>
+		/// Gets a value indicating whether this 
+		/// <see cref="Vius.Authentication.ViusRoleProvider"/> 
+		/// table exists.
+		/// </summary>
+		/// <value><c>true</c> if table exists; otherwise, <c>false</c>.</value>
+		protected static bool TableExists {
+			get {
+				if(!tableexistschecked){
+					tableexists = 
+							Db.TableExists(TbNames.Roles)
+							&& Db.TableExists(TbNames.UserRoles)
+							&& Db.TableExists(TbNames.Users)
+							;
+					tableexistschecked = true;
+				}
+				return tableexists;
+			}
+		}
+		private static bool tableexists = false;
+		private static bool tableexistschecked = false;
+
+
+		/// <summary>
+		/// Create the underlying tables for the RoleProvider
+		/// </summary>
+		internal static void CreateTable ()
+		{
+			//if the table already exists, we are done
+			if (TableExists) {
+				return;
+			}
+
+			ViusMembershipProvider.CreateTable();
+
+			List<string> cmds = new List<string>{
+				"create table if not exists " + TbNames.Roles + "( \n" +
+				"    RoleId bigserial, \n" +
+				"    RoleName varchar(" + MAX_ROLENAME_LENGTH + "), \n" +
+				"    LoweredRoleName varchar(" + MAX_ROLENAME_LENGTH + "), \n" +
+				"    primary key(RoleId) \n" + 
+				")\n"
+				,
+				"create table if not exists " + TbNames.UserRoles + "( \n" +
+				"    UserId bigint, \n" +
+				"    RoleId bigint, \n" +
+				"    primary key(UserId, RoleId), \n" +
+				"    foreign key(UserId) references " + TbNames.Users + "(UserId), \n" +
+				"    foreign key(RoleId) references " + TbNames.Roles + "(RoleId) \n" +
+				")\n"
+			};
+
+			Db.ExecuteCommand(cmds);
+		}
+
 
 		/// <summary>
 		/// Adds the specified user names to the specified roles for the configured applicationName.
@@ -102,15 +163,15 @@ namespace Vius.Authentication
 
 			Db.UseCommand(cmd => {
 					cmd.CommandText = 
-						"INSERT INTO " + TbNames.UserRoles + " ( \n" +
+						"insert into " + TbNames.UserRoles + " ( \n" +
 						"    UserId, \n" +
 						"    RoleId \n" +
 						") \n " +
-						"SELECT u.UserId, \n" +
+						"select u.UserId, \n" +
 						"       r.RoleId \n" +
-						"FROM   " + TbNames.Users + " u, \n" +
+						"from   " + TbNames.Users + " u, \n" +
 						"       " + TbNames.Roles + " r \n" +
-						"WHERE u.UsernameLowered = lower(:Username) AND \n" +
+						"where u.UsernameLowered = lower(:Username) and \n" +
 						"      r.LoweredRoleName = lower(:RoleName) \n";
 
 					var p = cmd.CreateParameter();
@@ -158,28 +219,35 @@ namespace Vius.Authentication
 			}
 
 			Db.UseCommand(cmd=>{
+				IDataParameter p;
+				cmd.CommandText = 
+					"insert into " + TbNames.Roles + "( \n" +
+					"    RoleId, \n" +
+					"    RoleName, \n" +
+					"    LoweredRoleName \n" +
+					") \n" +
+					"values ( \n" +
+					"    :RoleId, \n" +
+					"    :RoleName, \n" +
+					"    :LoweredRoleName \n" +
+					") \n";
+				
+				p = cmd.CreateParameter();
+				p.ParameterName = ":RoleId";
+				p.Value = Guid.NewGuid().ToString();
+				cmd.Parameters.Add(p);
+				
+				p = cmd.CreateParameter();
+				p.ParameterName = ":RoleName";
+				p.Value = roleName;
+				cmd.Parameters.Add(p);
 
-					IDataParameter p;
-					cmd.CommandText = 
-						"INSERT INTO " + TbNames.Roles + "(RoleId, RoleName, LoweredRoleName) " +
-						"Values (:RoleId, :RoleName, :LoweredRoleName)";
+				p = cmd.CreateParameter();
+				p.ParameterName = ":LoweredRoleName";
+				p.Value = roleName.ToLowerInvariant();
+				cmd.Parameters.Add(p);
 
-					p = cmd.CreateParameter();
-					p.ParameterName = ":RoleId";
-					p.Value = Guid.NewGuid().ToString();
-					cmd.Parameters.Add(p);
-
-					p = cmd.CreateParameter();
-					p.ParameterName = ":RoleName";
-					p.Value = roleName;
-					cmd.Parameters.Add(p);
-
-					p = cmd.CreateParameter();
-					p.ParameterName = ":LoweredRoleName";
-					p.Value = roleName.ToLowerInvariant();
-					cmd.Parameters.Add(p);
-
-					cmd.ExecuteNonQuery();
+				cmd.ExecuteNonQuery();
 			});
 		}
 
@@ -208,20 +276,20 @@ namespace Vius.Authentication
 				cmd.Parameters.Add(p);
 
 				cmd.CommandText = 
-					"DELETE " +
-					"FROM   " + TbNames.UserRoles + " " +
-					"WHERE  RoleId IN (" +
-					"           SELECT RoleId " +
-					"           FROM   " + TbNames.Roles + " " +
-					"           WHERE  LoweredRoleName = lower(:RoleName)" +
-					"        )";
+					"DELETE \n" +
+					"FROM   " + TbNames.UserRoles + " \n" +
+					"WHERE  RoleId IN (\n " +
+					"           SELECT RoleId \n" +
+					"           FROM   " + TbNames.Roles + " \n" +
+					"           WHERE  LoweredRoleName = lower(:RoleName) \n" +
+					"        ) \n";
 				
 				cmd.ExecuteNonQuery();
 
 				cmd.CommandText = 
-					"DELETE " +
-					"FROM " + TbNames.Roles + " " +
-					"WHERE LoweredRoleName = :RoleName ";
+					"DELETE \n" +
+					"FROM " + TbNames.Roles + " \n" +
+					"WHERE LoweredRoleName = :RoleName \n";
 				cmd.ExecuteNonQuery();
 
 			});
@@ -240,8 +308,8 @@ namespace Vius.Authentication
 
 			Db.UseCommand(cmd => {
 				cmd.CommandText = 
-					"SELECT RoleName " +
-					"FROM   " + TbNames.Roles + " "
+					"SELECT RoleName \n" +
+					"FROM   " + TbNames.Roles + " \n"
 					;
 
 				using (var dr = cmd.ExecuteReader()) {

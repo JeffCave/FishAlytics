@@ -2,6 +2,8 @@ using System;
 
 namespace Vius
 {
+	public class Tuple<T1,T2>: Vius.Pair<T1,T2>{}
+
 	public class Pair<T1,T2>
 	{
 		public T1 Key;

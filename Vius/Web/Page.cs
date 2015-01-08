@@ -2,6 +2,8 @@ using System;
 using System.Web.UI;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
+using System.Security.Principal;
+using System.Web.Security;
 
 namespace Vius.Web
 {

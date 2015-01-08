@@ -1,0 +1,13 @@
+/home/jeff/Documents/Projects/Firehall/FirehallTests/obj/Debug/.NETFramework,Version=v4.0.AssemblyAttribute.cs
+/home/jeff/Documents/Projects/Firehall/FirehallTests/bin/Debug/FirehallTests.dll.mdb
+/home/jeff/Documents/Projects/Firehall/FirehallTests/bin/Debug/FirehallTests.dll
+/home/jeff/Documents/Projects/Firehall/FirehallTests/obj/Debug/FirehallTests.dll
+/home/jeff/Documents/Projects/Firehall/FirehallTests/obj/Debug/FirehallTests.dll.mdb
+/home/jeff/Documents/Projects/Firehall/FirehallTests/bin/Debug/Selenium.WebDriverBackedSelenium.dll
+/home/jeff/Documents/Projects/Firehall/FirehallTests/bin/Debug/ThoughtWorks.Selenium.Core.dll
+/home/jeff/Documents/Projects/Firehall/FirehallTests/bin/Debug/WebDriver.dll
+/home/jeff/Documents/Projects/Firehall/FirehallTests/bin/Debug/WebDriver.Support.dll
+/home/jeff/Documents/Projects/Firehall/FirehallTests/bin/Debug/nunit.core.dll
+/home/jeff/Documents/Projects/Firehall/FirehallTests/bin/Debug/nunit.framework.dll
+/home/jeff/Documents/Projects/Firehall/FirehallTests/bin/Debug/Vius.dll
+/home/jeff/Documents/Projects/Firehall/FirehallTests/bin/Debug/Vius.dll.mdb

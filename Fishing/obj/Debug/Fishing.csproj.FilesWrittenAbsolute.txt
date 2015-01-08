@@ -1,0 +1,7 @@
+/home/jeff/Documents/Projects/Firehall/Fishing/obj/Debug/.NETFramework,Version=v4.5.AssemblyAttribute.cs
+/home/jeff/Documents/Projects/Firehall/Fishing/bin/Debug/Fishing.dll.mdb
+/home/jeff/Documents/Projects/Firehall/Fishing/bin/Debug/Fishing.dll
+/home/jeff/Documents/Projects/Firehall/Fishing/obj/Debug/Fishing.dll
+/home/jeff/Documents/Projects/Firehall/Fishing/obj/Debug/Fishing.dll.mdb
+/home/jeff/Documents/Projects/Firehall/Fishing/bin/Debug/Vius.dll
+/home/jeff/Documents/Projects/Firehall/Fishing/bin/Debug/Vius.dll.mdb

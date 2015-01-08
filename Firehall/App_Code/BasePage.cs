@@ -20,6 +20,7 @@ namespace Firehall
 		{
 			ClientScript.RegisterClientScriptInclude("objectwatch","/jslib/ObjectWatch.js");
 		}
+
 	}
 }
 

@@ -21,14 +21,6 @@ namespace Firehall {
 		
 		protected System.Web.UI.WebControls.Label SiteHtmlTitle;
 		
-		protected System.Web.UI.WebControls.ContentPlaceHolder LoginContent;
-		
-		protected System.Web.UI.WebControls.LoginView LoginView1;
-		
-		protected System.Web.UI.WebControls.LoginName LoginName1;
-		
-		protected System.Web.UI.WebControls.LoginStatus LoginStatus1;
-		
 		protected System.Web.UI.WebControls.SiteMapPath BreadCrumb;
 		
 		protected System.Web.UI.WebControls.SiteMapDataSource SiteMapDataSource1;

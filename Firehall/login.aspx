@@ -1,11 +1,6 @@
 <%@ Page Language="C#" Inherits="Firehall.Login" MasterPageFile="~/Site.master" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
-	<asp:Login id="Login1" runat="server"
-			CreateUserText="Not registered yet? Create an account!"
-			CreateUserUrl="~/Membership/CreatingUserAccounts.aspx"
-			RemberMeSet="True"
-			TitleText=""
-			UserNameLabelText="Username:"
-		/>
-	<asp:ValidationSummary id="ValidationSummary1" ValidationGroup="Login1" runat="server" />
+ <a runat="server" href="~/LoginGoogle.aspx">
+  <img src="https://developers.google.com/+/images/branding/sign-in-buttons/Red-signin_Medium_base_44dp.png" />
+ </a>
 </asp:Content>

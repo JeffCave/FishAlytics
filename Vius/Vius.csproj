@@ -3,13 +3,13 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>10.0.0</ProductVersion>
+    <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{9C5BB174-9F70-460F-AF21-3A7DB21F88B7}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>Vius</RootNamespace>
     <AssemblyName>Vius</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -36,14 +36,13 @@
     <Reference Include="Mono.Data.Sqlite" />
     <Reference Include="System.Web" />
     <Reference Include="System.Core" />
-    <Reference Include="Npgsql">
-      <HintPath>lib\Npgsql.dll</HintPath>
-    </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="log4net">
       <HintPath>..\Lib\log4net.dll</HintPath>
     </Reference>
     <Reference Include="System.Data.Linq" />
+    <Reference Include="Npgsql" />
+    <Reference Include="System.Web.ApplicationServices" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
@@ -70,11 +69,13 @@
     <Compile Include="Authentication\ProfileProvider.cs" />
     <Compile Include="Authentication\RoleProvider.cs" />
     <Compile Include="Web\PageSiteMapNode.cs" />
+    <Compile Include="Fixed.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <Folder Include="Authentication\" />
     <Folder Include="Data\" />
     <Folder Include="Web\" />
+    <Folder Include="JWT\" />
   </ItemGroup>
 </Project>

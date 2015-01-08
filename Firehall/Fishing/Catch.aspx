@@ -1,24 +1,22 @@
 <%@ Page Language="C#" Inherits="Firehall.Fishing.Catch" MasterPageFile="~/Site.master" %>
-<%@ MasterType VirtualPath="~/Site.master" %>
 <asp:Content ContentPlaceHolderID="MainContent" ID="MainContentContent" runat="server">
-	<table>
-		<tr>
-			<th><asp:Label runat="server" id="lblTime">When:</asp:Label></th>
-			<td><asp:TextBox runat="server" ID="Time" Text='' /></td>
-		</tr>
-		<tr>
-			<th><asp:Label runat="server" id="lblSpecies">Species:</asp:Label></th>
-			<td><asp:TextBox runat="server" ID="Species" Text='' /></td>
-		</tr>
-		<tr>
-			<th><asp:Label runat="server" id="lblLength">Length:</asp:Label></th>
-			<td><asp:TextBox runat="server" ID="Length" Text='' /></td>
-		</tr>
-		<tr>
-			<th><asp:Label runat="server" id="lblWeight">Weight</asp:Label></th>
-			<td><asp:TextBox runat="server" ID="Weight" Text='' /></td>
-		</tr>
-	</table>
+
+<input type='hidden' id='id' value='' />
+
+When:<br />
+<input type="datetime" id="Time" value='' /><br />
+<br />
+Species:<br />
+<input type='text' id="Species" value='' /><br />
+<br />
+Length:<br />
+<input type='number' id="Length" value='' /><br />
+<br />
+Weight:<br />
+<input type='number' id="Weight" value='' /><br />
+<br />
+<input type='submit' id="action" value='Save' /><br />
+
 </asp:Content>
 
 
