@@ -156,9 +156,6 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="App_Code\SQLiteMembershipProvider.cs" />
-    <Compile Include="App_Code\SQLiteProfileProvider.cs" />
-    <Compile Include="App_Code\SQLiteRoleProvider.cs" />
     <Compile Include="Site.master.cs">
       <DependentUpon>Site.master</DependentUpon>
     </Compile>
@@ -338,6 +335,7 @@
     <Compile Include="LoginGoogle.aspx.designer.cs">
       <DependentUpon>LoginGoogle.aspx</DependentUpon>
     </Compile>
+    <Compile Include="App_Code\RoutingModule.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
