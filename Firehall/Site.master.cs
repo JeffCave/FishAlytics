@@ -44,11 +44,23 @@ namespace Firehall{
 
 		protected string LoginHtml{
 			get{
-				//Console.WriteLine(this.Page.User.Identity is FormsIdentity);
+				string template = "<a href='{0}'>Login with Google</a>";
 				if (Request.IsAuthenticated) {
-					return "<a href='"+ LoginLink+"'>Logout</a>";
+					template = "Logged in as: {1} | <a href='{0}'>Logout</a>";
 				}
-				return "<a href='" + LoginLink + "'>Login with Google</a>";
+
+				string name;
+				try{
+					name = this.Context.User.Identity.Name;
+				}catch{
+					name = "";
+				}
+
+				template = String.Format(template
+						,LoginLink
+						,name
+					);
+				return template;
 			}
 		}
 

@@ -14,7 +14,8 @@ namespace Firehall{
 	{
 	    protected void Page_Load(object sender, EventArgs e)
 	    {
-			System.Web.Security.FormsAuthentication.SignOut();
+			//http://stackoverflow.com/questions/412300/formsauthentication-signout-does-not-log-the-user-out
+			Firehall.Web.Auth.SignOut();
 	    }
 	}
 }

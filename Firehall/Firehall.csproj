@@ -336,6 +336,7 @@
       <DependentUpon>LoginGoogle.aspx</DependentUpon>
     </Compile>
     <Compile Include="App_Code\RoutingModule.cs" />
+    <Compile Include="App_Code\Auth.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />

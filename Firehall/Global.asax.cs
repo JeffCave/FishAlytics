@@ -20,6 +20,7 @@ namespace Firehall
 		
 		protected virtual void Application_BeginRequest (Object sender, EventArgs e)
 		{
+			Context.Response.Expires = -1;
 		}
 		
 		/// <summary>

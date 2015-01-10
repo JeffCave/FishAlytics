@@ -10,8 +10,7 @@
 	<header>
 		<h1><asp:Label id="SiteHtmlTitle" runat="server" /> </h1>
 		<div style="position:absolute;top:0px;right:0px;">
-				Logged in as: <%=this.Page.User.Identity.Name %>
-				| <%=LoginHtml%>
+				<%=LoginHtml%>
 		</div>
 		<div id="navigation">
 			<asp:SiteMapPath ID="BreadCrumb" runat="server" CssClass="breadcrumb" />
