@@ -14,6 +14,10 @@ namespace Firehall
 	/// </remarks>
 	public class RoutingModule : IHttpModule
 	{
+		private static class CollectionKeys{
+			public static string OrigUrl = "RoutingModule.OrigUrl";
+		}
+
 		/// <summary>
 		/// Releases all resource used by the <see cref="Firehall.RoutingModule"/> object.
 		/// </summary>
@@ -39,18 +43,19 @@ namespace Firehall
 		}
 
 		/// <summary>
-		/// Contexts the authorize request.
+		/// Authorize portion of the request.
 		/// </summary>
-		/// <param name="sender">Sender.</param>
-		/// <param name="e">E.</param>
+		/// <param name="sender">HttpApplication object</param>
+		/// <param name="e">Standard Event arguments</param>
 		void context_AuthorizeRequest(object sender, EventArgs e)
 		{
 			//We change uri for invoking correct handler
 			HttpContext context = ((HttpApplication)sender).Context;
+			var uri = context.Request.Url;
 
-			if (context.Request.RawUrl.Contains(".bspx"))
+			if (uri.AbsolutePath.EndsWith(".html"))
 			{
-				string url = context.Request.RawUrl.Replace(".bspx", ".aspx");
+				string url = uri.ToString().Replace(".html", ".aspx");
 				context.RewritePath(url);
 			}
 		}
@@ -65,9 +70,9 @@ namespace Firehall
 			//We set back the original url on browser
 			HttpContext context = ((HttpApplication)sender).Context;
 
-			if (context.Items["originalUrl"] != null)
+			if (context.Items[CollectionKeys.OrigUrl] != null)
 			{
-				context.RewritePath((string)context.Items["originalUrl"]);
+				context.RewritePath((string)context.Items[CollectionKeys.OrigUrl]);
 			}
 		}
 
@@ -90,11 +95,7 @@ namespace Firehall
 		{
 			//We received a request, so we save the original URL here
 			HttpContext context = ((HttpApplication)sender).Context;
-
-			if (context.Request.RawUrl.Contains(".bspx"))
-			{
-				context.Items["originalUrl"] = context.Request.RawUrl;
-			}
+			context.Items[CollectionKeys.OrigUrl] = context.Request.RawUrl;
 		}
 	}
 }
