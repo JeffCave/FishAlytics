@@ -56,7 +56,8 @@ namespace Firehall
 			// but stay on the default page
 			Response.Write("<h2>Global Page Error</h2>\n");
 			Response.Write("<p>" + exc.Message + "</p>\n");
-			Response.Write("<p>Return to the <a href='Default.aspx'>Default Page</a></p>\n");
+
+			Response.Write("<p>Return to the <a href='"+System.Web.VirtualPathUtility.ToAbsolute("~/")+"'>Default Page</a></p>\n");
 				
 			// Log the exception and notify system operators
 			var stack = "Unhandled Exception:\n" +

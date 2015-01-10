@@ -16,7 +16,7 @@ namespace Firehall.Administration.Sitemap
 		}
 
 		private void BindAvailablePages(){
-			var allpages = new PageSiteMapProvider();
+			var allpages = Globals.Providers.SiteMapper;
 
 			var providerAttributes = new System.Collections.Specialized.NameValueCollection();
 
@@ -29,6 +29,8 @@ namespace Firehall.Administration.Sitemap
 			SiteMapDataSource data = new SiteMapDataSource();
 			data.Provider = allpages;
 
+			AvailablePages.ShowCheckBoxes = TreeNodeTypes.All;
+			AvailablePages.ShowLines = true;
 			AvailablePages.DataSource = data;
 			AvailablePages.DataBind();
 		}

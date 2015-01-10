@@ -12,7 +12,7 @@ namespace Vius.Web
 {
 
 	/// <summary>
-	/// Site map provider based on all web pages found
+	/// Site map provider based on all web pages found in the project
 	/// </summary>
 	/// <remarks>
 	/// $Id$

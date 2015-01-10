@@ -53,6 +53,8 @@ namespace Vius.JWT
 
 			byte[] headerBytes = Encoding.UTF8.GetBytes(Json.Encode(header));
 			byte[] payloadBytes = Encoding.UTF8.GetBytes(Json.Encode(payload));
+			//byte[] headerBytes = Encoding.UTF8.GetBytes(Newtonsoft.Json.JsonConvert.SerializeObject(header));
+			//byte[] payloadBytes = Encoding.UTF8.GetBytes(Newtonsoft.Json.JsonConvert.SerializeObject(payload));
 
 			segments.Add(Base64UrlEncode(headerBytes));
 			segments.Add(Base64UrlEncode(payloadBytes));
@@ -100,6 +102,8 @@ namespace Vius.JWT
 
 			var headerJson = Encoding.UTF8.GetString(Base64UrlDecode(header));
 			var headerData = Json.Decode<Dictionary<string, object>>(headerJson);
+			//Dictionary<string,object> headerData = new Dictionary<string,object>();
+			//Newtonsoft.Json.JsonConvert.DeserializeAnonymousType<Dictionary<string,object>>(headerJson,headerData);
 			var payloadJson = Encoding.UTF8.GetString(Base64UrlDecode(payload));
 
 			if (verify)
@@ -145,6 +149,8 @@ namespace Vius.JWT
 		{
 			var payloadJson = JsonWebToken.Decode(token, key, verify);
 			var payloadData = Json.Decode<Dictionary<string, object>>(payloadJson);
+			//var payloadData = new Dictionary<string,object>();
+			//Newtonsoft.Json.JsonConvert.DeserializeAnonymousType<Dictionary<string,object>>(payloadJson, payloadData);
 			return payloadData;
 		}
 

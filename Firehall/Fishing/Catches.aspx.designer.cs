@@ -13,8 +13,6 @@ namespace Firehall.Fishing {
 	
 	public partial class Catches {
 		
-		protected System.Web.UI.WebControls.Content LoginContentContent;
-		
 		protected System.Web.UI.WebControls.Content MainContentContent;
 	}
 }

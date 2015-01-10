@@ -32,6 +32,7 @@ namespace Firehall
 			public Vius.Authentication.ViusRoleProvider Roler = new Vius.Authentication.ViusRoleProvider();
 			public Vius.Authentication.ViusMembershipProvider Memberer = new Vius.Authentication.ViusMembershipProvider();
 			//public Vius.Authentication.IdentityProvider Identities = new Vius.Authentication.IdentityProvider();
+			public Vius.Web.PageSiteMapProvider SiteMapper = new Vius.Web.PageSiteMapProvider();
 		}
 
 		public static ProviderCollection Providers{

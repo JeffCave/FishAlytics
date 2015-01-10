@@ -67,7 +67,7 @@ namespace Firehall
 		/// <param name="e">E.</param>
 		void context_PreRequestHandlerExecute(object sender, EventArgs e)
 		{
-			//We set back the original url on browser
+			// We set back the original url on browser
 			HttpContext context = ((HttpApplication)sender).Context;
 
 			if (context.Items[CollectionKeys.OrigUrl] != null)

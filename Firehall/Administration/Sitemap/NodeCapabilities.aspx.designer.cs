@@ -11,16 +11,8 @@
 namespace Firehall {
 	
 	
-	public partial class NodeCapabilities {
-		
-		protected System.Web.UI.WebControls.Content LoginContentContent;
+	public partial class SitemapCapabilities {
 		
 		protected System.Web.UI.WebControls.Content MainContentContent;
-		
-		public new Firehall.Site Master {
-			get {
-				return ((Firehall.Site)(base.Master));
-			}
-		}
 	}
 }
