@@ -136,7 +136,7 @@
     <Content Include="Accounting\default.aspx" />
     <Content Include="Accounting\Transaction.aspx" />
     <Content Include="default.aspx" />
-    <Content Include="LoginGoogle.aspx" />
+    <Content Include="LoginGoogle.ashx" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Global.asax.cs">
@@ -315,14 +315,11 @@
       <DependentUpon>default.aspx</DependentUpon>
     </Compile>
     <Compile Include="App_Code\JWT.cs" />
-    <Compile Include="LoginGoogle.aspx.cs">
-      <DependentUpon>LoginGoogle.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="LoginGoogle.aspx.designer.cs">
-      <DependentUpon>LoginGoogle.aspx</DependentUpon>
-    </Compile>
     <Compile Include="App_Code\RoutingModule.cs" />
     <Compile Include="App_Code\Auth.cs" />
+    <Compile Include="LoginGoogle.ashx.cs">
+      <DependentUpon>LoginGoogle.ashx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />

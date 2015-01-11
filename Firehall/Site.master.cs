@@ -38,13 +38,13 @@ namespace Firehall{
 				if (Request.IsAuthenticated) {
 					return "/logout.aspx";
 				}
-				return "/LoginGoogle.aspx";
+				return "/login.aspx?authority=google";
 			}
 		}
 
 		protected string LoginHtml{
 			get{
-				string template = "<a href='{0}'>Login with Google</a>";
+				string template = "<a href='{0}'><img  style='width: 120px; height: 40px;' src='https://developers.google.com/+/images/branding/sign-in-buttons/Red-signin_Medium_base_44dp.png' /></a>";
 				if (Request.IsAuthenticated) {
 					template = "Logged in as: {1} | <a href='{0}'>Logout</a>";
 				}

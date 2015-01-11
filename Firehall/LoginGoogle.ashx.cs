@@ -19,104 +19,88 @@
 	/// https://developer.atlassian.com/static/connect/docs/concepts/understanding-jwt.html
 	/// http://leastprivilege.com/2014/06/10/writing-an-openid-connect-web-client-from-scratch/
 	/// </remarks>
-	public partial class LoginGoogle : Firehall.Page
+	public partial class LoginGoogle : System.Web.IHttpHandler,System.Web.SessionState.IRequiresSessionState
 	{
+		/// <summary>
+		/// Gets a value indicating whether this instance is reusable.
+		/// </summary>
+		/// <remarks>
+		/// This thing is not designed to be reusable, it could be, but it is not. It uses a lot of instance parametrs to do lookups on the current context. That means that each request requires a different lookup. This is a design that could be improved on. Mostly, if we changed the looking up of various parameters to be functions that took the session as a variable, we would be able to make this reusable.
+		/// </remarks>
+		/// 
+		/// <value><c>true</c> if this instance is reusable; otherwise, <c>false</c>.</value>
+		public bool IsReusable {
+			get {
+				return false;
+			}
+		}
+
 		protected int Stage = 0;
 
-		private static Dictionary<string,string> pGoogleTargetParams;
-		private Dictionary<string,string> GoogleTargetParams{
-			get{
-				if(pGoogleTargetParams == null){
-					pGoogleTargetParams = new Dictionary<string,string> {
-						{ "client_id","239959269801-rc9sbujsr5gv4gm43ecsavjk6s149ug7.apps.googleusercontent.com" },
-						{ "response_type","code" },
-						{ "scope","openid email" },
-						{ "redirect_uri",Request.Url.AbsoluteUri.Split("?".ToCharArray())[0] },
-						{ "state","security_token="+this.StateToken+"&url=/" },
-
-						//{"login_hint","jefferey.cave@gmail.com"},
-						{ "login_hint","" }
-					};
-				}
-				return pGoogleTargetParams;
-			}
+		private Dictionary<string,string> GoogleTargetParams(HttpContext context){
+			var pGoogleTargetParams = new Dictionary<string,string> {
+				{ "client_id","239959269801-rc9sbujsr5gv4gm43ecsavjk6s149ug7.apps.googleusercontent.com" },
+				{ "response_type","code" },
+				{ "scope","openid email" },
+				{ "redirect_uri",context.Request.Url.AbsoluteUri.Split("?".ToCharArray())[0] },
+				{ "state","security_token="+this.GetStateToken(context.Session)+"&url=/" },
+				{ "login_hint","" }
+			};
+			return pGoogleTargetParams;
 		}
 
 		/// <summary>
 		/// Gets the google target.
 		/// </summary>
 		/// <value>The google target.</value>
-		protected string GoogleTarget { 
-			get {
-				var targ = "";
-				foreach (KeyValuePair<string,string> val in GoogleTargetParams) {
-					/*targ += string.Format("{0}={1}&"
-					                      , System.Web.HttpUtility.UrlEncode(val.Key)
-					                      , System.Web.HttpUtility.UrlEncode(val.Value)
-					                      );*/
-					var encoded = string.Format(
-						"{0}={1}&"
-						, HttpUtility.UrlEncode(val.Key)
-						, HttpUtility.UrlEncode(val.Value)
-						);
-					targ += encoded;
-				}
-				return "https://accounts.google.com/o/oauth2/auth?" + targ;
+		protected string GoogleTarget(HttpContext context) { 
+			var targ = "";
+			foreach (KeyValuePair<string,string> val in GoogleTargetParams(context)) {
+				/*targ += string.Format("{0}={1}&"
+				                      , System.Web.HttpUtility.UrlEncode(val.Key)
+				                      , System.Web.HttpUtility.UrlEncode(val.Value)
+				                      );*/
+				var encoded = string.Format(
+					"{0}={1}&"
+					, HttpUtility.UrlEncode(val.Key)
+					, HttpUtility.UrlEncode(val.Value)
+					);
+				targ += encoded;
 			}
-		}
-
-		/// <summary>
-		/// Gets or sets the user email.
-		/// </summary>
-		/// <value>The user email.</value>
-		protected string UserEmail{
-			get{
-				string email ="";
-				try{
-					email = Session["useremail"].ToString();
-					if (email == null) {
-						email = "";
-					}
-				} catch {
-					email = "";
-				}
-				return email;
-			}
-			set{
-				Session["useremail"] = value;
-			}
+			return "https://accounts.google.com/o/oauth2/auth?" + targ;
 		}
 
 		/// <summary>
 		/// Gets the state token.
 		/// </summary>
 		/// <value>The state token.</value>
-		private string StateToken{
-			get{
-				if (Session["GoogleAuthState"] == null) {
-					Session["GoogleAuthState"] = Convert
+		private string GetStateToken(System.Web.SessionState.HttpSessionState session){
+				if (session["GoogleAuthState"] == null) {
+					session["GoogleAuthState"] = Convert
 						.ToBase64String(Guid.NewGuid().ToByteArray())
 						.Replace("=","")
 						.Replace("+","-")
 						.Replace("/","_")
 						;
 				}
-				return Session["GoogleAuthState"].ToString();
-			}
+				return session["GoogleAuthState"].ToString();
 		}
 
-		protected void Page_Load(object sender, EventArgs e) {
+		public void ProcessRequest (HttpContext context){
+			var Request = context.Request;
+			var Response = context.Response;
+
 			string strState = Request.QueryString["state"];
 			if (string.IsNullOrEmpty(strState)) {
-				Response.Redirect(this.GoogleTarget);
+				Response.Redirect(this.GoogleTarget(context));
 			}
 			else{
 				var state = HttpUtility.ParseQueryString(strState);
 				var token = state["security_token"];
 				var url = state["url"];
-				if (token == this.StateToken) {
+				if (token == this.GetStateToken(context.Session)) {
 					string code = Request.QueryString["code"];
-					GoogleTokens result = GetGoogleTokens(code);
+					GoogleTokens result = GetGoogleTokens(context,code);
 
 					code = result.access_token;
 					code = result.id_token;
@@ -127,7 +111,6 @@
 					var claims = Json.Decode<Dictionary<string,object>>(val["claims"]);
 
 					Console.Write("Authenticated: " + claims["email"].ToString() + "\n");
-					this.UserEmail = claims["email"].ToString();
 
 					var claimList = new List<Claim>();
 					foreach (var claim in claims) {
@@ -153,12 +136,12 @@
 			}
 		}
 
-		protected GoogleTokens GetGoogleTokens(string code){
+		protected GoogleTokens GetGoogleTokens(HttpContext context, string code){
 			var content = 
 				"code=" + code +
-				"&client_id=" + this.GoogleTargetParams["client_id"] + 
+				"&client_id=" + this.GoogleTargetParams(context)["client_id"] + 
 				"&client_secret=QyYKQRBx7HuKI-q11oJnkK-d" +
-				"&redirect_uri=" + this.GoogleTargetParams["redirect_uri"] +
+				"&redirect_uri=" + this.GoogleTargetParams(context)["redirect_uri"] +
 				"&grant_type=authorization_code"
 				;
 			var byteContent = System.Text.Encoding.UTF8.GetBytes(content);
