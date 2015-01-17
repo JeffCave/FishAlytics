@@ -1,13 +1,16 @@
 using System;
 using System.Collections.Generic;
+using DbLinq.Util;
+
+using DbLinq.PostgreSql;
 using System.Data.Linq;
 
 namespace Vius.Fishing.Data
 {
-	public class FishingData:DataContext
+	public class FishingData:System.Data.Linq.DataContext
 	{
-		public Table<Trip> Trips{ get; set;}
-		public Table<Catch> Catches{ get;  set;}
+		public Table<Trip> Trips{ get{return this.GetTable<Trip>();}}
+		public Table<Catch> Catches{ get{return this.GetTable<Catch>();}}
 
 		private static object staticLocker = new object();
 
@@ -17,8 +20,15 @@ namespace Vius.Fishing.Data
 				lock(staticLocker){
 					if(instance == null){
 						try{
+
 							var cnn = Vius.Data.DataProvider.Instance.GetConnection();
-							instance = new FishingData(cnn);
+							//cnn.ConnectionString += ";DbLinqProvider=Npgsql";
+							var cnnstr = 
+								"DbLinqProvider=PostgreSql;"
+								+ "DbLinqConnectionType=Npgsql.NpgsqlConnection, Npgsql;"
+								+ cnn.ConnectionString
+								;
+							instance = new FishingData(cnnstr);
 						} catch(Exception e) {
 							System.Console.Out.WriteLine(e.Message);
 							System.Console.Out.WriteLine(e.StackTrace);
@@ -29,10 +39,8 @@ namespace Vius.Fishing.Data
 			}
 		}
 
-		protected FishingData(System.Data.IDbConnection cnn)
-			:base(cnn){
-			Trips = this.GetTable<Trip>();
-			Catches = this.GetTable<Catch>();
+		public FishingData(string cnnstr):base(cnnstr)
+		{
 		}
 
 	}

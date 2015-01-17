@@ -24,7 +24,6 @@ namespace Firehall.Fishing
 		{
 			if(CatchesGrid.DataSource == null){
 				Globals.Fishing.Log = Console.Out;
-				//Globals.Fishing.Database.Log = s => Console.Out.WriteLine(s);
 				var list = 
 					from c in Globals.Fishing.Catches
 					select c;
