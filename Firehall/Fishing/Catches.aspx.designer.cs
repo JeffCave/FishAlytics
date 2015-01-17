@@ -14,5 +14,7 @@ namespace Firehall.Fishing {
 	public partial class Catches {
 		
 		protected System.Web.UI.WebControls.Content MainContentContent;
+		
+		protected System.Web.UI.WebControls.GridView CatchesGrid;
 	}
 }

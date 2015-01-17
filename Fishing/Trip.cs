@@ -14,87 +14,15 @@ namespace Vius.Fishing.Data
 {
 	[Serializable]
 	[Table(Name="Fishing.Trip")]
-	public class Trip
+	public class Trip:ISerializable
 	{
 		internal DateTime LastActivity = DateTime.Now;
-		private static Vius.Data.DataProvider Db = Vius.Data.DataProvider.Instance;
 
 		public delegate void AccessedEventHandler(object sender, EventArgs e);
 
-		public event AccessedEventHandler Accessed;
-
 		#region Initialize
-		internal Trip ()
+		public Trip ()
 		{
-			Accessed += (sender, e) => {
-					(sender as Trip).LastActivity = DateTime.UtcNow;
-				};
-			Initialize();
-		}
-
-		internal Trip (int pk)
-			:this()
-		{
-			Load(pk);
-		}
-
-		internal Trip (System.Data.IDataRecord rec)
-			:this()
-		{
-			Load(rec);
-		}
-
-		internal Trip (string json)
-			:this()
-		{
-			JavaScriptSerializer serializer = new JavaScriptSerializer();
-			var trip = serializer.Deserialize<Trip>(json);
-			Load(trip.Id);
-			Load(trip);
-		}
-
-		private void Initialize ()
-		{
-			DbParameter p;
-			if (fields == null) {
-				fields = new Dictionary<string, DbParameter>();
-			}
-			fields.Clear();
-
-			p = Db.Factory.CreateParameter();
-			p.ParameterName = ":Id";
-			p.DbType = DbType.Int32;
-			p.Value = DBNull.Value;
-			fields.Add(p.ParameterName,p);
-
-			p = Db.Factory.CreateParameter();
-			p.ParameterName = ":TripStart";
-			p.DbType = DbType.DateTime;
-			p.Value = DBNull.Value;
-			fields.Add(p.ParameterName,p);
-
-			p = Db.Factory.CreateParameter();
-			p.ParameterName = ":TripEnd";
-			p.DbType = DbType.DateTime;
-			p.Value = DBNull.Value;
-			fields.Add(p.ParameterName,p);
-
-			p = Db.Factory.CreateParameter();
-			p.ParameterName = ":Fisherman";
-			p.DbType = DbType.Int64;
-			p.Value = DBNull.Value;
-			fields.Add(p.ParameterName,p);
-		}
-
-		public void Dispose ()
-		{
-		}
-
-		public void GetObjectData (SerializationInfo info, StreamingContext context)
-		{
-			foreach (var fld in fields.Values) {
-				info.AddValue(fld.ParameterName, fld.Value);
-			}
 		}
 		#endregion
 
@@ -201,149 +129,6 @@ namespace Vius.Fishing.Data
 		}
 		#endregion
 
-		#region DataElement
-		private static Dictionary<string,string> sql = null;
-		protected static Dictionary<string,string> Sql {
-			get {
-				if(sql == null){
-					sql = new Dictionary<string, string>();
-					sql.Add("insert",
-						"insert into "+Trips.TbName+" ( \n" +
-						"    \"Start\", \n" +
-						"    \"Finish\" \n" +
-						") \n" +
-						"values ( \n" +
-						"    :TripStart, \n" +
-						"    :TripEnd \n" +
-						") \n" +
-						"returning \"TripId\" \n"
-					);
-					sql.Add("update",
-						"update " + Trips.TbName + " \n" +
-						"set    \"Start\" = :TripStart, \n" +
-						"       \"Finish\" = :TripEnd \n" +
-						"where  \"TripId\" = :Id \n"
-					);
-					sql.Add("load",
-						"select * \n" +
-						"from   " + Trips.TbName + " \n" +
-						"where  \"TripId\" = :Id \n"
-					);
-				}
-				return sql;
-			}
-		}
-
-		public bool IsNew {
-			get {
-				Accessed(this,null);
-				return(fields[":Id"].Value == DBNull.Value);
-			}
-		}
-
-		public bool IsDirty {
-			get {
-				Accessed(this,null);
-				//return origFields.Equals(fields);
-				return true;
-			}
-		}
-
-		public bool IsValid {
-			get {
-				try{
-					Validate();
-				} catch {
-					return false;
-				}
-				return true;
-			}
-		}
-
-		public void Validate ()
-		{
-			if (Start == DateTime.MinValue) {
-				throw new Exception("No Start given. We at least need to know when you went.");
-			}
-			if (Start >= Finish) {
-				throw new Exception("Start must be before End");
-			}
-		}
-
-
-		public void Save ()
-		{
-			Accessed(this,null);
-			if (!IsDirty) {
-				return;
-			}
-			Validate();
-			Db.UseCommand(cmd => {
-				cmd.CommandText = Sql[IsNew?"insert":"update"];
-				cmd.Parameters.Clear();
-				foreach(var p in fields){
-					cmd.Parameters.Add(p.Value);
-				}
-				if(IsNew){
-					Id = (int)cmd.ExecuteScalar();
-				} else {
-					cmd.ExecuteNonQuery();
-				}
-
-			});
-		}
-
-
-		internal void Load (int primarykey)
-		{
-			Db.UseCommand(cmd => {
-				cmd.CommandText = Sql["load"];
-
-				var p = cmd.CreateParameter();
-				p.ParameterName = ":Id";
-				p.DbType = DbType.Int32;
-				p.Value = primarykey;
-				cmd.Parameters.Add(p);
-
-				using(var rs = cmd.ExecuteReader(System.Data.CommandBehavior.SingleRow)){
-					if(rs.Read()){
-						Load(rs);
-					}
-				}
-			});
-		}
-
-		internal void Load (System.Data.IDataRecord rec)
-		{
-			Initialize();
-			for(var fld=0;fld<rec.FieldCount; fld++) {
-				if(rec.IsDBNull(fld)){
-					continue;
-				}
-				switch(rec.GetName(fld).ToLower()){
-					case "tripid":
-						this.Id = rec.GetInt32(fld);
-						break;
-					case "start":
-						this.Start = rec.GetDateTime(fld);
-						break;
-					case "finish":
-						this.Finish = rec.GetDateTime(fld);
-						break;
-					case "fisherman":
-						this.FishermanId = (long)rec.GetInt64(fld);
-						break;
-				}
-			}
-		}
-
-		internal void Load(Trip trip)
-		{
-			Start = trip.Start;
-			Finish = trip.Finish;
-			FishermanId = trip.FishermanId;
-		}
-
 		public string Serialize ()
 		{
 			JavaScriptSerializer serializer = new JavaScriptSerializer();
@@ -352,7 +137,14 @@ namespace Vius.Fishing.Data
 			json = Regex.Replace(json,@"\""\\/Date\((-?\d+)\)\\/\""","new Date($1)");
 			return json;
 		}
-		#endregion
+
+		public void GetObjectData (SerializationInfo info, StreamingContext context)
+		{
+			foreach (var fld in fields.Values) {
+				info.AddValue(fld.ParameterName, fld.Value);
+			}
+		}
+
 	}
 }
 

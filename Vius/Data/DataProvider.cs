@@ -70,6 +70,11 @@ namespace Vius.Data
 			cnn.ConnectionString = str;
 			return cnn;
 		}
+		public IDbConnection Connection{
+			get{
+				return GetConnection();
+			}
+		}
 
 		private QuickDict parsedConnectionString = null;
 		protected QuickDict ParsedConnectionString {

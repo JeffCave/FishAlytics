@@ -41,8 +41,9 @@
       <HintPath>..\Lib\log4net.dll</HintPath>
     </Reference>
     <Reference Include="System.Data.Linq" />
-    <Reference Include="Npgsql" />
     <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="Npgsql" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
@@ -77,5 +78,9 @@
     <Folder Include="Data\" />
     <Folder Include="Web\" />
     <Folder Include="JWT\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="App.config" />
   </ItemGroup>
 </Project>

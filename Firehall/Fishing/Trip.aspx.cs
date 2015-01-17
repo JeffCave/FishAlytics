@@ -3,6 +3,8 @@ using System.Web;
 using System.Web.UI;
 using System.Runtime.Serialization;
 using System.Web.Script.Serialization;
+using System.Data.Linq;
+using System.Linq;
 
 namespace Firehall
 {
@@ -51,9 +53,10 @@ namespace Firehall
 						} catch {
 							tripid = Convert.ToInt32(Request["t"]);
 						}
-						_TripData = Globals.Fishing.Trips[tripid];
+						_TripData = (from t in Globals.Fishing.Trips where t.Id == tripid select t).FirstOrDefault();
 					} catch {
-						_TripData = Globals.Fishing.Trips.New();
+						_TripData = new Vius.Fishing.Data.Trip();
+						Globals.Fishing.Trips.InsertOnSubmit(_TripData);
 						ViewState["TripData"] = null;
 					}
 
@@ -99,7 +102,8 @@ namespace Firehall
 		{
 			try {
 				UpdateData();
-				TripData.Save();
+				Globals.Fishing.Trips.InsertOnSubmit(TripData);
+				Globals.Fishing.SubmitChanges();
 				ViewState["TripData"] = TripData.Id;
 			} catch (Exception ex) {
 				System.Collections.Generic.Queue<string> msgs;

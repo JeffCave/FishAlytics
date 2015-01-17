@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Vius.Data
 {
-	public interface IDataCollection<Element> 
+	public interface IDataCollection<Element> :IList<Element>
 			where Element:IDataElement
 	{
 	}

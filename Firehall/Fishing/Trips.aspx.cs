@@ -84,7 +84,7 @@ namespace Firehall.Fishing
 		private void BindDataGrid ()
 		{
 			if (TripGrid.DataSource == null) {
-				TripGrid.DataSource = Globals.Fishing.Trips.Where();
+				TripGrid.DataSource = Globals.Fishing.Trips;
 			}
 			TripGrid.DataBind ();
 		}

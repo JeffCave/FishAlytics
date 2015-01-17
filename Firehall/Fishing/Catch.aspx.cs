@@ -3,6 +3,8 @@ using System;
 using System.Web;
 using System.Web.UI;
 using System.Web.Services;
+using System.Data.Linq;
+using System.Linq;
 
 using Vius.Fishing;
 
@@ -48,7 +50,7 @@ namespace Firehall.Fishing
 
 		protected void ReadPostback(){
 			datum = new Vius.Fishing.Data.Catch();
-			datum.Species = Request["Species"];
+//			datum.Species = Request["Species"];
 			datum.Time = DateTime.Parse(Request["Time"]);
 		}
 
@@ -57,7 +59,11 @@ namespace Firehall.Fishing
 		/// </summary>
 		protected void FillForm(int catchid)
 		{
-			datum = Globals.Fishing.Catches[catchid];
+			datum = (
+					from c in Globals.Fishing.Catches
+					where c.CatchId == catchid
+					select c
+				).FirstOrDefault();
 		}
 
 		/// <summary>

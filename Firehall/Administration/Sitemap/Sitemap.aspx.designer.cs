@@ -14,7 +14,5 @@ namespace Firehall.Administration.Sitemap {
 	public partial class Sitemap {
 		
 		protected System.Web.UI.WebControls.Content MainContentContent;
-		
-		protected System.Web.UI.WebControls.TreeView AvailablePages;
 	}
 }

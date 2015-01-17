@@ -135,19 +135,17 @@ namespace Vius.Web
 		{
 			CheckDataFreshness();
 			// Use a lock to provide thread safety
-			if(root == null){
-				lock (locker) {
-					if (root == null) {
-						NextLoad = DateTime.Now.Add(ExpiryRate);
-						base.Clear();
+			lock (locker) {
+				if (root == null) {
+					NextLoad = DateTime.Now.Add(ExpiryRate);
+					base.Clear();
 
-						root = new DbSiteMapNode(this, "");
-						root.Url = "~/default.aspx";
-						root.Title = "Home";
-						AddNode(root);
+					root = new DbSiteMapNode(this, "");
+					root.Url = "~/default.aspx";
+					root.Title = "Home";
+					AddNode(root);
 
-						LoadSiteMapNodes();
-					}
+					LoadSiteMapNodes();
 				}
 			}
 			return root;
@@ -282,8 +280,8 @@ namespace Vius.Web
 
 		private void CheckDataFreshness ()
 		{
-			if (DateTime.Now > NextLoad) {
-				lock(locker){
+			lock(locker){
+				if (DateTime.Now > NextLoad) {
 					root = null;
 					base.Clear();
 				}

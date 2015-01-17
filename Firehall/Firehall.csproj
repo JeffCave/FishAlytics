@@ -70,9 +70,6 @@
     <Reference Include="System.Web.WebPages.Razor">
       <HintPath>..\Lib\DotNetOpenAuth\System.Web.WebPages.Razor.dll</HintPath>
     </Reference>
-    <Reference Include="log4net">
-      <HintPath>..\Lib\DotNetOpenAuth\log4net.dll</HintPath>
-    </Reference>
     <Reference Include="Mono.Math">
       <HintPath>..\Lib\DotNetOpenAuth\Mono.Math.dll</HintPath>
     </Reference>
@@ -96,6 +93,7 @@
     <Reference Include="HtmlAgilityPack">
       <HintPath>..\Lib\AjaxControlToolkit.Binary.NET35\HtmlAgilityPack.dll</HintPath>
     </Reference>
+    <Reference Include="System.ComponentModel.DataAnnotations" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Global.asax" />
@@ -137,6 +135,7 @@
     <Content Include="Accounting\Transaction.aspx" />
     <Content Include="default.aspx" />
     <Content Include="LoginGoogle.ashx" />
+    <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Global.asax.cs">

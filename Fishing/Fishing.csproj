@@ -37,15 +37,18 @@
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Extensions, Version=1.0.61025.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
     <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="Npgsql" />
+    <Reference Include="DbLinq.PostgreSql">
+      <HintPath>..\Lib\DbLinq-0.20.1\DbLinq.PostgreSql.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Catch.cs" />
-    <Compile Include="Catches.cs" />
     <Compile Include="FishingData.cs" />
     <Compile Include="Capabilities.cs" />
     <Compile Include="Trip.cs" />
-    <Compile Include="Trips.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -56,5 +59,9 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Data\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>
