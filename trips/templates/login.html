@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <title>{{title}}</title>
+ <link rel="stylesheet" href="{{assetts}}/style/screen.css" type="text/css">
+ <style>
+  form label {
+  	display:block;
+  }
+  form{
+  	/* font-size:0.5em; */
+  }
+  form h1{
+  	text-shadow: #fff 0 0 4px;
+  	font-size:150%;
+  	text-align:left;
+  }
+  form p{
+  	margin:0px;
+  	margin-top:10px;
+  }
+ </style>
+</head>
+<body>
+ <form id="login" action="new.html" method="post">
+  <p>
+   <label for='user'>User</label>
+   <input type="input" name="user" value="{{user}}" />
+  </p>
+  <p>
+   <label for='pass'>Password</label>
+   <input type='pass' name="pass" value='' />
+  </p>
+  <p>
+   <input type="submit" value="Login &rarr;" /> 
+  </p>
+ </form>
+ <p>Please login</p>
+</body>
+{{>scripts}}
+<script type="text/javascript" charset="utf-8">
+</script>
+</html>
+

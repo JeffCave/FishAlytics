@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <title>{{ pageTitle }}</title>
+  <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
+  <link rel="stylesheet" href="{{ assets }}/style/screen.css" type="text/css">
+  <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
+  <style>
+   label {
+       display:block;
+   }
+   main h1 {
+       text-shadow: #fff 0 0 4px;
+       font-size:150%;
+       text-align:left;
+   }
+   form p {
+       margin:0px;
+   }
+   #map { height: 180px; }
+  </style>
+ </head>
+ <body>
+  {{>header}}
+  <main>
+   <h1>{{TripId}}</h1>
+   <ol id='waypoints'>
+    <li class='start'>
+     <time datetime='2016-02-17T20:00Z'>20:00</time>
+     
+    </li>
+    <li class='waypoint'>
+     <time datetime='2016-02-17T20:00Z'>20:00</time>
+    </li>
+    <li class='catch'>
+     <time datetime='2016-02-17T20:00Z'>20:00</time>
+    </li>
+    <li class='end'>
+     <time datetime='2016-02-17T20:00Z'>20:00</time>
+    </li>
+   </ol>
+   <div id="summary">
+    <ul>
+     <li>Put some stats about the trip</li>
+     <li>Start - End</li>
+     <li>TimeSpent</li>
+     <li>
+      Number of Fish
+      <ul>
+       <li>Species 1: %</li>
+       <li>Species 2: %</li>
+      </ul>
+     </li>
+     <li>Fish/Hour</li>
+     <li></li>
+     <li></li>
+    </ul>
+   </div>
+   <div id="map"></div>
+  </main>
+  <script type="text/javascript">
+	var map = L.map('map').setView([51.505, -0.09], 13);
+	L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}'
+		, {
+			attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>'
+			,maxZoom: 18
+			,id: 'your.mapbox.project.id'
+			,accessToken: 'your.mapbox.public.access.token'
+		}
+	).addTo(map);
+  </script>
+ </body>
+</html>
+

@@ -1,0 +1,30 @@
+<div id="header">
+  <div id="account">
+    "{{session}}"
+    <span class="loggedout" style="display: inline;">
+      <a href="#" class="signup">Signup</a> or <a href="#" class="login">Login</a>
+    </span>
+    <span class="loggedin" style="display: none;">
+      Welcome <a class="name">?</a>!
+      <br>
+      <span class="loggedinadmin" style="display: none;">
+        <a href="#" class="createadmin">Setup more admins</a> or
+        <br>
+      </span>
+      <a href="#" class="changepass">Change password</a> or
+      <a href="#" class="logout">Logout</a>
+    </span>
+    <span class="adminparty" style="display: none;">
+      Welcome to Admin Party!
+      <br>
+      Everyone is admin. <a href="#" class="createadmin">Fix this</a>
+    </span>
+  </div>
+  <h2><a href="{{ index }}">{{ blogName }}</a></h2>
+  <div id='version'>version information</div>
+  <div id="feeds">
+    Atom feeds of
+    <a href="{{feedPath}}">All Catches</a> &amp;
+    <a href="{{commentsFeed}}">Trips</a>.
+  </div>
+</div>

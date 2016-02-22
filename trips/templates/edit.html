@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ pageTitle }}</title>
+    <link rel="stylesheet" href="{{ assets }}/style/screen.css" type="text/css">
+    <style>
+      label {
+        display:block;
+      }
+      form {
+        /* font-size:0.5em; */
+      }
+      form h1 {
+        text-shadow: #fff 0 0 4px;
+        font-size:150%;
+        text-align:left;
+      }
+      form p {
+        margin:0px;
+      }
+    </style>
+  </head>
+  <body>
+    {{>header}}
+    <div id="tagcloud"></div>
+    <div id="content">
+      <!-- form to create a post -->
+      <form id="new-post" action="new.html" method="post">
+        <h1>{{pageTitle}}</h1>
+        <p>
+          <label for='date'>Date</label>
+          <input type="datetime-local" name="date" value="{{date}}" />
+        </p>
+        <p>
+          <label for='coords-latitude'>Latitude</label>
+          <input type="number" name="coords-latitude" value="{{lat}}" min='-180' max='180' step='0.00001' />
+        </p>
+        <p>
+          <label for='coords-longtitude'>Longtitude</label>
+          <input type="number" name="coords-longtitude" value="{{long}}" min='-180' max='180' step='0.00001' />
+        </p>
+        <p>
+          <label for='coords-altitude'>Altitude</label>
+          <input type="number" name="coords-altitude" value="{{alt}}" step='0.00001' />
+        </p>
+        <p>
+          <label for='species'>Species</label>
+          <input type="text" name="species" value="{{species}}" />
+        </p>
+        <p>
+          <label for='notes'>Notes</label>
+          <textarea name='notes' rows="10" cols="80">{{notes}}</textarea>
+        </p>
+        <p>
+          <label for="tags">Click tags to add them. (split by ',')</label>
+          <input size="50" type="text" name="tags" value="{{tags}}" />
+        </p>
+        <p>
+          <input id="preview" type="button" value="Preview" />
+          <input type="submit" value="Save &rarr;" /> 
+          <span id="saved" style="display:none;">Saved</span>
+        </p>
+      </form>
+      <a target="_new" href="http://warpedvisions.org/projects/markdown-cheat-sheet/">Markdown help</a>
+      <div id="show-preview"></div>
+    </div>
+  </body>
+  {{>scripts}}
+  <script type="text/javascript" charset="utf-8">
+    $.couch.app(function(app) {
+      $('#version').html(app.ddoc._id + ' [' + app.ddoc._rev + ']');
+      alert('Here: {{#header}}{{session}}{{/header}}');
+      var postDoc = {{{doc}}};
+      var path = app.require("vendor/couchapp/lib/path").init(app.req);
+      var postForm;
+      
+      $('label[for=notes]').append(' <em>with '+(postDoc.format||'html')+'</em>');
+      $("form#new-post").submit(function() {
+        
+        ///TODO:...
+        //postDoc.author = $$("#account").userCtx.name;
+        postDoc.notes = $("textarea[name=notes]").val();
+        postDoc.date = $("input[name=date]").val();
+        postDoc.species = $("input[name=species]").val();
+        postDoc.coords.altitude = $('input[name=coords-altitude]').val();
+        postDoc.coords.latitude = $('input[name=coords-latitude]').val();
+        postDoc.coords.longtitude = $('input[name=coords-longtitude]').val();
+        
+        var dtags = [];
+        var tags = $("input[name=tags]").val().split(",");
+        for(var i in tags) {
+          dtags.push($.trim(tags[i]));
+        }
+        postDoc.tags = dtags;
+        
+        app.db.saveDoc(postDoc, {
+          success : function(resp) {
+            $("#saved").text("Saved _rev: "+resp.rev).fadeIn(500).fadeOut(6000);
+            $('h1').html('Editing <a href="'+path.show('post',resp.id)+'">'+resp.id+'</a> by '+postDoc.author);
+          }
+        });
+        return false;
+      });
+      
+      if (postDoc._id) {
+        $('#preview').before('<input type="button" id="delete" value="Delete Post"/> ');
+        $("#delete").click(function() {
+          app.db.deleteDoc(postDoc, {
+            success : function(resp) {
+              $("h1").text("Deleted "+resp.id);
+              $('form#new-post input').attr('disabled', true);
+            }
+          });
+          return false;
+        });
+      }
+
+      $("#preview").click(function() {
+        var markdown = app.require("vendor/couchapp/lib/markdown");
+        var html = markdown.encode($("textarea[name=body]").val());
+        $('#show-preview').html(html);
+        $('body').scrollTo('#show-preview', {duration: 500});
+      });
+      
+    });
+  </script>
+</html>
+
