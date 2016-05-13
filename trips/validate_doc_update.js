@@ -6,7 +6,6 @@ function(newDoc, oldDoc, userCtx, secObj) {
 		return;
 	}
 	
-	
 	//*******************************************************************
 	//* Helpers
 	var Validators = {
@@ -18,55 +17,34 @@ function(newDoc, oldDoc, userCtx, secObj) {
 			}
 			//location is optional
 			if(waypoint.coords){
+				if(!Array.isArray(waypoint.coords)){
+					throw({ forbidden : 'Waypoint is an invalid format' });
+				}
 				//if you do specify a location, we need at least LAT and LONG
-				$val = parseFloat(waypoint.coords.longitude);
+				$val = waypoint.coords[0];
 				if(isNaN($val)){
 					throw({ forbidden : 'Waypoint specifies an invalid longitude: ' + $val });
 				}
-				if($val < -180 || $val > 180){
+				if(Math.abs($val) > 180){
 					throw({ forbidden : 'Waypoint specifies an invalid longitude: ' + $val });
 				}
-				$val = parseFloat(waypoint.coords.latitude);
+				$val = parseFloat(waypoint.coords[1]);
 				if(isNaN($val)){
 					throw({ forbidden : 'Waypoint specifies an invalid latitude: ' + $val });
 				}
-				if($val < -90 || $val > 90){
+				if(Math.abs($val) > 90){
 					throw({ forbidden : 'Waypoint specifies an invalid latitude: ' + $val });
 				}
 			}
 		},
 		'catch' : function(ctch){
-			//timestamp is optional on a catch
-			if(ctch.timestamp){
- 				//must be a valid date
- 				$val = Date.parse(ctch.timestamp);
- 				if(!$val){
- 					throw({ forbidden : 'Catch specifies and invalid timestamp: ' + $val });
- 				}
+			//catches are just spectial types of waypoint
+			try{
+				Validators.waypoint(ctch);
 			}
-			//location is optional
-			if(ctch.coords){
-				$msg = "Catch locations require a '{field}' field ";
-				['longitude','latitude'].forEach(function(field){
-						if(!ctch.coords[field]){
-							throw({ forbidden : $msg.replace('{field}',field) });
-						}
-					});
-				//if you do specify a location, we need at least LAT and LONG
-				$val = parseFloat(ctch.coords.longitude);
-				if(isNaN($val)){
-					throw({ forbidden : 'Catch specifies an invalid longitude: ' + $val });
-				}
-				if($val < -180 || $val > 180){
-					throw({ forbidden : 'Catch specifies an invalid longitude: ' + $val });
-				}
-				$val = parseFloat(ctch.coords.latitude);
-				if(isNaN($val)){
-					throw({ forbidden : 'Catch specifies an invalid latitude: ' + $val });
-				}
-				if($val < -90 || $val > 90){
-					throw({ forbidden : 'Catch [' + c + '] specifies an invalid latitude: ' + $val });
-				}
+			catch(e){
+				e.forbidden = e.forbidden.replace(/Waypoint/g,'Catch');
+				throw(e);
 			}
 		}
 	};
@@ -106,5 +84,23 @@ function(newDoc, oldDoc, userCtx, secObj) {
 	for(var w=newDoc.waypoints.length-1; w>=0; w--){
 		var waypoint = newDoc.waypoints[w];
 		Validators.waypoint(waypoint);
+	}
+	
+	// *******************************************************************
+	// * License is optional
+	// *  - FK: but must be an existing one
+	// *  - Array data type
+	if(newDoc.licenses){
+		if(!Array.isArray(newDoc.licenses)){
+			throw({ forbidden : 'Licenses must be an array' });
+		}
+//		var db = require('/_utils/script/jquery.couch.js') //('http://localhost:5984/fish');
+//		db.view('licenses', 'licenses',{ keys: newDoc.licenses }, function(err, body) {
+//			if (!err) {
+//				if(!body.total_rows){
+//					throw({forbidden : 'Licenses must exist'});
+//				}
+//			}
+//		});
 	}
 }

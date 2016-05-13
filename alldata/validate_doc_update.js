@@ -14,6 +14,8 @@
  */
 function(newDoc, oldDoc, userCtx, secObj) {
 	var isChanged = (function(oldDoc,newDoc){
+			if(!oldDoc) return true;
+			
 			var o = JSON.parse(JSON.stringify(oldDoc));
 			var n = JSON.parse(JSON.stringify(newDoc));
 			o._rev = "";

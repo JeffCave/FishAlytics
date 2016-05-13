@@ -43,7 +43,7 @@ function(newDoc, oldDoc, usserCtx, secObj) {
 	}
 	
 	// *******************************************************************
-	// * Valid is must be a valid time range
+	// * Valid period must be a valid time range
 	$val = Date.parse(newDoc.valid.start);
 	if(!$val){
 		throw({ forbidden : '"Valid" specifies an invalid start: ' + newDoc.valid.start });

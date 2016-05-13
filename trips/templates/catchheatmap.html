@@ -1,0 +1,159 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='utf-8' />
+  <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+  <meta name="description" content="Leafletslider : LeafletSlider" />
+
+  <!-- link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css" -->
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.css" />
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.css" type="text/css">
+
+  <style>
+	header h1 {
+		color:white;
+		text-shadow: 
+			0px 0px 3px   #000000,
+			0   0   0.5em #000000;
+		position:absolute;
+		bottom:0px;
+	}
+	img {
+		border: 0px;
+		box-shadow: 0 0 0px;
+	}
+	ul.paged{
+		position:absolute;
+		right:0px;
+		top: 0px;
+		bottom:0px;
+		width:7cm;
+	}
+	ul.paged li{
+		position:static;
+		background-color:white;
+		transform: scale(0.2);
+		z-index:1;
+		box-shadow: 10px 5px 5px black;
+	}
+	ul.paged li.selected{
+		position:fixed;
+		left:0px;
+		top: 0px;
+		right: 0px;
+		bottom: 0px;
+		height:100%;
+		width:100%;
+		z-index:-100;
+		transform:scale(1);
+	}
+  </style>
+
+  <title>My Catches</title>
+</head>
+
+<body>
+<header class="inner">
+  <h1>My Catches</h1>
+</header>
+
+<article>
+ <ul class='paged'>
+  <li id="map" class="selected"></li>
+  <!-- li><h1>Another Page</h1></li>
+  <li><h1>And Another Page</h1></li -->
+ <ul>
+ 
+ <script src="/_utils/script/jquery.couch.js"></script>
+ <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.js"></script>
+ <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-beta1/jquery.min.js"></script>
+ <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+ <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.2/jquery.ui.touch-punch.min.js"></script>
+ <script type="text/javascript" src="https://rawgit.com/dwilhelm89/LeafletSlider/master/SliderControl.js"></script>
+ <script type="text/javascript" src="https://raw.githubusercontent.com/pa7/heatmap.js/develop/plugins/leaflet-heatmap.js"></script>
+
+ <script>
+	
+	var map = L.map('map').setView([44.6869, -63.6846],15);
+	var tiles = {
+			'thunder':'https://{s}.tile.thunderforest.com/cycle/{z}/{x}/{y}.png'
+			,'osm':   'http://{s}.tile.osm.org/{z}/{x}/{y}.png'
+		};
+	
+	L.tileLayer(tiles['osm'], {
+		attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+	}).addTo(map);
+	
+	
+	var data = {{{mapdata}}};
+	
+	var heatdata = {min:0,max:0,data:[]};
+	for($d in data.features){
+		$c = data.features[$d];
+		heatdata.data.push({
+			value:$c.properties.effort
+			,lat:$c.geometry.coordinates[1]
+			,long:$c.geometry.coordinates[0]
+		});
+		if(heatdata.max < $c.properties.effort){
+			heatdata.max = $c.properties.effort;
+		}
+	}
+	
+//	var heatmapLayer = new HeatmapOverlay({
+//		// radius should be small ONLY if scaleRadius is true (or small radius is intended)
+//		// if scaleRadius is false it will be the constant radius used in pixels
+//		"radius": 2,
+//		"maxOpacity": 0.8, 
+//		// scales the radius based on map zoom
+//		"scaleRadius": true, 
+//		// if set to false the heatmap uses the global maximum for colorization
+//		// if activated: uses the data maximum within the current map boundaries 
+//		//   (there will always be a red spot with useLocalExtremas true)
+//		"useLocalExtrema": true,
+//		// which field name in your data represents the latitude - default "lat"
+//		latField: 'lat',
+//		// which field name in your data represents the longitude - default "lng"
+//		lngField: 'long',
+//		// which field name in your data represents the data value - default "value"
+//		valueField: 'value'
+//	});
+//	heatmapLayer.setData(heatdata);
+	
+	
+	var testlayer = L.geoJson(data, {
+		onEachFeature: function (feature, layer) {
+			// does this feature have a property named popupContent?
+			if (feature.properties && feature.properties.popupContent) {
+				layer.bindPopup(feature.properties.popupContent);
+			}
+		}
+	});
+	var sliderControl = L.control.sliderControl({
+		position: "topright",
+		layer: testlayer,
+		range: true
+	});
+	
+	
+	map.setView([44.6869, -63.6846],15);
+	//Make sure to add the slider to the map ;-)
+	map.addControl(sliderControl);
+	//map.addLayer(heatmapLayer);
+	
+	//And initialize the slider
+	sliderControl.startSlider();
+	
+//	$('ul.paged li').click(function(){
+//		$("ul.paged li").removeClass("selected");
+//		$(this).addClass("selected");'
+//	}
+ </script>
+
+
+</article>
+
+</body>
+</html>

@@ -1,28 +1,28 @@
 function(head, req) {
 	var ddoc = this;
-    var Mustache = require("lib/mustache");
-    var List = require("vendor/couchapp/lib/list");
-    var path = require("vendor/couchapp/lib/path").init(req);
-    var Atom = require("vendor/couchapp/lib/atom");
-    
-    var indexPath = path.list('index','recent-posts',{descending:true, limit:10});
-    var feedPath = path.list('index','recent-posts',{descending:true, limit:10, format:"atom"});
-    var commentsFeed = path.list('comments','comments',{descending:true, limit:10, format:"atom"});
-    
-    var path_parts = req.path;
-    // The provides function serves the format the client requests.
-    // The first matching format is sent, so reordering functions changes 
-    // thier priority. In this case HTML is the preferred format, so it comes first.
-    provides("html", function() {
-        var key = "";
-        // render the html head using a template
-        var stash = {
-            header : {
-                index : indexPath,
-                blogName : ddoc.blog.title,
-                feedPath : feedPath,
-                commentsFeed : commentsFeed
-            },
+	var Mustache = require("lib/mustache");
+	var List = require("vendor/couchapp/lib/list");
+	var path = require("vendor/couchapp/lib/path").init(req);
+	var Atom = require("vendor/couchapp/lib/atom");
+	
+	var indexPath = path.list('index','recent-posts',{descending:true, limit:10});
+	var feedPath = path.list('index','recent-posts',{descending:true, limit:10, format:"atom"});
+	var commentsFeed = path.list('comments','comments',{descending:true, limit:10, format:"atom"});
+	
+	var path_parts = req.path;
+	// The provides function serves the format the client requests.
+	// The first matching format is sent, so reordering functions changes 
+	// thier priority. In this case HTML is the preferred format, so it comes first.
+	provides("html", function() {
+		var key = "";
+		// render the html head using a template
+		var stash = {
+			header : {
+				index : indexPath,
+				blogName : ddoc.blog.title,
+				feedPath : feedPath,
+				commentsFeed : commentsFeed
+		},
 			scripts : {},
 			db : req.path[0],
 			design : req.path[2],

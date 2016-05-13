@@ -1,8 +1,10 @@
- 
+/**
+ * Catches
+ */
 function(doc) {
-	if (doc._id.substring(0,4) !== 'trip') {
+	//!code views/lib/catch.js
+	$catches =catchUtils.asCatches(doc); 
+	for($c in $catches){
+		emit($catches[$c].key,$catches[$c].val); 
 	}
-	doc.catches.foreach(function(catch){
-		emit(doc.user, catch);
-	});
 };
