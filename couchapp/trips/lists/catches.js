@@ -19,16 +19,15 @@ function(head, req) {
 				features: []
 			}
 		};
-		doc.mapdata.features = [];
 		while (row = getRow()) {
 			doc.mapdata.features.push({
-					type: "Feature",
-					properties: {
+					type: "Feature"
+					,properties: {
 						time: row.value.timestamp
 						,"popupContent": Mustache.render(this.templates.partials.map.catch, row.value)
 						,"effort":60/row.value.stats.time
-					},
-					geometry: {
+					}
+					,geometry: {
 						type: "Point",
 						coordinates: row.value.coords
 					}

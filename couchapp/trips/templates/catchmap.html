@@ -10,6 +10,15 @@
   <!-- link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css" -->
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.css" />
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.css" type="text/css">
+  
+ <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.js"></script>
+ <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-beta1/jquery.min.js"></script>
+ <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+ <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.2/jquery.ui.touch-punch.min.js"></script>
+ <script type="text/javascript" src="https://rawgit.com/dwilhelm89/LeafletSlider/master/SliderControl.js"></script>
+ <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
+ <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+
 
   <style>
 	header h1 {
@@ -47,14 +56,6 @@
 <article>
  <div id="map"></div>
 
- <script src="/_utils/script/jquery.couch.js"></script>
- <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.js"></script>
- <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-beta1/jquery.min.js"></script>
- <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
- <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.2/jquery.ui.touch-punch.min.js"></script>
- <script type="text/javascript" src="https://rawgit.com/dwilhelm89/LeafletSlider/master/SliderControl.js"></script>
- <script type="text/javascript" src="https://raw.githubusercontent.com/pa7/heatmap.js/develop/plugins/leaflet-heatmap.js"></script>
-
  <script>
 	
 	var map = L.map('map').setView([44.6869, -63.6846],15);
@@ -73,6 +74,7 @@
 	var heatdata = {min:0,max:0,data:[]};
 	for($d in data.features){
 		$c = data.features[$d];
+		console.debug(JSON.stringify($c));
 		heatdata.data.push({
 			value:$c.properties.effort
 			,lat:$c.geometry.coordinates[1]
@@ -115,7 +117,8 @@
 	var sliderControl = L.control.sliderControl({
 		position: "topright",
 		layer: testlayer,
-		range: true
+		range: true,
+		showAllOnStart: true
 	});
 	
 	

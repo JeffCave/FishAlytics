@@ -2,21 +2,41 @@
 <html>
 <body>
 <p>Jeff's personal fishing journal:</p>
+<h2>Administrative</h2>
+<p>
+The Login doesn't work. Sorry Justin, but if you want to use the system, figure out how to perform an OAuth 2.0 using Couch Update Triggers. Until someone figures this out, this is a single user system.
+</p>
+<ul>
+ <li><form method='POST' action='./auth/' >
+ <input type='email' placeholder='myemail@example.com' />
+ <input type='submit' value='Login w/ Google' />
+</form></li>
+</ul>
 <h2>Rendered View</h2>
 <ul>
  <li>
-  <a href="_list/catches/catches">Mapped Catches</a>
+  <a href="catchmap">Mapped Catches</a>
   <ul>
-   <li><a href="_view/catches/catches?startkey=2015&endkey=2016">2015</a></li>
-   <li><a href="_view/catches/catches?startkey=2015&endkey=2016">2016</a></li>
+   <li><a href='catchmap?startkey=["2015"]&endkey=["2016"]'>2015</a></li>
+   <li><a href='catchmap?startkey=["2016"]&endkey=["2017"]'>2016</a></li>
+  </ul>
+ </li>
+ <li>
+  <a href="stdweight">Length/Weight</a>
+  <ul>
+   <li><a href='stdweight?startkey=["yellow%20perch"]&endkey=["yellow%20perch",{}]'>Perch</a></li>
+   <li><a href='stdweight?startkey=["brook%20trout"]&endkey=["brook%20trout",{}]'>Trout</a></li>
+   
   </ul>
  </li>
 </ul>
 <h2>Queriable Raw Data</h2>
 <ul>
- <li><a href="_view/catches">Catches</a></li>
- <li><a href="_view/species">Fish</a></li>
- <li><a href="_view/trips">Trips</a></li>
+ <li><a href="views/catches">Catches</a></li>
+ <li><a href="views/bySpecies">Fish</a>
+  <ul><li><a href='views/bySpecies?startkey=["brook%20trout"]&endkey=["brook%20trout",{}]'>Trout</a></li></ul>
+ </li>
+ <li><a href="views/trips">Trips</a></li>
 </ul>
 </body>
 </html>

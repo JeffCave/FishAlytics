@@ -1,0 +1,18 @@
+{
+	"web":{
+		"client_id":"239959269801-rc9sbujsr5gv4gm43ecsavjk6s149ug7.apps.googleusercontent.com"
+		,"project_id":"silent-polygon-822"
+		,"auth_uri":"https://accounts.google.com/o/oauth2/auth"
+		,"token_uri":"https://accounts.google.com/o/oauth2/token"
+		,"auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs"
+		,"client_secret":"QyYKQRBx7HuKI-q11oJnkK-d"
+		,"redirect_uris":[
+			"http://127.0.0.1:8080/LoginGoogle.ashx"
+			,"http://127.0.0.1:5984/fishdev/_design/trips/_rewrite/auth"
+		]
+		,"javascript_origins":[
+			"http://localhost:4567"
+			,"http://127.0.0.1:8080"
+		]
+	}
+}

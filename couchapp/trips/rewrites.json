@@ -4,5 +4,48 @@
 		"to": "index.html",
 		"method": "GET",
 		"query": {}
+    },
+    {
+		"from": "/auth",
+		"to": "_update/auth",
+		"method": "*",
+		"query": {}
+	},
+	{
+		"from":"/catchmap",
+		"to":"_list/catches/catches",
+		"method":"GET",
+		"query":{}
+	},
+	{
+		"from":"/stdweight",
+		"to":"_list/scatterplot/catches",
+		"method":"GET",
+		"query":{}
+	},
+	{
+		"from":"/stdweight2",
+		"to":"_list/scatterplot/bySpecies",
+		"method":"GET",
+		"query":{}
+	},
+	{
+		"from":"/views/*",
+		"to":"_view/*",
+		"method":"GET",
+		"query":{}
+	},
+	{
+		"from":"/google7c0ad88da7b67f85.html",
+		"to":"google7c0ad88da7b67f85.html",
+		"method":"GET",
+		"query":{}
+	},
+    {
+		"from": "/*",
+		"to": "404.html",
+		"method": "GET",
+		"query": {}
     }
+    
 ]

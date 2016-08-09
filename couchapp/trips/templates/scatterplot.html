@@ -1,0 +1,239 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='utf-8' />
+  <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+  <meta name="description" content="Leafletslider : LeafletSlider" />
+
+  <!-- link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css" -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.css" type="text/css">
+
+ <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.js"></script>
+ <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-beta1/jquery.min.js"></script>
+ <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+ <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.2/jquery.ui.touch-punch.min.js"></script>
+ <script type="text/javascript" src="https://rawgit.com/dwilhelm89/LeafletSlider/master/SliderControl.js"></script>
+ <script type="text/plain" src="https://raw.githubusercontent.com/pa7/heatmap.js/develop/plugins/leaflet-heatmap.js"></script>
+ <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+
+  <style>
+	header h1 {
+		color:white;
+		text-shadow:
+			0px 0px 3px   #000000,
+			0   0   0.5em #000000;
+		position:absolute;
+		bottom:0px;
+	}
+	img {
+		border: 0px;
+		box-shadow: 0 0 0px;
+	}
+	div#map{
+		position:absolute;
+		font: 11px sans-serif;
+		left:0px;
+		top: 0px;
+		right: 0px;
+		bottom: 0px;
+		height:100%;
+		width:100%;
+		z-index:-100;
+	}
+	
+	.axis path,
+	.axis line {
+		fill: none;
+		stroke: #000;
+		shape-rendering: crispEdges;
+	}
+	
+	.dot {
+		stroke: #000;
+		filter: drop-shadow( 0px 1px 1.5px #000 );
+	}
+	
+	.tooltip {
+		position: absolute;
+		width: 200px;
+		height: 28px;
+		pointer-events: none;
+	}
+  </style>
+
+  <title>Scatter</title>
+</head>
+
+<body>
+<header class="inner">
+  <h1>Standard Weight</h1>
+</header>
+
+<article>
+<div id="map"></div>
+
+<script>
+// http://pothibo.com/2013/09/d3-js-how-to-handle-dynamic-json-data/
+// http://bl.ocks.org/weiglemc/6185069
+// http://stackoverflow.com/questions/17626555/responsive-d3-chart
+
+	var data = (function(inbound){
+		// if we didn't get daata from the server, we move to development mode
+		// load the sample data.
+		return inbound || {
+			"total_rows":14
+			,"rows":[
+				{"id":"trip.201509271135Z","key":["brook trout",-63.683472999999999331,44.687420000000003029,"2015-09-27T15:35"],"value":{"timestamp":"2015-09-27T15:35","coords":[-63.683472999999999331,44.687420000000003029],"fish":{"species":"brook trout","length":22.859999999999999432},"stats":{"fef":6840}}}
+				,{"id":"trip.201604021445Z","key":["brook trout",-63.683061999999999614,44.686596000000001538,"2016-04-02T12:20-03:00"],"value":{"timestamp":"2016-04-02T12:20-03:00","coords":[-63.683061999999999614,44.686596000000001538],"fish":{"species":"brook trout","length":33.020000000000003126,"girth":19,"weight":527},"images":["https://goo.gl/photos/Y8R8ok6c7PMKk9Ue8"],"stats":{"lwFactor":1.792106735675091933,"fef":1350}}}
+				,{"id":"trip.201604091430Z","key":["brook trout",-63.682934000000003039,44.68644700000000114,"2016-04-09T12:40-03:00"],"value":{"timestamp":"2016-04-09T12:40-03:00","coords":[-63.682934000000003039,44.68644700000000114],"fish":{"species":"brook trout","length":38.100000000000001421,"girth":17.780000000000001137,"weight":453},"images":["https://goo.gl/photos/oBoMkjb3rgQXPd3z5"],"stats":{"lwFactor":1.6800912395464748794,"fef":3150}}}
+				,{"id":"trip.201604161445Z","key":["brook trout",-63.682934000000003039,44.68644700000000114,"2016-04-16T12:00-03:00"],"value":{"timestamp":"2016-04-16T12:00-03:00","coords":[-63.682934000000003039,44.68644700000000114],"fish":{"species":"brook trout","length":31.199999999999999289,"weight":227},"stats":{"lwFactor":1.5768287074343003695,"fef":4230}}}
+				,{"id":"trip.201604201401Z","key":["brook trout",-63.682855000000003542,44.686709999999997933,"2016-04-23T15:08Z"],"value":{"timestamp":"2016-04-23T15:08Z","coords":[-63.682855000000003542,44.686709999999997933],"fish":{"species":"brook trout","length":24.100000000000001421,"girth":12.699999999999999289,"weight":"214.81~"},"kept":true,"images":[],"stats":{"lwFactor":null,"fef":2028.5}}}
+				,{"id":"trip.201604201401Z","key":["brook trout",-63.682855000000003542,44.686709999999997933,"2016-04-23T15:09Z"],"value":{"timestamp":"2016-04-23T15:09Z","coords":[-63.682855000000003542,44.686709999999997933],"fish":{"species":"brook trout","length":33.020000000000003126,"girth":17.780000000000001137,"weight":136.09999999999999432},"kept":true,"images":[],"stats":{"lwFactor":1.4049844238899387161,"fef":120}}}
+				,{"id":"trip.201604201401Z","key":["brook trout",-63.682855000000003542,44.686709999999997933,"2016-04-23T15:12Z"],"value":{"timestamp":"2016-04-23T15:12Z","coords":[-63.682855000000003542,44.686709999999997933],"fish":{"species":"brook trout","length":17.800000000000000711},"kept":false,"images":[],"stats":{"fef":1620}}}
+				,{"id":"trip.201604021445Z","key":["brook trout",-63.682690999999998382,44.686597999999996489,"2016-04-02T12:30-03:00"],"value":{"timestamp":"2016-04-02T12:30-03:00","coords":[-63.682690999999998382,44.686597999999996489],"fish":{"species":"brook trout","length":24.129999999999999005},"images":["https://goo.gl/photos/Y8R8ok6c7PMKk9Ue8"],"stats":{"fef":900}}}
+				,{"id":"trip.201604021445Z","key":["brook trout",-63.682653000000001953,44.686576999999999771,"2016-04-02T12:50-03:00"],"value":{"timestamp":"2016-04-02T12:50-03:00","coords":[-63.682653000000001953,44.686576999999999771],"fish":{"species":"brook trout","length":25.399999999999998579},"images":["https://goo.gl/photos/Y8R8ok6c7PMKk9Ue8"],"stats":{"fef":1350}}}
+				,{"id":"trip.201604300900Z","key":["english carp",1.200865999999999989,51.83638700000000199,"2016-04-30T09:08Z"],"value":{"timestamp":"2016-04-30T09:08Z","coords":[1.200865999999999989,51.83638700000000199],"fish":{"species":"english carp","length":24.100000000000001421},"kept":false,"stats":{"fef":3138.5}}}
+				,{"id":"trip.201605030900Z","key":["english carp",1.200865999999999989,51.83638700000000199,"2016-05-03T09:08Z"],"value":{"timestamp":"2016-05-03T09:08Z","coords":[1.200865999999999989,51.83638700000000199],"fish":{"species":"english carp","length":24.100000000000001421},"kept":false,"stats":{"fef":528.5}}}
+				,{"id":"trip.201605030900Z","key":["english carp",1.200865999999999989,51.83638700000000199,"2016-05-03T09:20Z"],"value":{"timestamp":"2016-05-03T09:20Z","coords":[1.200865999999999989,51.83638700000000199],"fish":{"species":"english carp","length":24.100000000000001421},"kept":false,"stats":{"fef":2610}}}
+				,{"id":"trip.201605030900Z","key":["koi",1.200865999999999989,51.83638700000000199,"2016-05-03T09:18Z"],"value":{"timestamp":"2016-05-03T09:18Z","coords":[1.200865999999999989,51.83638700000000199],"fish":{"species":"koi","length":24.100000000000001421},"kept":false,"stats":{"fef":360}}}
+				,{"id":"trip.201607250615Z","key":["yellow perch",-63.682218200000001218,44.686386099999999999,"2016-07-23T12:15-03:00"],"value":{"timestamp":"2016-07-23T12:15-03:00","coords":[-63.682218200000001218,44.686386099999999999],"fish":{"species":"yellow perch","length":21,"weight":125},"kept":true,"stats":{"lwFactor":1.5859018404583442585,"fef":78750}}}
+			]
+		};
+	})({{{data}}});
+
+(function() {
+	function getX(rec){
+		try{
+			$val = Number.parseInt(rec.value.fish.length);
+		}
+		catch(ex){
+			$val = NaN;
+		}
+		return $val;
+	};
+	function getY(rec){
+		return Number.parseInt(rec.value.fish.weight);
+	};
+	function getCat(rec){
+		try{
+			$val = rec.value.fish.species;
+		}
+		catch(ex){
+			$val = "Unknown";
+		}
+		return $val;
+	};
+	
+	
+	
+	
+	data.rows = data.rows.filter(function(row){
+		$val = !(isNaN(getX(row)) || isNaN(getY(row)));
+		if($val){
+			console.debug(row.key[0]+","+row.value.fish.species);
+		}
+		return $val;
+	});
+	if(data.total_rows !== data.rows.length){
+		console.log("Values rejected due to non-numeric input: " + (data.total_rows-data.rows.length));
+	}
+	
+	
+	
+	var 
+		margin = {top: 20, right: 20, bottom: 30, left: 40},
+		width = 960 - margin.left - margin.right,
+		height = 500 - margin.top - margin.bottom
+		;
+
+	var x = d3.scale.linear()
+		.range([0, width])
+		.domain(d3.extent(data.rows, getX))
+		;
+	
+	var y = d3.scale.linear()
+		.range([height,0])
+		.domain(d3.extent(data.rows, getY))
+		;
+	var xAxis = d3.svg.axis().scale(x).orient("bottom");
+	var yAxis = d3.svg.axis().scale(y).orient("left");
+	var catAxis = d3.scale.category10();
+	
+	var svg = d3.select("div#map")
+		.append("svg:svg")
+			.attr("margin", "auto")
+			.attr("width", "99%")
+			.attr("height", "99%")
+			.attr('viewBox','0 0 '+width*1.1+' '+height)
+			.attr('preserveAspectRatio','xMinYMin')
+		.append("g")
+			.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+		;
+	
+	svg.append('g').attr("class","axis x")
+			.attr("transform", "translate(0,"+height+")")
+			.call(xAxis)
+		.append("text")
+			.attr("class","label")
+			.attr("x",width)
+			.attr("y",-6)
+			.style("text-anchor","end")
+			.text("Length (cm)")
+		;
+	
+	svg.append('g').attr("class","axis y")
+			.call(yAxis)
+		.append("text")
+			.attr("class", "label")
+			.attr("transform", "rotate(-90)")
+			.attr("y", 6)
+			.attr("dy", ".71em")
+			.style("text-anchor", "end")
+			.text("Weight (grams)");
+		;
+	
+	svg.selectAll(".dot").data(data.rows)
+		.enter().append("svg:circle")
+			.attr("class", "dot")
+			.attr("r", 5)
+			.attr("cx", function(d) { return x(getX(d)); })
+			.attr("cy", function(d) { return y(getY(d)); })
+			.style("fill",function(d) { return catAxis(getCat(d)); })
+		;
+	
+	
+	// draw legend
+	var legend = svg.selectAll(".legend")
+		.data(catAxis.domain())
+		.enter().append("g")
+			.attr("class", "legend")
+			.attr("transform", function(d, i) { return "translate(0," + (/*height-60-*/ i * 20) + ")"; })
+		;
+	
+	// draw legend colored rectangles
+	legend.append("rect")
+		.attr("x", width - 9)
+		.attr("width", 9)
+		.attr("height", 18)
+		.style("fill", catAxis)
+		;
+	
+	// draw legend text
+	legend.append("text")
+		.attr("x", width - 11)
+		.attr("y", 9)
+		.attr("dy", ".35em")
+		.style("text-anchor", "end")
+		.text(function(d) { return d;})
+		;
+})();
+ </script>
+
+
+</article>
+
+</body>
+</html>
