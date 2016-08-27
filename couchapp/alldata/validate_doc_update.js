@@ -52,6 +52,7 @@ function(newDoc, oldDoc, userCtx, secObj) {
 		;
 	
 	//META-DATA enforcement
+	if(newDoc && newDoc._id && newDoc._id.substr(0,4) === "auth") return;
 	if(!newDoc.meta){
 		throw({forbidden : "Entities are expected to maintain meta data"});
 	}

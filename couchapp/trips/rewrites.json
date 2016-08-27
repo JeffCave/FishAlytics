@@ -6,8 +6,32 @@
 		"query": {}
     },
     {
+		"from": "/_session",
+		"to": "../../../_session",
+		"method": "*",
+		"query": {}
+	},
+	{
+		"from": "/auth",
+		"to": "proxy.html",
+		"method": "GET",
+		"query": {}
+	},
+	{
 		"from": "/auth",
 		"to": "_update/auth",
+		"method": "*",
+		"query": {}
+	},
+	{
+		"from": "/auth/:key",
+		"to": "_update/auth/:key",
+		"method": "*",
+		"query": {}
+	},
+	{
+		"from": "/register",
+		"to": "_updates/register",
 		"method": "*",
 		"query": {}
 	},
