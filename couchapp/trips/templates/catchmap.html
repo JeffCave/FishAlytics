@@ -51,6 +51,8 @@
 <body>
 <header class="inner">
   <h1>My Catches</h1>
+  {{^userCtx.name}}<p><a href='auth'>Login</a></p>{{/userCtx.name}}
+  {{#userCtx.name}}<p>Welcome, {{userCtx.name}} = {{userCtx.email}}</p>{{/userCtx.name}}
 </header>
 
 <article>

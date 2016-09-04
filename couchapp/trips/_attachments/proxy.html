@@ -1,0 +1,34 @@
+<html>
+<body style='display:none'>
+<form method='POST'></form>
+<script>
+var form = document.getElementsByTagName("form")[0];
+
+var query = window.location.search.substring(1);
+var vars = query.split('&');
+var htmlForm = ["<input type='submit' value='Manual Submit' />"];
+query = {};
+for (var i = 0; i < vars.length; i++) {
+	var pair = vars[i].split('=');
+	pair[0] = decodeURIComponent(pair[0]);
+	pair[1] = decodeURIComponent(pair[1]);
+	query[pair[0]] = pair[1];
+	htmlForm.push(pair[0] + "<input type='text' name='" + pair[0] + "' value='" + pair[1] + "' />") 
+}
+form.innerHTML = htmlForm.join('<br />');
+
+
+var loc = window.location.href.split('#')[0].split("?")[0];
+
+if(query.state){
+	var $state = JSON.parse(query.state);
+	if($state._id){
+		loc += "/" + $state._id;
+	}
+}
+
+form.setAttribute("action", loc);
+form.submit();
+</script>
+</body>
+</html>

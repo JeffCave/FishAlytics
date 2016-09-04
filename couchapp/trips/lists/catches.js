@@ -17,7 +17,8 @@ function(head, req) {
 			mapdata: {
 				type: "FeatureCollection",
 				features: []
-			}
+			},
+			userCtx : req.userCtx
 		};
 		while (row = getRow()) {
 			doc.mapdata.features.push({
