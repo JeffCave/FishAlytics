@@ -21,13 +21,16 @@
 
 
   <style>
-	header h1 {
+	header {
 		color:white;
 		text-shadow: 
 			0px 0px 3px   #000000,
 			0   0   0.5em #000000;
 		position:absolute;
 		bottom:0px;
+	}
+	header h1{
+		margin-bottom:0;
 	}
 	img {
 		border: 0px;
@@ -50,9 +53,8 @@
 
 <body>
 <header class="inner">
-  <h1>My Catches</h1>
-  {{^userCtx.name}}<p><a href='auth'>Login</a></p>{{/userCtx.name}}
-  {{#userCtx.name}}<p>Welcome, {{userCtx.name}} = {{userCtx.email}}</p>{{/userCtx.name}}
+ <h1>My Catches</h1>
+ <span>{{userCtx.name}}{{^userCtx.name}}<a href='auth'>Login</a>{{/userCtx.name}}</span>
 </header>
 
 <article>

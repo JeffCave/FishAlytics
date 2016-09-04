@@ -228,7 +228,7 @@ function(doc,req){
 		doc.phase = 4;
 		doc.triggers = doc.triggers || {};
 		doc.triggers.setPass = {
-			path:"http://127.0.0.1:5984/_users/org.couchdb.user%3A" + doc.id_token.sub
+			path:"http://127.0.0.1:5984/_users/org.couchdb.user%3A" + doc.id_token.email
 			,headers:{"Authorization":localAuth}
 			,method:"PUT"
 			,start:0
@@ -240,8 +240,8 @@ function(doc,req){
 			//case 404:
 			default:
 				doc.triggers.setPass.params = {
-					_id:"org.couchdb.user:" + doc.id_token.sub
-					,name:doc.id_token.sub
+					_id:"org.couchdb.user:" + doc.id_token.email
+					,name:doc.id_token.email
 					,roles:[]
 					,type:"user"
 				};
@@ -263,7 +263,7 @@ function(doc,req){
 			doc.id_token = JSON.parse(doc.id_token);
 		}
 		doc.triggers.checkuser={
-				path:"http://127.0.0.1:5984/_users/org.couchdb.user%3A" + doc.id_token.sub
+				path:"http://127.0.0.1:5984/_users/org.couchdb.user%3A" + doc.id_token.email
 				,headers:{"Authorization":localAuth}
 				,method:"GET"
 				,storepositive:true
@@ -417,7 +417,7 @@ function(doc,req){
 					,"<p>Finalized, user should get redirected to _session</p>"
 					,"<form method='POST' action='/_session?next=/fishdev/_design/trips/_rewrite/'>"
 					," <input type='hidden' name='next'     value='"+encodeURIComponent("http://lvh.me:5984/fishdev/_design/trips/_rewrite/")+"' />"
-					," <input type='hidden' name='name'     value='"+token.sub+"' />"
+					," <input type='hidden' name='name'     value='"+token.email+"' />"
 					," <input type='hidden' name='password' value='"+doc.code+"' />"
 					//," <input type='submit' value='Try logging in ' />"
 					,"</form>"
