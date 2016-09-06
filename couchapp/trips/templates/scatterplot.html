@@ -18,7 +18,11 @@
  <script type="text/javascript" src="https://rawgit.com/dwilhelm89/LeafletSlider/master/SliderControl.js"></script>
  <script type="text/plain" src="https://raw.githubusercontent.com/pa7/heatmap.js/develop/plugins/leaflet-heatmap.js"></script>
  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
-
+ <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/regression/1.3.0/regression.min.js" integrity="sha256-zyi4loJvZ0U+9M64eRYM3IXdjU2M4wYAnPGQrafn+zw=" crossorigin="anonymous"></script>
+ <!--
+ <script type="text/javascript" src="/fishdev/_design/trips/scripts/regression.js?nocache=true"></script>
+ -->
+ 
   <style>
 	header h1 {
 		color:white;
@@ -71,6 +75,7 @@
 <header class="inner">
   <h1>Standard Weight</h1>
 </header>
+<dialog open="open" id="notes" style='display:none'></dialog>
 
 <article>
 <div id="map"></div>
@@ -103,6 +108,8 @@
 			]
 		};
 	})({{{data}}});
+ </script>
+ <script>
 
 (function() {
 	function getX(rec){
@@ -229,6 +236,20 @@
 		.style("text-anchor", "end")
 		.text(function(d) { return d;})
 		;
+})();
+</script>
+<script>
+
+(function(){
+	var estimate = [];
+	data.rows.forEach(function(rec){
+		estimate.push([
+			rec.value.fish.length,
+			rec.value.fish.weight
+		]);
+	});
+	estimate = regression('power',estimate);
+	$("dialog#notes").html("<p>"+estimate.string+"</p>");
 })();
  </script>
 

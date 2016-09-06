@@ -11,6 +11,7 @@
 
 ;(function() {
 	'use strict';
+	alert('here');
 	
 	var gaussianElimination = function(a, o) {
 		var i = 0, j = 0, k = 0, maxrow = 0, tmp = 0, n = a.length - 1, x = new Array(o);
@@ -186,9 +187,7 @@
 		},
 		
 		polynomial: function(data, order) {
-			if(typeof order == 'undefined'){
-				order = 2;
-			}
+			order = order || 2;
 			var lhs = [], rhs = [], results = [], a = 0, b = 0, i = 0, k = order + 1;
 			
 			for (; i < k; i++) {
@@ -261,4 +260,4 @@
 		window.regression = regression;
 	}
 
-}());
+})();
