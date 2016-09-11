@@ -316,7 +316,7 @@ function(doc,req){
 			,body : [ ""
 					,"<html>"
 					," <body>"
-					,"  <form method='POST' action='/fishdev/_design/trips/_rewrite/auth/"+doc._id+"'>"
+					,"  <form method='POST' action='./auth/"+doc._id+"'>"
 					,"   Login with: "
 					,"   <ul>"
 					,"    <li><input type='submit' name='authsource' value='Google' /></li>"
