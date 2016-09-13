@@ -1,4 +1,17 @@
 function(head, req) {
+	if(!req.userCtx.name){
+		provides("html",function(){
+			return [""
+				,"<html><body>"
+				,"<p>Attempting to redirect to google auth</p>"
+				,"<script>setTimeout(function(){window.location='./auth'},1000)</script>"
+				,"</body></html>"
+			].join('\n')
+			;
+
+		});
+		return;
+	}
 	var Mustache = require("lib/mustache");
 //	var List = require("vendor/couchapp/lib/list");
 //	var path = require("vendor/couchapp/lib/path").init(req);
@@ -18,6 +31,7 @@ function(head, req) {
 				type: "FeatureCollection",
 				features: []
 			},
+			PageTitle:"Catches",
 			userCtx : req.userCtx
 		};
 		while (row = getRow()) {
