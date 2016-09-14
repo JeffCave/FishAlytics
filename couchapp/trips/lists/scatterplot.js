@@ -5,7 +5,9 @@ function(head, req) {
 			data: {
 				total_rows: 0
 				,rows : []
-			}
+			},
+			PageTitle:"Standard Weight",
+			userCtx : req.userCtx
 		};
 		while (row = getRow()) {
 			doc.data.rows.push(row);
@@ -16,4 +18,3 @@ function(head, req) {
 		return html;
 	});
 };
-
