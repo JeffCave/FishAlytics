@@ -308,23 +308,14 @@ function(doc,req){
 		token.email_verified = doc.id_token.email_verified;
 	}
 	
+	
+	
 	var resp = [
 		{
 			headers : {
 				"Content-Type" : "text/html"
 			}
-			,body : [ ""
-					,"<html>"
-					," <body>"
-					,"  <form method='POST' action='./auth/"+doc._id+"'>"
-					,"   Login with: "
-					,"   <ul>"
-					,"    <li><input type='submit' name='authsource' value='Google' /></li>"
-					,"   </ul>"
-					,"  </form>"
-					," </body>"
-					,"</html>"
-				].join('\n')
+			,body : this.templates.login
 		}
 		,{
 			code:303
@@ -414,9 +405,9 @@ function(doc,req){
 			}
 			,body : [""
 					,"<html><body>"
-					,"<p>Finalized, user should get redirected to _session</p>"
+					,"<p>Finalized, creating session</p>"
 					,"<form method='POST' action='/_session?next=/fishdev/_design/trips/_rewrite/'>"
-					," <input type='hidden' name='next'     value='"+encodeURIComponent("http://lvh.me:5984/fishdev/_design/trips/_rewrite/")+"' />"
+					," <input type='hidden' name='next' value='"+encodeURIComponent("http://lvh.me:5984/fishdev/_design/trips/_rewrite/")+"' />"
 					," <input type='hidden' name='name'     value='"+token.email+"' />"
 					," <input type='hidden' name='password' value='"+doc.code+"' />"
 					//," <input type='submit' value='Try logging in ' />"
@@ -434,6 +425,8 @@ function(doc,req){
 		}
 	];
 	resp = resp[doc.phase];
+	var Mustache = require("lib/mustache");
+	resp.body = Mustache.to_html(resp.body, doc, this.templates.partials);
 	if(doc.blockSave){
 		doc = null;
 	}

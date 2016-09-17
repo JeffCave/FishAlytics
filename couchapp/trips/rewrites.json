@@ -1,7 +1,7 @@
 [
 	{
 		"from": "",
-		"to": "index.html",
+		"to": "_list/catches/catches",
 		"method": "GET",
 		"query": {}
 	},
@@ -44,6 +44,12 @@
 	{
 		"from":"/stdweight",
 		"to":"_list/scatterplot/catches",
+		"method":"GET",
+		"query":{}
+	},
+	{
+		"from":"/experimental",
+		"to":"index.html",
 		"method":"GET",
 		"query":{}
 	},
