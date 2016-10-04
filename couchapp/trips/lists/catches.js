@@ -13,6 +13,7 @@ function(head, req) {
 		return;
 	}
 	var Mustache = require("lib/mustache");
+	var utils = require("lib/utils");
 //	var List = require("vendor/couchapp/lib/list");
 //	var path = require("vendor/couchapp/lib/path").init(req);
 //	var Atom = require("vendor/couchapp/lib/atom");
@@ -49,6 +50,8 @@ function(head, req) {
 				});
 		}
 		doc.mapdata = JSON.stringify(doc.mapdata);
+		doc.BaseUrl = utils.getBaseUrl(req);
+		doc.DbUrl = utils.getBasePath(req).slice(0,3).join('/');
 		html = Mustache.render(this.templates.catchmap, doc, this.templates.partials);
 		return html;
 	});

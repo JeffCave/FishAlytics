@@ -4,6 +4,7 @@
  */
 function(doc,req){
 	var base64 = require("lib/base64");
+	var utils = require("lib/utils");
 	//generally useful calculations
 	var token = {email:'',sub:'',email_verified:''};
 	var origDoc = JSON.parse(JSON.stringify(doc));
@@ -22,6 +23,7 @@ function(doc,req){
 				created:timestamp
 				,modified:timestamp
 			}
+			,BaseUrl : utils.getBaseUrl(req)
 			,expires:timestamp + 1000*60
 			//,triggers:{
 			//	//expire:{
@@ -32,6 +34,7 @@ function(doc,req){
 			//}
 		};
 	}
+	
 	
 	// copy any variables from the post, or 
 	// query string into the document
@@ -72,7 +75,7 @@ function(doc,req){
 				,body : [""
 						,"<html>"
 						," <body>"
-						,"  <form method='POST' action='/fishdev/_design/trips/_rewrite/auth/{{id}}'>"
+						,"  <form method='POST' action='{{{BaseUrl}}}auth/{{id}}'>"
 						,"   Login with: "
 						,"   <ul>"
 						,"    <li><input type='submit' name='authsource' value='Google' /></li>"
@@ -197,7 +200,7 @@ function(doc,req){
 				}
 				,body : [""
 						,"<html><body>"
-						,"<form method='POST' action='/_session?next="+encodeURIComponent("http://lvh.me:5984/fishdev/_design/trips/_rewrite/")+"'>"
+						,"<form method='POST' action='/_session?next="+encodeURIComponent("{{{BaseUrl}}}")+"'>"
 						,"<input type='submit' value='Try logging in ' />"
 						//,"<script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1000)</script>"
 						,"</form>"
@@ -288,7 +291,7 @@ function(doc,req){
 					code:doc.code
 					,client_id:"239959269801-rc9sbujsr5gv4gm43ecsavjk6s149ug7.apps.googleusercontent.com"
 					,client_secret:"QyYKQRBx7HuKI-q11oJnkK-d"
-					,redirect_uri:"http://lvh.me:5984/fishdev/_design/trips/_rewrite/auth"
+					,redirect_uri: (doc.BaseUrl + "/auth")
 					,grant_type:"authorization_code"
 				}
 			}};
@@ -327,8 +330,7 @@ function(doc,req){
 					+ "&client_id=239959269801-rc9sbujsr5gv4gm43ecsavjk6s149ug7.apps.googleusercontent.com"
 					+ "&scope=email"
 					+ "&state="+encDoc+""
-					//+ "&redirect_uri=https%3A%2F%2Ffishalytics.smileupps.com%2Fauth"
-					+ "&redirect_uri=http%3A%2F%2Flvh.me:5984%2Ffishdev%2F_design%2Ftrips%2F_rewrite%2Fauth"
+					+ "&redirect_uri=" + encodeURIComponent(doc.BaseUrl + "/auth")
 					+ "&include_granted_scopes=true"
 					+ "&nonce=" + doc._id
 			}
@@ -347,7 +349,7 @@ function(doc,req){
 			,body : [""
 					,"<html><body>"
 					,"Verifying with "+doc.authsource+"...<br />"
-					,"<form method='POST' action='./"+doc._id+"'>"
+					,"<form method='POST' action='{{{BaseUrl}}}/auth/"+doc._id+"'>"
 					//,"<input type='submit' value='waitmore' />"
 					,"</form>"
 					,"<script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1000)</script>"
@@ -406,13 +408,13 @@ function(doc,req){
 			,body : [""
 					,"<html><body>"
 					,"<p>Finalized, creating session</p>"
-					,"<form method='POST' action='/_session?next=/fishdev/_design/trips/_rewrite/'>"
-					," <input type='hidden' name='next' value='"+encodeURIComponent("http://lvh.me:5984/fishdev/_design/trips/_rewrite/")+"' />"
+					,"<form method='POST' action='/_session?next=/"+utils.getBasePath(req).slice(2).join('/')+"/'>"
+					," <input type='hidden' name='next' value='"+doc.BaseUrl+"' />"
 					," <input type='hidden' name='name'     value='"+token.email+"' />"
 					," <input type='hidden' name='password' value='"+doc.code+"' />"
 					//," <input type='submit' value='Try logging in ' />"
 					,"</form>"
-					," <script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1000)</script>"
+					," <script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1)</script>"
 					//,"<table>"
 					//," <tr><td>Email</td><td>"+token.email+"</td></tr>"
 					//," <tr><td>Sub</td><td>"+token.sub+"</td></tr>"
@@ -424,6 +426,9 @@ function(doc,req){
 				].join('\n')
 		}
 	];
+	
+	
+	
 	resp = resp[doc.phase];
 	var Mustache = require("lib/mustache");
 	resp.body = Mustache.to_html(resp.body, doc, this.templates.partials);

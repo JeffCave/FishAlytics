@@ -22,9 +22,13 @@
  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/regression/1.3.0/regression.min.js" integrity="sha256-zyi4loJvZ0U+9M64eRYM3IXdjU2M4wYAnPGQrafn+zw=" crossorigin="anonymous"></script>
+ <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pouchdb/6.0.6/pouchdb.min.js" integrity="sha256-dN7ct+ugEHOZpL4AtGETZkiNynI5KMZ05sgpaMGFGK4=" crossorigin="anonymous"></script>
  <!--
  <script type="text/javascript" src="/fishdev/_design/trips/scripts/regression.js?nocache=true"></script>
  -->
+ <script>
+ var db = new PouchDB('{{{DbUrl}}}');
+ </script>
  
  <title>{{PageTitle}}</title>
 </head>
@@ -46,9 +50,23 @@
  
  <nav id='panic'>
   <ul>
-   <li><a href="catch">Fish On!</a></li>
+   <li><a href="{{{BaseUrl}}}/catch">Fish On!</a></li>
   </ul>
  </nav>
+ <script>
+	db.allDocs({
+		descending: true
+		,limit:1
+		,startkey: 'trip.\uffff'
+		,endkey: 'trip.'
+	}).then(function (result) {
+		if(result.rows){
+			$('nav#panic a:eq(0)').attr('href','catch/' + result.rows[0].id + '?'+Math.exp(20).toFixed(0));
+		}
+	}).catch(function (err) {
+		console.log(err);
+	});
+ </script>
 
 <article>
  <div id="map"></div>

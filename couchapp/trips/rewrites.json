@@ -30,12 +30,6 @@
 		"query": {}
 	},
 	{
-		"from": "/register",
-		"to": "_updates/register",
-		"method": "*",
-		"query": {}
-	},
-	{
 		"from":"/catchmap",
 		"to":"_list/catches/catches",
 		"method":"GET",
@@ -59,6 +53,26 @@
 		"method":"GET",
 		"query":{}
 	},
+	
+	{
+		"from":"/catch",
+		"to":"_show/catch/",
+		"method":"GET",
+		"query":{}
+	},	
+	{
+		"from":"/catch/:key",
+		"to":"_show/catch/:key",
+		"method":"GET",
+		"query":{}
+	},	
+	{
+		"from":"/catch/:key",
+		"to":"_update/catch/:key",
+		"method":"POST",
+		"query":{}
+	},	
+	
 	{
 		"from":"/views/*",
 		"to":"_view/*",

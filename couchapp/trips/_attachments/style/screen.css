@@ -1,3 +1,6 @@
+html{
+	text-align:right;
+}
 body{
 	background-color:white;
 }
@@ -12,6 +15,7 @@ header {
 		0   0   0.5em #000000;
 	position:absolute;
 	bottom:0px;
+	text-align:left;
 }
 header h1{
 	margin-bottom:0;
@@ -80,4 +84,40 @@ div#map{
 	height:100%;
 	width:100%;
 	z-index:-100;
+}
+
+form{
+	font-family:sans-serif;
+}
+form  span {
+	display:block;
+	margin-top:0.5em;
+}
+form  span label {
+	display:block;
+}
+form  span label.est{
+	display:inline;
+	font-size:50%;
+}
+main {
+	display:inline-block;
+	text-align:left;
+}
+main h1 {
+	text-shadow: #fff 0 0 4px;
+	font-size:150%;
+	text-transform:capitalize;
+}
+fieldset{
+	display:inline;
+	border:0px;
+	padding:0px;
+	margin:0px;
+	margin-right:2em;
+	margin-top:1em;
+}
+fieldset legend{
+	padding:0px;
+	margin:0px;
 }
