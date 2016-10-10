@@ -10,11 +10,11 @@ module.exports = new (function(){
 		BaseUrl = [
 				BaseUrl
 				,req.headers.Host
-				,req.path[0]
 			];
-		if(req.path[1] === '_design'){
-			BaseUrl = BaseUrl.concat(req.requested_path.slice(1,4));
+		if(req.requested_path[1] === '_design'){
+			BaseUrl = BaseUrl.concat(req.requested_path.slice(0,4));
 		}
 		return BaseUrl;
 	};
+	
 })();
