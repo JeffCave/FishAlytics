@@ -11,7 +11,6 @@ function(doc,req){
 	var timestamp = Date.now();
 	//var localAuth = "Basic " + base64.btoa("triggerjob:triggerjob");
 	var localAuth = "Basic dHJpZ2dlcmpvYjp0cmlnZ2Vyam9i";
-	if(doc && doc.expires < timestamp) doc = null;
 	
 	
 	
@@ -56,172 +55,25 @@ function(doc,req){
 	// determine which phase we are in
 	//doc.phase++;
 	
-/*	
-	var phases = {
-		error{
-			phase:-1
-			,isphase:function(doc,req){
-				return false;
-			}
-			,resp:{code:500}
-		}
-		,begin : {
-			phase:0
-			,isphase:function(doc,req){
-				return false !== (doc.code || false);
-			}
-			,resp:{
-				headers : {"Content-Type" : "text/html"}
-				,body : [""
-						,"<html>"
-						," <body>"
-						,"  <form method='POST' action='{{{BaseUrl}}}auth/{{id}}'>"
-						,"   Login with: "
-						,"   <ul>"
-						,"    <li><input type='submit' name='authsource' value='Google' /></li>"
-						,"   </ul>"
-						,"  </form>"
-						," </body>"
-						,"</html>"
-					].join('\n')
-			}
-		},
-		redirectToAuthSource:{
-			phase:1
-			,isphase:function(doc,req){
-				return false !== (doc.code || false);
-			}
-			,resp:{
-				code:303
-				,headers : {
-					"Status" : "303"
-					,"Location" : 
-						"https://accounts.google.com/o/oauth2/v2/auth?"
-						+ "&response_type=code" 
-						+ "&client_id=239959269801-rc9sbujsr5gv4gm43ecsavjk6s149ug7.apps.googleusercontent.com"
-						+ "&scope=email"
-						+ "&state={{encdoc}}"
-						//+ "&redirect_uri=https%3A%2F%2Ffishalytics.smileupps.com%2Fauth"
-						+ "&redirect_uri=http%3A%2F%2Flvh.me:5984%2Ffishdev%2F_design%2Ftrips%2F_rewrite%2Fauth"
-						+ "&include_granted_scopes=true"
-						+ "&nonce={{id}}"
-				}
-				,body : [""
-						,"<html><body>"
-						,"<p>Attempting to redirect to google auth</p>"
-						,"<pre>{{dispDoc}}</pre><hr />"
-						,"<pre>{{dispRec}}</pre>"
-						,"</body></html>"
-					].join('\n')
-			}
-		},
-		waitOnAuthSource: {
-			phase:2
-			,isphase:function(doc,req){
-				return false;
-			}
-			,resp:{
-				code:200
-				,headers : {"Content-Type" : "text/html"}
-				,body : [""
-						,"<html><body>"
-						,"Verifying with {{authsource}}...<br />"
-						,"<form method='POST' action='./"+doc._id+"'>"
-						,"<input type='submit' value='waitmore' />"
-						//,"<script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1000)</script>"
-						,"</form>"
-						,"<hr /><pre>{{dispDoc}}</pre>"
-						,"<hr /><pre>{{dispRec}}</pre>"
-						,"</body></html></html>"
-					].join('\n')
-			}
-		},
-		checkuser:{
-			phase:3
-			,isphase:function(doc,req){
-				return false;
-			}
-			,resp:{
-				,headers : {"Content-Type" : "text/html"}
-				,body : [""
-						,"<html><body>"
-						,"<p>Verified with {{authsource}}.</p>"
-						,"<p>Checking local...</p>"
-						,"<form method='POST' action='./{{id}}'>"
-						,"<input type='submit' value='waitmore' />"
-						,"</form>"
-						//,"<script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1000)</script>"
-						,"<table>"
-						," <tr><td>Email</td><td>"+token.email+"</td></tr>"
-						," <tr><td>Sub</td><td>"+token.sub+"</td></tr>"
-						," <tr><td>Verified</td><td>"+token.email_verified+"</tr>"
-						,"</table>"
-						,"<hr /><pre>{{dispDoc}}</pre>"
-						,"<hr /><pre>{{dispRec}}</pre>"
-						,"</body></html></html>"
-					].join('\n')
-			}
-		},
-		setpass:{
-			phase:4
-			,isphase:function(doc,req){
-				return false;
-			}
-			,resp:{
-				,headers : {
-					"Content-Type" : "text/html"
-				}
-				,body : [""
-						,"<html><body>"
-						,"<p>Updating password...</p>"
-						,"<form method='POST' action='./{{doc._id}}'>"
-						,"<input type='submit' value='waitmore' />"
-						,"</form>"
-						//,"<script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1000)</script>"
-						,"<table>"
-						," <tr><td>Email</td><td>{{id_token.email}}</td></tr>"
-						," <tr><td>Sub</td><td>{{id_token.sub}}</td></tr>"
-						," <tr><td>Verified</td><td>{{id_token.email_verified}}</tr>"
-						,"</table>"
-						,"<hr /><pre>{{dispDoc}}</pre>"
-						,"<hr /><pre>{{dispRec}}</pre>"
-						,"</body></html></html>"
-					].join('\n')
-			}
-		},
-		dologin:{
-			phase:5
-			,isphase:function(doc,req){
-				return false;
-			}
-			,resp:{
-				,headers : {
-					"Content-Type" : "text/html"
-				}
-				,body : [""
-						,"<html><body>"
-						,"<form method='POST' action='/_session?next="+encodeURIComponent("{{{BaseUrl}}}")+"'>"
-						,"<input type='submit' value='Try logging in ' />"
-						//,"<script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1000)</script>"
-						,"</form>"
-						,"<p>Finalized, user should get redirected to _session</p>"
-						,"<table>"
-						," <tr><td>Email</td><td>{{id_token.email}}</td></tr>"
-						," <tr><td>Sub</td><td>{{id_token.sub}}</td></tr>"
-						," <tr><td>Verified</td><td>{{id_token.email_verified}}</tr>"
-						,"</table>"
-						,"<hr /><pre>{{dispDoc}}</pre>"
-						,"<hr /><pre>{{dispRec}}</pre>"
-						,"</body></html></html>"
-					].join('\n')
-			}
-		}
-	};
-*/	
 	
-	if(doc.triggered && doc.triggered.setPass){
+	
+	if(doc && doc.expires < timestamp){ 
+		return [
+			null //{"_id":doc._id,"_rev":doc._rev,"_deleted":true}
+			,{
+				code:504
+				,headers : {
+					"Status" : "504"
+				}
+				,body : "<html><body>Did not receive a timely response from authentication party.</body></html>"
+			}
+
+		];
+	}
+	else if(doc.triggered && doc.triggered.setPass){
 		doc.phase = 5;
 		doc.setpass = doc.triggered.setPass.code;
+		doc.canDelete = true;
 		//if(doc.triggered.setPass.code !== 200){
 		//	
 		//}
@@ -231,7 +83,7 @@ function(doc,req){
 		doc.phase = 4;
 		doc.triggers = doc.triggers || {};
 		doc.triggers.setPass = {
-			path:"http://127.0.0.1:5984/_users/org.couchdb.user%3A" + doc.id_token.email
+			path: doc.BaseUrl + "/_users/org.couchdb.user%3A" + encodeURIComponent(doc.id_token.email)
 			,headers:{"Authorization":localAuth}
 			,method:"PUT"
 			,start:0
@@ -266,7 +118,7 @@ function(doc,req){
 			doc.id_token = JSON.parse(doc.id_token);
 		}
 		doc.triggers.checkuser={
-				path:"http://127.0.0.1:5984/_users/org.couchdb.user%3A" + doc.id_token.email
+				path: doc.BaseUrl + "/_users/org.couchdb.user%3A" + encodeURIComponent(doc.id_token.email)
 				,headers:{"Authorization":localAuth}
 				,method:"GET"
 				,storepositive:true
@@ -284,10 +136,10 @@ function(doc,req){
 				path:"https://accounts.google.com/o/oauth2/token"
 				,headers:{'content-type':'application/x-www-form-urlencoded'}
 				,method:"POST"
-				,asquery:true
+				,asquery:false
 				,storepositive:true
 				,start:0
-				,params:{
+				,form:{
 					code:doc.code
 					,client_id:"239959269801-rc9sbujsr5gv4gm43ecsavjk6s149ug7.apps.googleusercontent.com"
 					,client_secret:"QyYKQRBx7HuKI-q11oJnkK-d"
@@ -313,118 +165,179 @@ function(doc,req){
 	
 	
 	
+	var phases = {
+		error:{
+			phase:-1
+			,isphase:function(doc,req){
+				return false;
+			}
+			,resp:{code:500}
+		}
+		,begin : {
+			phase:0
+			,isphase:function(doc,req){
+				return false !== (doc.code || false);
+			}
+			,resp:{
+				headers : {
+					"Content-Type" : "text/html"
+				}
+				,body : this.templates.login
+			}
+		}
+		,redirectToAuthSource:{
+			phase:1
+			,isphase:function(doc,req){
+				return false !== (doc.code || false);
+			}
+			,resp:{
+				code:303
+				,headers : {
+					"Status" : "303"
+					,"Location" : 
+						"https://accounts.google.com/o/oauth2/v2/auth?"
+						+ "&response_type=code" 
+						+ "&client_id=239959269801-rc9sbujsr5gv4gm43ecsavjk6s149ug7.apps.googleusercontent.com"
+						+ "&scope=email"
+						+ "&state="+encDoc+""
+						+ "&redirect_uri=" + encodeURIComponent(doc.BaseUrl + "/auth")
+						+ "&include_granted_scopes=true"
+						+ "&nonce=" + doc._id
+				}
+				,body : [""
+						,"<html>"
+						,"<style>.pagecenter{display:block; position:absolute; top:33%; transform:translateY(-50%); left:50%; transform:translateX(-50%); }</style>"
+						,"<body>"
+						,"<p class='pagecenter'>Attempting to redirect to google auth</p>"
+						,"<pre>"+JSON.stringify(doc,null,"\t")+"</pre><hr />"
+						,"<pre>"+JSON.stringify(req,null,"\t")+"</pre>"
+						,"</body></html>"
+					].join('\n')
+			}
+		}
+		,waitOnAuthSource: {
+			phase:2
+			,isphase:function(doc,req){
+				return false;
+			}
+			,resp:{
+				headers : {
+					"Content-Type" : "text/html"
+				}
+				,body : [""
+						,"<html>"
+						,"<style>.pagecenter{display:block; position:absolute; top:33%; transform:translateY(-50%); left:50%; transform:translateX(-50%); }</style>"
+						,"<body>"
+						,"<p class='pagecenter'>Verifying with "+doc.authsource+"...</p>"
+						,"<form method='POST' action='{{{BaseUrl}}}/auth/"+doc._id+"'>"
+						//,"<input type='submit' value='waitmore' />"
+						,"</form>"
+						,"<script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1000)</script>"
+						//,"<pre>"+JSON.stringify(doc,null,"\t")+"</pre><hr />"
+						//,"<pre>"+JSON.stringify(req,null,"\t")+"</pre>"
+						,"</body></html></html>"
+					].join('\n')
+			}
+		}
+		,checkuser:{
+			phase:3
+			,isphase:function(doc,req){
+				return false;
+			}
+			,resp:{
+				headers : {
+					"Content-Type" : "text/html"
+				}
+				,body : [""
+						,"<html>"
+						,"<style>.pagecenter{display:block; position:absolute; top:33%; transform:translateY(-50%); left:50%; transform:translateX(-50%); }</style>"
+						,"<body>"
+						,"<p class='pagecenter'>Verified with "+doc.authsource+".</p>"
+						,"<form method='POST' action='./"+doc._id+"'>"
+						//,"<input type='submit' value='waitmore' />"
+						,"</form>"
+						,"<script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1000)</script>"
+						//,"<table>"
+						//," <tr><td>Email</td><td>"+token.email+"</td></tr>"
+						//," <tr><td>Sub</td><td>"+token.sub+"</td></tr>"
+						//," <tr><td>Verified</td><td>"+token.email_verified+"</tr>"
+						//,"</table>"
+						//,"<pre>"+JSON.stringify(doc,null,"\t")+"</pre><hr />"
+						//,"<pre>"+JSON.stringify(req,null,"\t")+"</pre>"
+						,"</body></html></html>"
+					].join('\n')
+			}
+		}
+		,setpass:{
+			phase:4
+			,isphase:function(doc,req){
+				return false;
+			}
+			,resp:{
+				headers : {
+					"Content-Type" : "text/html"
+				}
+				,body : [""
+						,"<html>"
+						,"<style>.pagecenter{display:block; position:absolute; top:33%; transform:translateY(-50%); left:50%; transform:translateX(-50%); }</style>"
+						,"<body>"
+						,"<p class='pagecenter'>Logging in...</p>"
+						,"<form method='POST' action='./"+doc._id+"'>"
+						//,"<input type='submit' value='waitmore' />"
+						,"</form>"
+						,"<script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1000)</script>"
+						//,"<table>"
+						//," <tr><td>Email</td><td>"+token.email+"</td></tr>"
+						//," <tr><td>Sub</td><td>"+token.sub+"</td></tr>"
+						//," <tr><td>Verified</td><td>"+token.email_verified+"</tr>"
+						//,"</table>"
+						//,"<pre>"+JSON.stringify(doc,null,"\t")+"</pre><hr />"
+						//,"<pre>"+JSON.stringify(req,null,"\t")+"</pre>"
+						,"</body></html></html>"
+					].join('\n')
+			}
+		}
+		,dologin:{
+			phase:5
+			,isphase:function(doc,req){
+				return false;
+			}
+			,resp:{
+				headers : {
+					"Content-Type" : "text/html"
+				}
+				,body : [""
+						,"<html>"
+						,"<style>.pagecenter{display:block; position:absolute; top:33%; transform:translateY(-50%); left:50%; transform:translateX(-50%); }</style>"
+						,"<body>"
+						,"<p class='pagecenter'>Logging in</p>"
+						,"<form method='POST' action='/_session?next=/catchmap'>"
+						//," <input type='hidden' name='next' value='"+doc.BaseUrl+"' />"
+						," <input type='hidden' name='name'     value='"+token.email+"' />"
+						," <input type='hidden' name='password' value='"+doc.code+"' />"
+						//," <input type='submit' value='Try logging in ' />"
+						,"</form>"
+						,"<script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1)</script>"
+						//,"<table>"
+						//," <tr><td>Email</td><td>"+token.email+"</td></tr>"
+						//," <tr><td>Sub</td><td>"+token.sub+"</td></tr>"
+						//," <tr><td>Verified</td><td>"+token.email_verified+"</tr>"
+						//,"</table>"
+						//,"<pre>"+JSON.stringify(doc,null,"\t")+"</pre><hr />"
+						//,"<pre>"+JSON.stringify(req,null,"\t")+"</pre>"
+						,"</body></html></html>"
+					].join('\n')
+			}
+		}
+	};
+	
 	var resp = [
-		{
-			headers : {
-				"Content-Type" : "text/html"
-			}
-			,body : this.templates.login
-		}
-		,{
-			code:303
-			,headers : {
-				"Status" : "303"
-				,"Location" : 
-					"https://accounts.google.com/o/oauth2/v2/auth?"
-					+ "&response_type=code" 
-					+ "&client_id=239959269801-rc9sbujsr5gv4gm43ecsavjk6s149ug7.apps.googleusercontent.com"
-					+ "&scope=email"
-					+ "&state="+encDoc+""
-					+ "&redirect_uri=" + encodeURIComponent(doc.BaseUrl + "/auth")
-					+ "&include_granted_scopes=true"
-					+ "&nonce=" + doc._id
-			}
-			,body : [""
-					,"<html><body>"
-					,"<p>Attempting to redirect to google auth</p>"
-					,"<pre>"+JSON.stringify(doc,null,"\t")+"</pre><hr />"
-					,"<pre>"+JSON.stringify(req,null,"\t")+"</pre>"
-					,"</body></html>"
-				].join('\n')
-		}
-		,{
-			headers : {
-				"Content-Type" : "text/html"
-			}
-			,body : [""
-					,"<html><body>"
-					,"Verifying with "+doc.authsource+"...<br />"
-					,"<form method='POST' action='{{{BaseUrl}}}/auth/"+doc._id+"'>"
-					//,"<input type='submit' value='waitmore' />"
-					,"</form>"
-					,"<script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1000)</script>"
-					//,"<pre>"+JSON.stringify(doc,null,"\t")+"</pre><hr />"
-					//,"<pre>"+JSON.stringify(req,null,"\t")+"</pre>"
-					,"</body></html></html>"
-				].join('\n')
-		}
-		,{
-			headers : {
-				"Content-Type" : "text/html"
-			}
-			,body : [""
-					,"<html><body>"
-					,"<p>Verified with "+doc.authsource+".</p>"
-					,"<p>Checking local...</p>"
-					,"<form method='POST' action='./"+doc._id+"'>"
-					//,"<input type='submit' value='waitmore' />"
-					,"</form>"
-					,"<script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1000)</script>"
-					//,"<table>"
-					//," <tr><td>Email</td><td>"+token.email+"</td></tr>"
-					//," <tr><td>Sub</td><td>"+token.sub+"</td></tr>"
-					//," <tr><td>Verified</td><td>"+token.email_verified+"</tr>"
-					//,"</table>"
-					//,"<pre>"+JSON.stringify(doc,null,"\t")+"</pre><hr />"
-					//,"<pre>"+JSON.stringify(req,null,"\t")+"</pre>"
-					,"</body></html></html>"
-				].join('\n')
-		}
-		,{
-			headers : {
-				"Content-Type" : "text/html"
-			}
-			,body : [""
-					,"<html><body>"
-					,"<p>Updating password...</p>"
-					,"<form method='POST' action='./"+doc._id+"'>"
-					//,"<input type='submit' value='waitmore' />"
-					,"</form>"
-					,"<script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1000)</script>"
-					//,"<table>"
-					//," <tr><td>Email</td><td>"+token.email+"</td></tr>"
-					//," <tr><td>Sub</td><td>"+token.sub+"</td></tr>"
-					//," <tr><td>Verified</td><td>"+token.email_verified+"</tr>"
-					//,"</table>"
-					//,"<pre>"+JSON.stringify(doc,null,"\t")+"</pre><hr />"
-					//,"<pre>"+JSON.stringify(req,null,"\t")+"</pre>"
-					,"</body></html></html>"
-				].join('\n')
-		}
-		,{
-			headers : {
-				"Content-Type" : "text/html"
-			}
-			,body : [""
-					,"<html><body>"
-					,"<p>Finalized, creating session</p>"
-					,"<form method='POST' action='/_session?next=/"+utils.getBasePath(req).slice(2).join('/')+"/'>"
-					," <input type='hidden' name='next' value='"+doc.BaseUrl+"' />"
-					," <input type='hidden' name='name'     value='"+token.email+"' />"
-					," <input type='hidden' name='password' value='"+doc.code+"' />"
-					//," <input type='submit' value='Try logging in ' />"
-					,"</form>"
-					," <script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1)</script>"
-					//,"<table>"
-					//," <tr><td>Email</td><td>"+token.email+"</td></tr>"
-					//," <tr><td>Sub</td><td>"+token.sub+"</td></tr>"
-					//," <tr><td>Verified</td><td>"+token.email_verified+"</tr>"
-					//,"</table>"
-					//,"<pre>"+JSON.stringify(doc,null,"\t")+"</pre><hr />"
-					//,"<pre>"+JSON.stringify(req,null,"\t")+"</pre>"
-					,"</body></html></html>"
-				].join('\n')
-		}
+		phases.begin.resp
+		,phases.redirectToAuthSource.resp
+		,phases.waitOnAuthSource.resp
+		,phases.checkuser.resp
+		,phases.setpass.resp
+		,phases.dologin.resp
 	];
 	
 	

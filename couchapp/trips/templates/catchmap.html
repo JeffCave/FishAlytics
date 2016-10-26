@@ -51,6 +51,7 @@
  <nav id='panic'>
   <ul>
    <li><a href="{{{BaseUrl}}}/catch">Fish On!</a></li>
+   {{^userCtx.name}}<li><a href="{{{BaseUrl}}}/auth">Login</a></li>{{/userCtx.name}}
   </ul>
  </nav>
  <script>
