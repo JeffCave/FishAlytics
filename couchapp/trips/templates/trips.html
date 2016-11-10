@@ -1,0 +1,144 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+ <meta charset='utf-8' />
+ <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+ <meta name="description" content="Leafletslider : LeafletSlider" />
+ 
+ <!-- Login Redirect -->
+ <script type="text/javascript">if (!"{{userCtx.name}}") setTimeout(function(){window.location='{{{BaseUrl}}}/auth'},1);</script>
+ 
+ <link rel="stylesheet" type="text/css" media="screen" href="{{{BaseUrl}}}/style/screen.css">
+ <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.css" />
+ <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.css" type="text/css">
+ 
+ <link rel="stylesheet" href="style/screen.css" type="text/css">
+ 
+ <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.js"></script>
+ <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-beta1/jquery.min.js"></script>
+ <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+ <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.2/jquery.ui.touch-punch.min.js"></script>
+ <script type="text/javascript" src="https://rawgit.com/dwilhelm89/LeafletSlider/master/SliderControl.js"></script>
+ <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.3.0/d3.min.js" integrity="sha256-nmVW7V4d14Gfxlcq4PgXq/ZSODv1HhQwMxccoU308kY=" crossorigin="anonymous"></script>
+ <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/regression/1.3.0/regression.min.js" integrity="sha256-zyi4loJvZ0U+9M64eRYM3IXdjU2M4wYAnPGQrafn+zw=" crossorigin="anonymous"></script>
+ <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pouchdb/6.0.6/pouchdb.min.js" integrity="sha256-dN7ct+ugEHOZpL4AtGETZkiNynI5KMZ05sgpaMGFGK4=" crossorigin="anonymous"></script>
+ <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.1/moment.min.js" integrity="sha256-4PIvl58L9q7iwjT654TQJM+C/acEyoG738iL8B8nhXg=" crossorigin="anonymous"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-range/2.2.0/moment-range.min.js" integrity="sha256-Drt7BwJgfK1zoQV9ZwikA8+Lbl+v2pRsyLwN/9adRBY=" crossorigin="anonymous"></script>
+ <script src="http://isaaccambron.com/twix.js/twix.js/dist/twix.min.js" ></script>
+
+ <!--
+ <script type="text/javascript" src="/fishdev/_design/trips/scripts/regression.js?nocache=true"></script>
+ -->
+ <script>
+ var db = new PouchDB('{{{BaseUrl}}}');
+ </script>
+ 
+ <style>
+	div.trip{
+		/* border:1px solid grey; */
+		box-shadow: 0px 0px 20px 0px grey;
+		margin:1em;
+		padding:1em;
+	}
+ </style>
+
+ 
+ <title>{{PageTitle}}</title>
+</head>
+
+<body>
+<header class="inner">
+ <h1>{{PageTitle}}</h1>
+ <span>{{userCtx.name}}</span>
+ 
+</header>
+
+ <nav id='menu'>
+  <ul>
+   <li><a href="catchmap">My Catches</a></li>
+   <li><a href="stdweight">Standard Weight</a></li>
+   <li><a href="experimental">Experiments</a></li>
+  </ul>
+ </nav>
+ 
+ <nav id='panic'>
+  <ul>
+   <li><a href="catch">Fish On!</a></li>
+  </ul>
+ </nav>
+
+
+
+
+ </head>
+ <body>
+  <main>
+  </main>
+ 
+ 
+  <script>
+//	db.allDocs({
+//		descending: true
+//		,limit:1
+//		,startkey: 'trip.\uffff'
+//		,endkey: 'trip.'
+//	}).then(function (result) {
+//		if(result.rows){
+//			$('nav#panic a:eq(0)').attr('href','catch/' + result.rows[0].id + '?'+Math.exp(20).toFixed(0));
+//		}
+//	}).catch(function (err) {
+//		console.log(err);
+//	});
+	
+	var data = [];
+	var isend = false;
+	function AppendPage(){
+		if(isend) return;
+		d3.json("{{{BaseUrl}}}/views/trips?skip="+data.length+"&limit=10&descending=true", function(error, json) {
+			if (error) return console.warn(error);
+			isend = (json.rows.length === 0);
+			
+			data = data.concat(json.rows);
+			
+			var trips = d3
+				.select("main")
+				.selectAll("div.trip")
+				.data(data)
+				;
+			
+			var i = 0;
+			trips.exit().remove();
+			trips.enter()
+				.append("div")
+				.classed("trip", true)
+				.html(function(d){ 
+					var range = moment(d.value.start).twix(moment(d.value.finish));
+					return [""
+						,"<h1>((title))</h1>"
+						,"<p>((range))</p>"
+						].join('')
+						.replace('((title))',d.value._id)
+						.replace('((range))', range.humanizeLength() + ' (' + range.simpleFormat("HH:mm") + ')')
+						;
+				})
+				.style('opacity', 0)
+				.transition()
+				.duration(function(d,i){return 1000 /*+ 500 * i*/;})
+				.style('opacity', 1)
+				;
+		});
+	}
+	AppendPage();
+	
+	window.addEventListener("scroll", function(){
+		if ($(window).scrollTop() + $(window).height() > $(document).height() - 200) { 
+			AppendPage();
+		}
+	});
+  </script>
+ </body>
+</html>
+
