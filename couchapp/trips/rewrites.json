@@ -77,13 +77,20 @@
 		"to":"_show/catch/:key",
 		"method":"GET",
 		"query":{}
-	},	
+	},
 	{
 		"from":"/catch/:key",
 		"to":"_update/catch/:key",
 		"method":"POST",
 		"query":{}
-	},	
+	},
+	
+	{
+		"from":"/trips",
+		"to":"_list/trips/trips",
+		"method":"*",
+		"query":{}
+	},
 	
 	{
 		"from":"/views/*",

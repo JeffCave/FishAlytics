@@ -1,76 +1,191 @@
+
 <!DOCTYPE html>
 <html>
- <head>
-  <title>{{ pageTitle }}</title>
-  <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
-  <link rel="stylesheet" href="{{ assets }}/style/screen.css" type="text/css">
-  <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
-  <style>
-   label {
-       display:block;
-   }
-   main h1 {
-       text-shadow: #fff 0 0 4px;
-       font-size:150%;
-       text-align:left;
-   }
-   form p {
-       margin:0px;
-   }
-   #map { height: 180px; }
-  </style>
+
+<head>
+ <meta charset='utf-8' />
+ <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+ <meta name="description" content="Leafletslider : LeafletSlider" />
+ 
+ <!-- Login Redirect -->
+ <script type="text/javascript">if (!"{{userCtx.name}}") setTimeout(function(){window.location='{{{BaseUrl}}}/auth'},1);</script>
+ 
+ <link rel="stylesheet" type="text/css" media="screen" href="{{{BaseUrl}}}/style/screen.css">
+ <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.css" />
+ <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.css" type="text/css">
+ 
+ <link rel="stylesheet" href="style/screen.css" type="text/css">
+ 
+ <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.js"></script>
+ <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-beta1/jquery.min.js"></script>
+ <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+ <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.2/jquery.ui.touch-punch.min.js"></script>
+ <script type="text/javascript" src="https://rawgit.com/dwilhelm89/LeafletSlider/master/SliderControl.js"></script>
+ <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.3.0/d3.min.js" integrity="sha256-nmVW7V4d14Gfxlcq4PgXq/ZSODv1HhQwMxccoU308kY=" crossorigin="anonymous"></script>
+ <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/regression/1.3.0/regression.min.js" integrity="sha256-zyi4loJvZ0U+9M64eRYM3IXdjU2M4wYAnPGQrafn+zw=" crossorigin="anonymous"></script>
+ <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pouchdb/6.0.6/pouchdb.min.js" integrity="sha256-dN7ct+ugEHOZpL4AtGETZkiNynI5KMZ05sgpaMGFGK4=" crossorigin="anonymous"></script>
+ <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.1/moment.min.js" integrity="sha256-4PIvl58L9q7iwjT654TQJM+C/acEyoG738iL8B8nhXg=" crossorigin="anonymous"></script>
+ <!--
+ <script type="text/javascript" src="/fishdev/_design/trips/scripts/regression.js?nocache=true"></script>
+ -->
+ <script>
+ var db = new PouchDB('{{{BaseUrl}}}');
+ </script>
+ 
+ <title>{{PageTitle}}</title>
+</head>
+
+<body>
+<header class="inner">
+ <h1>{{PageTitle}}</h1>
+ <span>{{userCtx.name}}</span>
+ 
+</header>
+
+ <nav id='menu'>
+  <ul>
+   <li><a href="catchmap">My Catches</a></li>
+   <li><a href="stdweight">Standard Weight</a></li>
+   <li><a href="experimental">Experiments</a></li>
+  </ul>
+ </nav>
+ 
+ <nav id='panic'>
+  <ul>
+   <li><a href="catch">Fish On!</a></li>
+  </ul>
+ </nav>
+ 
+ 
+ <script>
+	db.allDocs({
+		descending: true
+		,limit:1
+		,startkey: 'trip.\uffff'
+		,endkey: 'trip.'
+	}).then(function (result) {
+//		if(result.rows){
+//			$('nav#panic a:eq(0)').attr('href','catch/' + result.rows[0].id + '?'+Math.exp(20).toFixed(0));
+//		}
+	}).catch(function (err) {
+		console.log(err);
+	});
+ </script>
+
+
+
+
+
+
+
+
+
+
+  <script>
+	function updateForm(form){
+		// get the form if it wasn't passed
+		if(!form){
+			form = document.getElementsByTagName('form')[0];
+		}
+		
+		// calculate the title
+		form.title.value = form.trip.value 
+			? form.species.value+' - '+moment(form.time.value).format("ddd, hA")+''
+			: 'New Catch'
+			;
+		document.title = form.title.value;
+		
+		// validate inter-relationships
+		form.weightIsEst.checked = form.weightIsEst.checked || (form.weightVisible.value.slice(-1) === '~');
+		form.weightVisible.value = Number.parseInt(form.weightVisible.value);
+		if("NaN" === form.weightVisible.value){
+			form.weightVisible.value = "";
+		}
+		form.weight.value = "" + form.weightVisible.value + (form.weightIsEst.checked ? "~" : "");
+		
+		//form.trip.value = "trip." + form.tripDisp.value;
+		var tripId = form.trip.value.split('.')[1];
+		form.tripDisp.value = moment(tripId,'x').utc().format();
+		if(form.tripDisp.value == 'Invalid date'){
+			form.tripDisp.value = tripId;
+		}
+		
+		form.setAttribute("action","{{{BaseUrl}}}/catch/" + form.trip.value + "?{{catchid}}");
+	}
+  </script>
  </head>
  <body>
-  {{>header}}
   <main>
-   <h1>{{TripId}}</h1>
-   <ol id='waypoints'>
-    <li class='start'>
-     <time datetime='2016-02-17T20:00Z'>20:00</time>
-     
-    </li>
-    <li class='waypoint'>
-     <time datetime='2016-02-17T20:00Z'>20:00</time>
-    </li>
-    <li class='catch'>
-     <time datetime='2016-02-17T20:00Z'>20:00</time>
-    </li>
-    <li class='end'>
-     <time datetime='2016-02-17T20:00Z'>20:00</time>
-    </li>
-   </ol>
-   <div id="summary">
-    <ul>
-     <li>Put some stats about the trip</li>
-     <li>Start - End</li>
-     <li>TimeSpent</li>
-     <li>
-      Number of Fish
-      <ul>
-       <li>Species 1: %</li>
-       <li>Species 2: %</li>
-      </ul>
-     </li>
-     <li>Fish/Hour</li>
-     <li></li>
-     <li></li>
-    </ul>
-   </div>
-   <div id="map"></div>
-  </main>
-  <script type="text/javascript">
-	var map = L.map('map',{zoomControl: false}).setView([44.6869, -63.6846],15);
-	var tiles = {
-			'thunder':'https://{s}.tile.thunderforest.com/cycle/{z}/{x}/{y}.png'
-			,'osm':   'http://{s}.tile.osm.org/{z}/{x}/{y}.png'
-		};
-	
-	L.tileLayer(tiles['osm'], {
-		attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-	}).addTo(map);
-	
-	
-  </script>
+   <form oninput="updateForm(this);" method="POST" action='{{{BaseUrl}}}/catch/{{doc._id}}?{{catchid}}'>
+    <h1><output name="title" for="species time">{{species}} &mdash; <time>{{time}}</time></h1>
+    <span>
+     <label for="trip">Trip</label>
+     <input type="hidden" id="trip" name="trip" value="{{doc._id}}" readonly />
+     <input type="text" id="tripDisp" name="tripDisp" value="{{doc._id}}" readonly />
+     {{#catchids.length}}
+     <br />
+     <select onchange='if(this.value === "") return; window.location.href="{{{BaseUrl}}}/catch/{{doc._id}}?" + this.value;'>
+      <option value=''></option>
+      {{#catchids}}<option value='{{key}}' {{#isCurrent}}selected{{/isCurrent}} >{{value}}</option>{{/catchids}}
+      <option value='{{NewCatch}}'>New Catch</option>
+     </select>
+     {{/catchids.length}}
+    </span>
+    
+    <fieldset>
+     <legend>Catch</legend>
+     <span>
+      <label for="time">Time</label>
+      <input type="text" id="time" name="time" value="{{catch.timestamp}}" />
+     </span>
+     <span>
+      <label for="longitude">Latitude</label>
+      <input type="text" id="lat" name="lat" value="{{catch.coords.1}}" />
+     </span>
+     <span>
+      <label for="latitude">Longtitude</label>
+      <input type="text" id="long" name="long" value="{{catch.coords.0}}" />
+     </span>
+     <span>
+      <label for="alt">Altitude</label>
+      <input type="text" id="alt" name="alt" value="{{catch.coords.2}}" />
+     </span>
+    </fieldset>
+    
+    <fieldset>
+     <legend>Fish</legend>
+     <span>
+      <label for="species">Species</label>
+      <input type="text" id="species" name="species" value="{{catch.fish.species}}" />
+     </span>
+     <span>
+      <label for="length">Length</label>
+      <input type="text" id="length" name="length" value="{{catch.fish.length}}" />
+     </span>
+     <span>
+      <label for="length">Weight</label>
+      <input type="hidden" id="weight" name="weight" value="{{catch.fish.weight}}" />
+      <input type="text" id="weightVisible" value="{{catch.fish.weight}}" />
+      <input type="checkbox" id="weightIsEst" value="~" onchange="updateForm();" /><label for="estWeight" class="est">estimated</label>
+     </span>
+     <span>
+      <label for="length">Girth</label>
+      <input type="text" id="girth" name="girth" value="{{catch.fish.girth}}" />
+     </span>
+    </fieldset>
+    
+    <span>
+     <button type="submit">Save</button>
+     <button type="reset">Cancel</button>
+     <button type='button' onclick='window.location.href="{{{BaseUrl}}}/catch"'>New Trip</button>
+    </span>
+    
+   </form>
+   
+   <script>
+	updateForm();
+   </script>
  </body>
 </html>
 

@@ -224,6 +224,15 @@ function(doc,req){
 		}
 	};
 	
+	var resp = [
+		phases.begin.resp
+		,phases.redirectToAuthSource.resp
+		,phases.waitOnAuthSource.resp
+		,phases.checkuser.resp
+		,phases.setpass.resp
+		,phases.dologin.resp
+	];
+	
 	
 	
 	if(doc && doc.expires < timestamp){ 
@@ -236,6 +245,7 @@ function(doc,req){
 		doc.phase = phases.dologin.phase;
 		doc.setpass = doc.triggered.setPass.code;
 		doc.canDelete = true;
+		resp = phases.dologin.resp;
 		//if(doc.triggered.setPass.code !== 200){
 		//	
 		//}
@@ -243,6 +253,7 @@ function(doc,req){
 	}
 	else if(phases.setpass.isphase(doc,req)){
 		doc.phase = phases.setpass.phase;
+		resp = phases.setpass.resp;
 		doc.triggers = doc.triggers || {};
 		doc.triggers.setPass = {
 			path: doc.BaseUrl + "/_users/org.couchdb.user%3A" + encodeURIComponent(doc.id_token.email)
@@ -268,6 +279,7 @@ function(doc,req){
 	}
 	else if(phases.checkuser.isphase(doc,req)){
 		doc.phase = phases.checkuser.phase;
+		resp = phases.checkuser.resp;
 		doc.triggers = doc.triggers || {};
 		if(doc.triggered.verify.code !== 200){
 			//TODO
@@ -290,10 +302,12 @@ function(doc,req){
 	else if(doc.triggers && doc.triggers.verify){
 		//we are still waiting... nothignt really to do
 		doc.phase = phases.waitOnAuthSource.phase;
+		resp = phases.waitOnAuthSource.resp;
 		doc.blockSave = true;
 	}
 	else if(doc.code){
 		doc.phase = phases.waitOnAuthSource.phase;
+		resp = phases.waitOnAuthSource.resp;
 		doc.triggers = {verify:{
 				path:"https://accounts.google.com/o/oauth2/token"
 				,headers:{'content-type':'application/x-www-form-urlencoded'}
@@ -312,9 +326,11 @@ function(doc,req){
 	}
 	else if(doc._rev){
 		doc.phase = phases.redirectToAuthSource.phase;
+		resp = phases.redirectToAuthSource.resp;
 	}
 	else{
 		doc.phase = phases.begin.phase;
+		resp = phases.begin.resp;
 	}
 	
 	if(doc.id_token){
@@ -323,18 +339,7 @@ function(doc,req){
 		token.email_verified = doc.id_token.email_verified;
 	}
 	
-	var resp = [
-		phases.begin.resp
-		,phases.redirectToAuthSource.resp
-		,phases.waitOnAuthSource.resp
-		,phases.checkuser.resp
-		,phases.setpass.resp
-		,phases.dologin.resp
-	];
 	
-	
-	
-	resp = resp[doc.phase];
 	var Mustache = require("lib/mustache");
 	resp.body = Mustache.to_html(resp.body, doc, this.templates.partials);
 	if(doc.blockSave){
