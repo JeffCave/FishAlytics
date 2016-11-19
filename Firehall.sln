@@ -39,7 +39,6 @@ Global
 		{BDB72165-61B3-4F34-AEED-95FC60009709}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = Firehall\Firehall.csproj
 		Policies = $0
 		$0.TextStylePolicy = $1
 		$1.FileWidth = 120
@@ -58,7 +57,7 @@ Global
 		$4.TabWidth = 2
 		$4.IndentWidth = 2
 		$4.NoTabsAfterNonTabs = True
-		$4.inheritsSet = Mono
+		$4.inheritsSet = VisualStudio
 		$4.inheritsScope = text/plain
 		$4.scope = application/xml
 		$0.XmlFormattingPolicy = $5
@@ -70,6 +69,9 @@ Global
 		$6.scope = text/x-csharp
 		$0.CSharpFormattingPolicy = $7
 		$7.IndentSwitchBody = True
+		$7.ElseNewLinePlacement = NewLine
+		$7.CatchNewLinePlacement = NewLine
+		$7.FinallyNewLinePlacement = NewLine
 		$7.BeforeMethodCallParentheses = False
 		$7.BeforeIndexerDeclarationBracket = False
 		$7.NewParentheses = False
@@ -95,5 +97,11 @@ Global
 		$10.inheritsSet = Mono
 		$10.inheritsScope = text/plain
 		$10.scope = application/x-master-page
+		$0.DotNetNamingPolicy = $11
+		$11.DirectoryNamespaceAssociation = Hierarchical
+		$11.ResourceNamePolicy = FileFormatDefault
+		$0.TextStylePolicy = $12
+		$12.inheritsSet = null
+		$12.scope = application/javascript
 	EndGlobalSection
 EndGlobal

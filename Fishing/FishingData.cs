@@ -19,24 +19,29 @@ namespace Vius.Fishing.Data
 			get {
 				lock(staticLocker){
 					if(instance == null){
-						try{
-
-							var cnn = Vius.Data.DataProvider.Instance.GetConnection();
-							//cnn.ConnectionString += ";DbLinqProvider=Npgsql";
-							var cnnstr = 
-								"DbLinqProvider=PostgreSql;"
-								+ "DbLinqConnectionType=Npgsql.NpgsqlConnection, Npgsql;"
-								+ cnn.ConnectionString
-								;
-							instance = new FishingData(cnnstr);
-						} catch(Exception e) {
-							System.Console.Out.WriteLine(e.Message);
-							System.Console.Out.WriteLine(e.StackTrace);
-						}
+						instance = GetContext();
 					}
 				}
 				return instance;
 			}
+		}
+
+		public static FishingData GetContext(){
+			FishingData inst = null;
+			try{
+				var cnn = Vius.Data.DataProvider.Instance.GetConnection();
+				//cnn.ConnectionString += ";DbLinqProvider=Npgsql";
+				var cnnstr = 
+					"DbLinqProvider=PostgreSql;"
+					+ "DbLinqConnectionType=Npgsql.NpgsqlConnection, Npgsql;"
+					+ cnn.ConnectionString
+					;
+				inst = new FishingData(cnnstr);
+			} catch(Exception e) {
+				System.Console.Out.WriteLine(e.Message);
+				System.Console.Out.WriteLine(e.StackTrace);
+			}
+			return inst;
 		}
 
 		public FishingData(string cnnstr):base(cnnstr)

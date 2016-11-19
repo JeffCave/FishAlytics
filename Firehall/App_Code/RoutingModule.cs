@@ -14,8 +14,14 @@ namespace Firehall
 	/// </remarks>
 	public class RoutingModule : IHttpModule
 	{
-		private static class CollectionKeys{
-			public static string OrigUrl = "RoutingModule.OrigUrl";
+		/// <summary>
+		/// This collection represents keys used by the routing module for storage in the shared memory
+		/// </summary>
+		public static class CollectionKeys{
+			/// <summary>
+			/// The original URL.
+			/// </summary>
+			public static readonly string OrigUrl = "RoutingModule.OrigUrl";
 		}
 
 		/// <summary>

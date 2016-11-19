@@ -1,12 +1,14 @@
 <%@ Page Language="C#" Inherits="Firehall.Fishing.Catch" MasterPageFile="~/Site.master" %>
 <asp:Content ContentPlaceHolderID="MainContent" ID="MainContentContent" runat="server">
 
-<input type='hidden' id='id' value='' />
+<form method="delete">
+<input type='hidden' id='id' name="CatchId" value='<%=datum.CatchId%>' />
 
-When:<br />
-<input type="datetime" id="Time" value='' /><br />
-<br />
-Species:<br />
+<p>
+<label for="Time">When</label>
+<input type="datetime" id="Time" name="Time" value='<%=datum.Time%>' />
+</p>
+<lable for="Species">Species<br />
 <input type='text' id="Species" value='' /><br />
 <br />
 Length:<br />
@@ -16,7 +18,7 @@ Weight:<br />
 <input type='number' id="Weight" value='' /><br />
 <br />
 <input type='submit' id="action" value='Save' /><br />
-
+</form>
 </asp:Content>
 
 

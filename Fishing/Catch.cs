@@ -12,7 +12,7 @@ namespace Vius.Fishing.Data
 {
 	[Serializable]
 	[Table(Name="Fishing.Catches")]
-	public class Catch: ISerializable
+	public class Catch // : ISerializable
 	{
 		#region Initialize
 		public Catch ()
@@ -24,14 +24,13 @@ namespace Vius.Fishing.Data
 		private int catchId = 0;
 		private DateTime time = DateTime.MinValue;
 
-//		[Column(DbType="bigserial",CanBeNull=false,IsDbGenerated=true,IsPrimaryKey=true)]
-		[Column]
+		[Column(DbType="bigserial",CanBeNull=false,IsDbGenerated=true,IsPrimaryKey=true)]
 		public int CatchId {
 			get{ return catchId; }
 			set{catchId = value;}
 		}
 
-		[Column(CanBeNull=false)]
+		[Column(CanBeNull=true, DbType="System.Data.DbType.DateTime")]
 		public DateTime Time {
 			get{ return time;}
 			set{ time = value;}
@@ -93,25 +92,25 @@ namespace Vius.Fishing.Data
 		/// </summary>
 		/// <param name="info">Info.</param>
 		/// <param name="context">Context.</param>
-		public void GetObjectData(SerializationInfo info, StreamingContext context)
-		{
-			// Use the AddValue method to specify serialized values.
-			info.AddValue("CatchId", CatchId, this.CatchId.GetType());
-			info.AddValue("Time", Time, this.Time.GetType());
+//		public void GetObjectData(SerializationInfo info, StreamingContext context)
+//		{
+//			// Use the AddValue method to specify serialized values.
+//			info.AddValue("CatchId", CatchId, this.CatchId.GetType());
+//			info.AddValue("Time", Time, this.Time.GetType());
 //			info.AddValue("Species", Species, this.Species.GetType());
-		}
+//		}
 		/// <summary>
 		/// The special constructor is used to deserialize a <see cref="Vius.Fishing.Data.Catch"/> object.
 		/// </summary>
 		/// <param name="info">serialized properties</param>
 		/// <param name="context">context</param>
-		public Catch(SerializationInfo info, StreamingContext context)
-		{
-			// Reset the property value using the GetValue method.
-			this.CatchId = (int)info.GetValue("CatchId", this.CatchId.GetType());
-			this.Time = (DateTime)info.GetValue("Time", this.Time.GetType());
+//		public Catch(SerializationInfo info, StreamingContext context)
+//		{
+//			// Reset the property value using the GetValue method.
+//			this.CatchId = (int)info.GetValue("CatchId", this.CatchId.GetType());
+//			this.Time = (DateTime)info.GetValue("Time", this.Time.GetType());
 //			this.Species = (string)info.GetValue("Species", this.Species.GetType());
-		}
+//		}
 		#endregion
 
 	}
