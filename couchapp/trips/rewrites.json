@@ -1,6 +1,12 @@
 [
 	{
 		"from": "",
+		"to": "_attachments/index.html",
+		"method": "GET",
+		"query": {}
+	},
+	{
+		"from": "/catches",
 		"to": "_list/catches/catches",
 		"method": "GET",
 		"query": {}

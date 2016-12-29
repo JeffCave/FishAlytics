@@ -1,40 +1,159 @@
 <!DOCTYPE html>
 <html>
+<head>
+ <title>Fishalytics</title>
+    
+ <script src="https://use.fontawesome.com/0217019c13.js"></script>
+    
+ <!-- Fav and touch icons -->
+ <link rel="shortcut icon" href="images/favicon.ico">
+
+ <style type="text/css">
+	body {
+		margin:0px;
+		padding:0px;
+	}
+	header{
+		position: fixed;
+		top: 0;
+		left:0;
+		right:0;
+		bottom:0;
+	}
+	header > nav {
+		display:inline-block;
+	}
+	nav ul {
+		display:inline-block;
+		list-style-type: none;
+	}
+	nav ul li {
+		display: inline;
+	}
+	main > section {
+		border:1px solid black;
+	}
+	#splash > header{
+		position: absolute;
+		top: 10vw;
+		width:100%;
+		text-align:center;
+		margin:auto;
+	}
+	#splash > header > img {
+		display:inline-block;
+		height:20vw;
+		width:20vw;
+		border:1px solid white;
+	}
+	#splash > header > h1 {
+		display: inline-block;
+		font-size:10vw;
+		color: #973c13;
+		text-shadow:
+			-1px -1px 0 white,
+			1px -1px 0 white,
+			-1px 1px 0 white,
+			1px 1px 0 white; 
+		margin:0;
+		padding:0;
+	}
+	
+	.background {
+		display:block;
+		width:100%;
+	}
+	
+	video {
+		display:block;
+		width:100%;
+	}
+ </style>
+</head>
+
 <body>
-<h2>Administrative</h2>
-<ul>
- <li><form method='POST' action='./auth' >
- <input type='submit' value='Sign in with Google' />
-</form></li>
- <li><form method='DELETE' action='/_session' >
- <input type='submit' value='Sign out' />
-</form></li>
-</ul>
-<h2>Rendered View</h2>
-<ul>
- <li>
-  <a href="catchmap">Mapped Catches</a>
+<header>
+ <nav>
   <ul>
-   <li><a href='catchmap?startkey=["2015"]&endkey=["2016"]'>2015</a></li>
-   <li><a href='catchmap?startkey=["2016"]&endkey=["2017"]'>2016</a></li>
+   <li><a href="#map">Features</a></li>
+   <li><a href="#map">Features</a></li>
   </ul>
- </li>
- <li>
-  <a href="stdweight">Length/Weight</a>
-  <ul>
-   <li><a href='stdweight?startkey=["yellow%20perch"]&endkey=["yellow%20perch",{}]'>Perch</a></li>
-   <li><a href='stdweight?startkey=["brook%20trout"]&endkey=["brook%20trout",{}]'>Trout</a></li>
-   
-  </ul>
- </li>
-</ul>
-<h2>Queriable Raw Data</h2>
-<ul>
- <li><a href="views/catches">Catches</a></li>
- <li><a href="views/bySpecies">Fish</a>
-  <ul><li><a href='views/bySpecies?startkey=["brook%20trout"]&endkey=["brook%20trout",{}]'>Trout</a></li></ul>
- </li>
- <li><a href="views/trips">Trips</a></li>
-</ul>
+ </nav>
+ <button><a href=''>Login</a></button>
+</header>
+
+<main>
+<section id='splash'>
+ <video autoplay muted loop poster="media/hero.png" class='background'>
+  <source src="media/hero.mp4" type="video/mp4">
+ </video>
+ <header>
+  <!-- img src='http://weirdthings.com/wp-content/uploads/2009/10/sea-monster2-150dpi1-thumb.jpg' / -->
+  <img src='media/logo.png' />
+  <h1>FishAlytics</h1>
+ </header>
+ <p>
+  Share and track sport angling data to co-operatively improve ecological management.
+ </p>
+</section>
+<section id='map'>
+ <img src='media/screen-map.png' class='background' />
+ <p>
+  <strong>Know</strong> where fish are <strong>right now</strong>
+ </p>
+</section>
+<section id='audiences'>
+ <p>Perfect for </p>
+ <ul>
+  <li>Fisherman</li>
+  <li>Conservationists
+   <ul>
+    <li>Government</li>
+    <li>Research</li>
+    <li>Private Clubs</li>
+   </ul>
+  </li>
+  <li>Professional
+   <ul>
+    <li>Guides</li>
+    <li>Outfitters</li>
+    <li>Lodges</li>
+   </ul>
+  </li>
+ </ul>
+</section>
+<section id='fisherman' class='audience'>
+ <img class='icon' src='fisherman.png' />
+ <p>
+  ??? There are lots of uses for fisherman. Catch more fish. Don't just guess where you caught the big one, know. Share with your friends. 
+ </p>
+ <img class='chart' />
+</section>
+<section id='conserve' class='audience'>
+ <img class='icon' src='conserve.png' />
+ <p>
+  ??? Acheive real time insight into population health and behaviour. 
+ </p>
+ <img class='chart' />
+</section>
+<section id='professional' class='audience'>
+ <img class='icon' src='professional.png' />
+ <p>
+  ??? Customers demand successful trips. Maximize your client's chances of catching the big one.
+ </p>
+ <p>
+  Create trip albums for your customers to remember you by and share with their friends.
+ </p>
+ <img class='chart' />
+</section>
+<section>
+ <p>Actively seeking partnerships</p>
+</section>
+</main>
+<footer>
+ <p>Copyright 2017</p>
+ <p>jefferey.cave@gmail.com</p>
+</footer>
 </body>
 </html>
+
