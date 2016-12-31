@@ -1,7 +1,7 @@
 [
 	{
 		"from": "",
-		"to": "_attachments/index.html",
+		"to": "index.html",
 		"method": "GET",
 		"query": {}
 	},
@@ -116,6 +116,12 @@
 	{
 		"from":"/style/*",
 		"to":"/style/*",
+		"method":"*",
+		"query":{}
+	},
+	{
+		"from":"/media/*",
+		"to":"/media/*",
 		"method":"*",
 		"query":{}
 	},

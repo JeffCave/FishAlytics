@@ -3,24 +3,36 @@
 <head>
  <title>Fishalytics</title>
     
- <script src="https://use.fontawesome.com/0217019c13.js"></script>
-    
  <!-- Fav and touch icons -->
  <link rel="shortcut icon" href="images/favicon.ico">
 
  <style type="text/css">
+ *{
+	box-sizing: border-box;
+	position:relative;
+	}
+	/*
+	 * Thematic color: rgb(151,60,19) or #973C13
+	 * video ratio: 852 x 479.25
+	 */
 	body {
 		margin:0px;
 		padding:0px;
+		padding-top:3em;
+		box-sizing: border-box;
+		/* font-size:10mm ;*/
 	}
-	header{
+	body > header{
+		background-color:rgba(0,0,0,0.5);
+		z-index:100;
 		position: fixed;
+		text-align:right;
 		top: 0;
 		left:0;
 		right:0;
-		bottom:0;
+		height:3em;
 	}
-	header > nav {
+	body > header > nav {
 		display:inline-block;
 	}
 	nav ul {
@@ -30,12 +42,23 @@
 	nav ul li {
 		display: inline;
 	}
+	
 	main > section {
+		width:100%;
+		min-height:55.5vw;
 		border:1px solid black;
+	}
+	
+	#splash > #video-sepia{
+		position: absolute;
+		top: 0vw;
+		width:100%;
+		height:55.6vw;
+		background-color:rgba(151,60,19,0.3);
 	}
 	#splash > header{
 		position: absolute;
-		top: 10vw;
+		top: 5vw;
 		width:100%;
 		text-align:center;
 		margin:auto;
@@ -48,15 +71,27 @@
 	}
 	#splash > header > h1 {
 		display: inline-block;
-		font-size:10vw;
-		color: #973c13;
+		font-size:13vw;
+		color: rgb(151,60,19);
 		text-shadow:
 			-1px -1px 0 white,
-			1px -1px 0 white,
-			-1px 1px 0 white,
-			1px 1px 0 white; 
+			1px  -1px 0 white,
+			-1px  1px 0 white,
+			1px   1px 0 white; 
 		margin:0;
 		padding:0;
+	}
+	#splash > p {
+		position:absolute;
+		top:20vw;
+		margin:10vw;
+		font-size:5mm;
+		color: white;
+		text-shadow:
+			-1px -1px 0 rgb(151,60,19),
+			1px  -1px 0 rgb(151,60,19),
+			-1px  1px 0 rgb(151,60,19),
+			1px   1px 0 rgb(151,60,19); 
 	}
 	
 	.background {
@@ -84,9 +119,25 @@
 
 <main>
 <section id='splash'>
- <video autoplay muted loop poster="media/hero.png" class='background'>
+ <video muted loop poster="media/hero.png" class='background' playbackRate='0.5'>
   <source src="media/hero.mp4" type="video/mp4">
  </video>
+ <script>
+	var vid = document.getElementsByTagName('video')[0];
+	vid.playbackRate = 0;
+	vid.play();
+	setTimeout(function(){
+		vid.playbackRate = 0.5;
+		var setrate = setInterval(function(){
+			vid.playbackRate += 1/1000;
+			if(vid.playbackRate >0.75){
+				vid.playbackRate = 0.75;
+				clearInterval(setrate);
+			}
+		},100)
+	},10000);
+ </script>
+ <div id='video-sepia'></div>
  <header>
   <!-- img src='http://weirdthings.com/wp-content/uploads/2009/10/sea-monster2-150dpi1-thumb.jpg' / -->
   <img src='media/logo.png' />
@@ -103,24 +154,81 @@
  </p>
 </section>
 <section id='audiences'>
- <p>Perfect for </p>
- <ul>
-  <li>Fisherman</li>
-  <li>Conservationists
-   <ul>
-    <li>Government</li>
-    <li>Research</li>
-    <li>Private Clubs</li>
-   </ul>
-  </li>
-  <li>Professional
-   <ul>
-    <li>Guides</li>
-    <li>Outfitters</li>
-    <li>Lodges</li>
-   </ul>
-  </li>
- </ul>
+ <style>
+  #audiences {
+	padding-left:1vw;
+	padding-right:1vw;
+	text-align: justify;
+	text-align-last: justify;
+	box-sizing: border-box;
+	vertical-align:middle;
+  }
+  
+  #audiences > section{
+	display:inline-block;
+	position:relative;
+	box-sizing: border-box;
+	width:30vw;
+	height:30vw;
+	border:1px solid magenta;
+	text-align:center;
+	text-align-last:center;
+  }
+  
+  #audiences > section > img {
+	display:block;
+	position:absolute;
+	z-index:-1;
+	top:0;
+	left:0;
+	right:0;
+	height:50%;
+	width:100%;
+  }
+  #audiences > section > div {
+	display:block;
+	position:absolute;
+	z-index:-1;
+	box-sizing: border-box;
+	padding:1em;
+	bottom:0;
+	left:0;
+	right:0;
+	height:50%;
+	width:100%;
+  }
+  
+  #audiences > section > h2 {
+	display:inline;
+	position:relative;
+	text-align:center;
+	vertical-align:middle;
+	height:100%
+  }
+  
+ </style>
+ <h2 style='display:none;'>Audience</h2>
+ <section>
+  <h3>Fisherman</h3>
+  <img src='media/logo.png' />
+  <div>
+   Catch more fish
+  </div>
+ </section>
+ <section>
+  <h3>Conservationists</h3>
+  <img src='media/logo.png' />
+  <div>
+   Catch more fish
+  </div>
+ </section>
+ <section>
+  <h3>Guides</h3>
+  <img src='media/logo.png' />
+  <div>
+   Catch more fish
+  </div>
+ </section>
 </section>
 <section id='fisherman' class='audience'>
  <img class='icon' src='fisherman.png' />
@@ -132,7 +240,12 @@
 <section id='conserve' class='audience'>
  <img class='icon' src='conserve.png' />
  <p>
-  ??? Acheive real time insight into population health and behaviour. 
+  ??? Achieve real time insight into population health and behaviour. 
+   <ul>
+    <li>Government</li>
+    <li>Research</li>
+    <li>Private Clubs</li>
+   </ul>
  </p>
  <img class='chart' />
 </section>
@@ -143,6 +256,11 @@
  </p>
  <p>
   Create trip albums for your customers to remember you by and share with their friends.
+   <ul>
+    <li>Guides</li>
+    <li>Outfitters</li>
+    <li>Lodges</li>
+   </ul>
  </p>
  <img class='chart' />
 </section>
