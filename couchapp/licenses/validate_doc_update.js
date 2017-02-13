@@ -1,7 +1,7 @@
 /**
  * Validations for Licenses
  */ 
-function(newDoc, oldDoc, usserCtx, secObj) {
+function validate_doc_update(newDoc, oldDoc, usserCtx, secObj) {
 	if('lic' != newDoc._id.split('.')[0].toLowerCase()){
 		return;
 	}
@@ -13,7 +13,7 @@ function(newDoc, oldDoc, usserCtx, secObj) {
 	
 	//*******************************************************************
 	//* Required fields
-	$msg = "All licenses require a '{field}' field ";
+	var $msg = "All licenses require a '{field}' field ";
 	[	'fisherman'
 		,'authority'
 		,'type'
@@ -37,7 +37,7 @@ function(newDoc, oldDoc, usserCtx, secObj) {
 	// *******************************************************************
 	// * Issuance has some constraints
 	//must contain a valid date
-	$val = Date.parse(newDoc.issued.timestamp);
+	var $val = Date.parse(newDoc.issued.timestamp);
 	if(!$val){
 		throw({ forbidden : '"Issued" specifies an invalid timestamp: ' + newDoc.issued.timestamp });
 	}

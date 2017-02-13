@@ -1,0 +1,36 @@
+{
+  "name": "fishalytics",
+  "devDependencies": {
+    "follow": "latest",
+    "grunt": "latest",
+    "grunt-check-dependencies": "latest",
+    "grunt-contrib-jshint": "latest",
+    "grunt-contrib-watch": "latest",
+    "grunt-couch": "latest",
+    "grunt-exec": "latest",
+    "grunt-npm-install": "latest",
+    "grunt-shell-spawn": "latest",
+    "jshint": "latest",
+    "mocha": "latest",
+    "node-netstat": "latest",
+    "sync-request": "latest"
+  },
+  "scripts": {
+    "lint": "jshint **.js",
+    "start:c9": "./runC9.sh"
+  },
+  "version": "0.1.0",
+  "description": "Share and track sport angling data to co-operatively improve ecological management",
+  "main": "Gruntfile.js",
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@gitlab.com/jefferey-cave/Fishalytics.git"
+  },
+  "author": "Jeff Cave <jefferey.cave@gmail.com>",
+  "license": "WTFPL",
+  "bugs": {
+    "url": "https://gitlab.com/jefferey-cave/Fishalytics/issues"
+  },
+  "homepage": "https://gitlab.com/jefferey-cave/Fishalytics#README"
+}
