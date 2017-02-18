@@ -1,15 +1,20 @@
+/* global emit */
+/* global catchUtils */
+
 /**
  * Species Maps
  * 
  * Within our catches we record the species caught.
  * 
  */
-function(doc) {
+function bySpecies(doc) {
+	'use strict';
+	
 	//!code views/lib/catch.js
 	
-	$catches =catchUtils.asCatches(doc);
-	for($c in $catches){
-		$key = $catches[$c];
+	var $catches =catchUtils.asCatches(doc);
+	for(var $c in $catches){
+		var $key = $catches[$c];
 		$key = $key.val;
 		$key = JSON.parse(JSON.stringify($key));
 		$key = [
@@ -19,7 +24,7 @@ function(doc) {
 			$key.timestamp
 		];
 		
-		$val = JSON.parse(JSON.stringify($catches[$c].val));
+		var $val = JSON.parse(JSON.stringify($catches[$c].val));
 		delete $val.licenses;
 		delete $val.status;
 		delete $val.rig;

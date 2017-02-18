@@ -1,7 +1,7 @@
 /**
  * Validations for Trip documents
  */ 
-function(newDoc, oldDoc, userCtx, secObj) {
+function validate_doc_update(newDoc, oldDoc, userCtx, secObj) {
 	if('trip' != newDoc._id.split('.')[0].toLowerCase()){
 		return;
 	}
@@ -11,7 +11,7 @@ function(newDoc, oldDoc, userCtx, secObj) {
 	var Validators = {
 		'waypoint' : function(waypoint){
 			//must be a valid date
-			$val = Date.parse(waypoint.timestamp);
+			var $val = Date.parse(waypoint.timestamp);
 			if(!$val){
 				throw({ forbidden : 'Waypoint specifies an invalid timestamp: ' + waypoint.timestamp });
 			}

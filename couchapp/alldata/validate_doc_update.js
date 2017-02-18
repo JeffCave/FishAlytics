@@ -12,7 +12,7 @@
  * </ul>
  * 
  */
-function(newDoc, oldDoc, userCtx, secObj) {
+function validate_doc_update(newDoc, oldDoc, userCtx, secObj) {
 	var isChanged = (function(oldDoc,newDoc){
 			if(!oldDoc) return true;
 			
@@ -32,10 +32,11 @@ function(newDoc, oldDoc, userCtx, secObj) {
 	}
 	
 	var isAdmin = (function(userCtx, secObj){
-			isadmin = (userCtx.roles.indexOf('_admin') !== -1)
-				|| (
-					secObj && secObj.admins && secObj.admins.names 
-					&& secObj.admins.names.indexOf(userCtx.name) !== -1
+			var isadmin = (userCtx.roles.indexOf('_admin') !== -1) || (
+					secObj && 
+					secObj.admins && 
+					secObj.admins.names && secObj.
+					admins.names.indexOf(userCtx.name) !== -1
 				);
 			// see if the user a database admin specified by role
 			if (!isadmin && secObj && secObj.admins && secObj.admins.roles){
@@ -63,7 +64,7 @@ function(newDoc, oldDoc, userCtx, secObj) {
 				throw({ forbidden : msg.replace('{field}',field) });
 			}
 		});
-	$val = Date.parse(meta.created);
+	var $val = Date.parse(meta.created);
 	if(isNaN($val)){
 		throw({forbidden : "Creation date must be a date"});
 	}
@@ -82,7 +83,7 @@ function(newDoc, oldDoc, userCtx, secObj) {
 	if(oldDoc){
 		if (oldDoc.meta){
 			//META DATA
-			if(oldDoc.meta.created && toJSON(oldDoc.meta.created) != toJSON(newDoc.meta.created)){
+			if(oldDoc.meta.created && JSON.stringify(oldDoc.meta.created) != JSON.stringify(newDoc.meta.created)){
 				throw({ forbidden : "May not change creation timestamp" });
 			}
 		}

@@ -1,4 +1,4 @@
-function(doc) {
+function trips(doc) {
     if (doc._id.substring(0,5) !== 'trip.') {
 		return;
 	}
@@ -54,4 +54,4 @@ function(doc) {
 	];
 	
 	emit(key, d);
-};
+}

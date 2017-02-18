@@ -1,4 +1,4 @@
-function(doc, req) {
+function showsCatch(doc, req) {
 	var utils = require("lib/utils");
 	
 	if(!req.userCtx.name){

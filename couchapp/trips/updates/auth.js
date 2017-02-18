@@ -2,12 +2,12 @@
  * Authentication Handler
  * 
  */
-function(doc,req){
+function updatesAuth(doc,req){
 	var base64 = require("lib/base64");
 	var utils = require("lib/utils");
 	//generally useful calculations
 	var token = {email:'',sub:'',email_verified:''};
-	var origDoc = JSON.parse(JSON.stringify(doc));
+	//var origDoc = JSON.parse(JSON.stringify(doc));
 	var timestamp = Date.now();
 	//var localAuth = "Basic " + base64.btoa("triggerjob:triggerjob");
 	var localAuth = "Basic dHJpZ2dlcmpvYjp0cmlnZ2Vyam9i";
@@ -87,15 +87,16 @@ function(doc,req){
 				code:303
 				,headers : {
 					"Status" : "303"
-					,"Location" : 
-						"https://accounts.google.com/o/oauth2/v2/auth?"
-						+ "&response_type=code" 
-						+ "&client_id=239959269801-rc9sbujsr5gv4gm43ecsavjk6s149ug7.apps.googleusercontent.com"
-						+ "&scope=email"
-						+ "&state="+encodeURIComponent(JSON.stringify(doc))+""
-						+ "&redirect_uri=" + encodeURIComponent(doc.BaseUrl + "/auth")
-						+ "&include_granted_scopes=true"
-						+ "&nonce=" + encodeURIComponent(doc._id)
+					,"Location" : [""
+						,"https://accounts.google.com/o/oauth2/v2/auth?"
+						,"&response_type=code" 
+						,"&client_id=239959269801-rc9sbujsr5gv4gm43ecsavjk6s149ug7.apps.googleusercontent.com"
+						,"&scope=email"
+						,"&state="+encodeURIComponent(JSON.stringify(doc))+""
+						,"&redirect_uri=" + encodeURIComponent(doc.BaseUrl + "/auth")
+						,"&include_granted_scopes=true"
+						,"&nonce=" + encodeURIComponent(doc._id)
+						].join('')
 				}
 				,body : [""
 						,"<html>"

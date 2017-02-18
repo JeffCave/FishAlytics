@@ -1,16 +1,16 @@
-
-function(doc) {
+/* global emit */
+function TripSummary(doc) {
     if (doc._id.substring(0,5) !== 'trip.') {
 		return;
 	}
 	var key = [
 		doc.fisherman,
-		doc._id.split('.')[1]
+		doc._id.split('.')[1],
 	];
 	var agg = {
-		"trip" : doc._id
-		,"fef" : 0
+		"trip" : doc._id,
+		"fef" : 0,
 	};
 	
 	emit(key, agg);
-};
+}

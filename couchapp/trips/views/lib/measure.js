@@ -12,7 +12,7 @@ var measures = {
 
 // CommonJS bindings
 if( typeof(exports) === 'object' ) {
-	for($e in meaures){
+	for(let $e in measures){
 		exports[$e] = measures[$e];
 	}
-};
+}

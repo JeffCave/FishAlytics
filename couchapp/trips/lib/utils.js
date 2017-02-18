@@ -1,4 +1,4 @@
-module.exports = new (function(){
+module.exports = new (function(){ // jshint ignore:line
 	
 	this.getBaseUrl = function(req){
 		return this.getBasePath(req).join('/');

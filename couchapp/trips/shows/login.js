@@ -1,4 +1,4 @@
-function(doc, req) {  
+function showLogin(doc, req) {  
 	var ddoc = this;
 	var Mustache = require("lib/mustache");
     
@@ -6,7 +6,6 @@ function(doc, req) {
     	header: {}
     	,scripts:{}
     	,title:'My Thingy'
-    	,assets : path.asset()
     };
       
       
