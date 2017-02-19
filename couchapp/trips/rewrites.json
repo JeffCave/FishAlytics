@@ -5,6 +5,9 @@
 		"method": "GET",
 		"query": {}
 	},
+	
+	
+	
 	{
 		"from": "/catches",
 		"to": "_list/catches/catches",
@@ -13,19 +16,19 @@
 	},
 	{
 		"from": "/_session",
-		"to": "../../../_session",
+		"to": "../../_session",
 		"method": "*",
 		"query": {}
 	},
 	{
 		"from": "/_users",
-		"to": "../../../_users",
+		"to": "../../_users",
 		"method": "*",
 		"query": {}
 	},
 	{
 		"from": "/_users/*",
-		"to": "../../../_users/*",
+		"to": "../../_users/*",
 		"method": "*",
 		"query": {}
 	},
@@ -90,14 +93,12 @@
 		"method":"POST",
 		"query":{}
 	},
-	
 	{
 		"from":"/trips",
 		"to":"_list/trips/trips",
 		"method":"*",
 		"query":{}
 	},
-	
 	{
 		"from":"/views/*",
 		"to":"_view/*",
