@@ -2,3 +2,4 @@
 .directory
 *.log
 bin/*
+erl_crash.dump

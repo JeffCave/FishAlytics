@@ -35,22 +35,22 @@ module.exports = function(grunt) {
     },
     'couch-compile': {
       app: {
-        files: [
-          {dest:'bin/alldata.json',src: 'couchapp/alldata/*'},
-          {dest:'bin/licenses.json',src: 'couchapp/licenses/*'},
-          //{dest:'bin/triggerjob.json',src: 'couchapp/triggerjob/*'},
-          {dest:'bin/trips.json',src: 'couchapp/trips/*'},
-        ]
+        files: {
+          'bin/alldata.json': 'couchapp/alldata',
+          'bin/licenses.json': 'couchapp/licenses',
+          //'bin/triggerjob.json' : 'couchapp/triggerjob/*',
+          'bin/trips.json' : 'couchapp/trips',
+        }
       }
     },
     'couch-push': {
         //options: {user: 'karin',pass: 'secure'},
-        c9: {
+        app: {
           files: [
-//            {dest:'http://localhost:8080/trips', src:'bin/alldata.json'},
-//            {dest:'http://localhost:8080/trips', src:'bin/licenses.json'},
-//            {dest:'http://localhost:8080/trips', src:'bin/triggerjob.json'},
-//            {dest:'http://localhost:8080/trips', src:'bin/trips.json'}
+            {dest:'http://localhost:8080/fish', src:'bin/alldata.json'},
+            {dest:'http://localhost:8080/fish', src:'bin/licenses.json'},
+            //{dest:'http://localhost:8080/fish', src:'bin/triggerjob.json'},
+            {dest:'http://localhost:8080/fish', src:'bin/trips.json'}
           ]
         }
     },
@@ -60,7 +60,7 @@ module.exports = function(grunt) {
         sudo chmod +w /var/lib/couchdb/*
         sudo chmod +x /var/lib/couchdb
         */
-        command: 'couchdb -a ./couch.ini -p ./bin/couchdb/couch.pid -b',
+        command: 'couchdb -a ./couch.ini -p ./bin/couchdb/couch.pid -d',
         options: {
           async: true
         }
