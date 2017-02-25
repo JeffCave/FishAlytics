@@ -1,6 +1,10 @@
 <html>
-<body style='display:none'>
-<form method='POST'></form>
+<head>
+<!-- <meta http-equiv="Refresh" content="0; url=http://www.example.com/" /> -->
+</head>
+<body style="display:none">
+<p>Please follow <a href="http://www.example.com/">this link</a>.</p>
+<form method='GET'></form>
 <script>
 var form = document.getElementsByTagName("form")[0];
 
@@ -18,10 +22,10 @@ for (var i = 0; i < vars.length; i++) {
 form.innerHTML = htmlForm.join('<br />');
 
 
-var loc = window.location.href
-	.split('#')[0]
-	.split("?")[0]
-	;
+var loc = window.location.href.split('#')[1];
+loc = (loc || '').split("?")[0];
+loc = loc || "/intro/";
+console.debug('here:'+loc);
 
 if(query.state){
 	var $state = JSON.parse(query.state);
