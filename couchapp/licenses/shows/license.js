@@ -1,11 +1,13 @@
-function(doc, req) {  
+/* global registerType */
+/* global provides */
+function showLicense(doc, req) {  
 	registerType('text-json', 'text/json');
 	
 //	provides('json', function(){
 //		return {'json': doc};
 //	});
 	provides('text-json', function(){
-		return toJSON(doc);
+		return JSON.stringify(doc);
 	});
 	
 	var Formatter = {
@@ -16,11 +18,11 @@ function(doc, req) {
 		//		.replace(/&/g, '&amp;');
 		//},
 		'xml': function(o){
-			$tmpl = '<{{key}}>{{val}}</{{key}}>';
-			$rtn = '';
-			for($key in o){
+			var $tmpl = '<{{key}}>{{val}}</{{key}}>';
+			var $rtn = '';
+			for(var $key in o){
 				if(!o.hasOwnProperty($key)) continue;
-				$val = o[$key];
+				var $val = o[$key];
 				
 				switch(typeof $val){
 					case 'string':
@@ -32,7 +34,7 @@ function(doc, req) {
 							;
 						break;
 					case 'array':
-						for($v=0; $v<$val.length;$v++){
+						for(var $v=0; $v<$val.length;$v++){
 							$rtn += $tmpl
 								.replace(/{{key}}/g,$key)
 								.replace(/{{val}}/g,$val[$v]);
@@ -48,7 +50,7 @@ function(doc, req) {
 			return $rtn;
 		},
 		'html': function($val){
-			$rtn = ''
+			var $rtn = '';
 			switch((Array.isArray($val)?'array':false) || typeof $val){
 				case 'undefined':
 					$rtn = '';
@@ -65,7 +67,7 @@ function(doc, req) {
 					break;
 				case 'array':
 					$rtn = '';
-					for($v=0; $v<$val.length;$v++){
+					for(var $v=0; $v<$val.length;$v++){
 						$rtn += '<dd>{{val}}</dd>'
 							.replace(/{{val}}/g,Formatter.html($val[$v]))
 							// this makes me feel dirty
@@ -75,18 +77,14 @@ function(doc, req) {
 					}
 					break;
 				case 'object':
-					for($k in $val){
-						$shouldShow = 
-							$val.hasOwnProperty($k)
-							&& $k.substring(0,1) !== '_' 
-							;
-						if($shouldShow){
+					for(var $k in $val){
+						if($val.hasOwnProperty($k) && $k.substring(0,1) !== '_'){
 							$rtn += '<dt>{{key}}</dt>{{val}}'
 								.replace('{{key}}',$k)
 								.replace('{{val}}',Formatter.html($val[$k]))
 								;
 						}
-					};
+					}
 					$rtn = '<dl>' + $rtn + '</dl>';
 					break;
 			}

@@ -1,8 +1,10 @@
-function(head, req) {
+/* global provides */
+/* global getRow */
+function lists_authCleaner(head, req) {
 	provides("html", function() {
 		html = "<html><body><form method='POST' action=''><textarea>{docs:[\n";
 		var data = [];
-		while (row = getRow()) {
+		for(var row = getRow(); row; row = getRow()) {
 			data.push(row.value);
 		}
 		data = JSON.stringify({docs:data});

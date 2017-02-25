@@ -2,3 +2,9 @@
 .directory
 *.log
 bin/*
+couchdb/couch.log
+couchdb/couch.pid
+couchdb/couch.uri
+couchdb/*.couch
+couchdb.std*
+erl_crash.dump

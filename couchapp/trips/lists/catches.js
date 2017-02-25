@@ -1,4 +1,6 @@
-function(head, req) {
+/* global provides */
+/* global getRow */
+function lists_catches(head, req) {
 	if(!req.userCtx.name){
 		provides("html",function(){
 			return [""
@@ -35,7 +37,7 @@ function(head, req) {
 			PageTitle:"Catches",
 			userCtx : req.userCtx
 		};
-		while (row = getRow()) {
+		for (var row = getRow(); row; row = getRow()) {
 			doc.mapdata.features.push({
 					type: "Feature"
 					,properties: {
@@ -52,8 +54,8 @@ function(head, req) {
 		doc.mapdata = JSON.stringify(doc.mapdata);
 		doc.BaseUrl = utils.getBaseUrl(req);
 		doc.DbUrl = utils.getBasePath(req).slice(0,3).join('/');
-		html = Mustache.render(this.templates.catchmap, doc, this.templates.partials);
+		var html = Mustache.render(this.templates.catchmap, doc, this.templates.partials);
 		return html;
 	});
-};
+}
 

@@ -1,20 +1,17 @@
-function(doc, req) {  
+function showsTrip(doc, req) {  
 	var ddoc = this;
 	var Mustache = require("lib/mustache");
 	
 	var page = {
 		header : {
-		index : indexPath,
-		blogName : 'FishAlytics - Couch',
-		feedPath : feedPath,
-		commentsFeed : commentsFeed
-		,session : req.userCtx
+			blogName : 'FishAlytics - Couch',
+			session : req.userCtx,
 		},
 		scripts : {},
 		pageTitle : doc ? doc.date : "Create a new post",
-		assets : path.asset()
 	};
 	
+	var data = {};
 	if (doc) {
 		data.doc = JSON.stringify(doc);
 		data.date = new Date(doc.date).toISOString().substring(0,19);

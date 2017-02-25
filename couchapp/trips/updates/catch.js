@@ -1,9 +1,7 @@
-function(doc, req) {
+function updatesCatch(doc, req) {
 	if (!doc) {
 		return [null,''];
 	}
-	
-	var page = {};
 	
 	//setup the meta data
 	var now = (new Date()).toISOString();
@@ -44,10 +42,10 @@ function(doc, req) {
 	var c = doc.catches[catchid];
 	
 	c.fish = c.fish || {};
-	c.fish.species = (req.form['species'] || c.fish.species || "").trim() || undefined;
-	c.fish.weight = toApproxNum(req.form['weight']) || c.fish.weight || undefined;
-	c.fish.length = toApproxNum(req.form['length']) || c.fish.length || undefined;
-	c.fish.girth = toApproxNum(req.form['girth']) || c.fish.girth || undefined;
+	c.fish.species = (req.form.species || c.fish.species || "").trim() || undefined;
+	c.fish.weight = toApproxNum(req.form.weight) || c.fish.weight || undefined;
+	c.fish.length = toApproxNum(req.form.length) || c.fish.length || undefined;
+	c.fish.girth = toApproxNum(req.form.girth) || c.fish.girth || undefined;
 	
 	this.renderer = eval("("+this.shows.catch+")");
 	return [doc, this.renderer(doc,req)];

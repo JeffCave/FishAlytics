@@ -1,11 +1,11 @@
 // File lib/user/signin.js
 
+/* global log */
 
 exports.exec = function(req,params,doc,caller){
 	log('HERE');
 
 	var v = require("lib/utils").utils(req);
-	var caller=caller||{};
 	var msg = caller.msg||"User successfully authed.";
 	var isNew = !doc;
 	var userid=v.getUserid();
@@ -14,6 +14,8 @@ exports.exec = function(req,params,doc,caller){
 	var base64 = require("lib/base64");
 	var hash = "";
 	var timestamp = Math.round(v.now()/1000);
+	
+	caller=caller||{};
 	
 	v.assert(doc&&doc.type=="user","Invalid username or password",400);
 	v.assert(doc.salt && doc.derived_key && doc.roles,"salt, derived_key or roles not found",400);
@@ -32,7 +34,8 @@ exports.exec = function(req,params,doc,caller){
 	var ret = [];
 	hash = CryptoJS.HmacSHA1(sessdata,configsecret+doc.salt).words;
 	for (var i in hash) {
-		var v = hash[i], pos = v>=0, last=ret.length;
+		v = hash[i];
+		var pos = v>=0, last=ret.length;
 		for(v=pos?v:v>>>0; v>0; v=Math.floor(v/256)) {
 			ret.splice(last, 0, v%256);
 		}

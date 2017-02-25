@@ -1,4 +1,5 @@
-function(head, req) {
+/* global provides */
+function listsTripts(head, req) {
 	var Mustache = require("lib/mustache");
 	var utils = require("lib/utils");
 	
@@ -11,8 +12,7 @@ function(head, req) {
 			,userCtx : req.userCtx
 			,BaseUrl : utils.getBaseUrl(req)
 		};
-		html = Mustache.render(this.templates.trips, page, this.templates.partials);
+		var html = Mustache.render(this.templates.trips, page, this.templates.partials);
 		return html;
 	});
-};
-
+}

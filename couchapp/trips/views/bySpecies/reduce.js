@@ -2,10 +2,10 @@
  * Reduce Species 
  * 
  */
-function (key, values, rereduce) {
+function bySpecies(key, values, rereduce) {
 	
 	var $stats = function(values, rereduce){
-		$stat = {
+		let $stat = {
 			sum:0
 			,count:0
 			,avg:0

@@ -6,11 +6,12 @@ var catchUtils = {
 		}
 		// waypoint min/max... to define the 
 		// start and end of the trip
-		$catches = (function(){
-				$points = doc.waypoints;
-				$min = $max = Date.parse($points[0].timestamp);
-				for($i in $points){
-					$cur = Date.parse($points[$i].timestamp);
+		var $catches = (function(){
+				let $points = doc.waypoints;
+				let $max = Date.parse($points[0].timestamp);
+				let $min = $max ;
+				for(var $i in $points){
+					let $cur = Date.parse($points[$i].timestamp);
 					$max = ($max < $cur) ? $cur : $max;
 					$min = ($min > $cur) ? $cur : $min;
 				}
@@ -24,9 +25,9 @@ var catchUtils = {
 				val: {
 					timestamp:'\u0001'
 					,stats:{
-						time: $catches[0]
-						,span:0
-						,lines:1
+						time: $catches[0],
+						span:0,
+						lines:1,
 					}
 				}
 			},
@@ -35,28 +36,28 @@ var catchUtils = {
 				val: {
 					timestamp:'\uffff'
 					,stats:{
-						time: $catches[1]
-						,span:0
-						,lines:1
+						time: $catches[1],
+						span:0,
+						lines:1,
 					}
 				}
 			}
 		];
 		
 		//gather up the catches
-		for($c in doc.catches){
-			$catch = JSON.parse(JSON.stringify(doc.catches[$c]));
+		for(var $c in doc.catches){
+			var $catch = JSON.parse(JSON.stringify(doc.catches[$c]));
 			
 			//attach the license
-			$catch['licenses'] = doc.licenses;
+			$catch.licenses = doc.licenses;
 			//normalize data
 			$catch.timestamp = (new Date($catch.timestamp)).toISOString();
-			if(!Array.isArray($catch['coords'])){
-				$catch['coords'] = [
-					$catch['coords'].longitude || null
-					,$catch['coords'].latitude || null
-					,$catch['coords'].altitude || null
-					,Date.parse($catch.timestamp) || null
+			if(!Array.isArray($catch.coords)){
+				$catch.coords = [
+					$catch.coords.longitude || null,
+					$catch.coords.latitude || null,
+					$catch.coords.altitude || null,
+					Date.parse($catch.timestamp) || null
 				];
 			}
 			$catch.coords[0] = +$catch.coords[0] || null;
@@ -64,24 +65,24 @@ var catchUtils = {
 			$catch.coords[2] = +$catch.coords[2] || null;
 			$catch.coords[3] = +$catch.coords[3] || Date.parse($catch.timestamp);
 			//prepare for calculation of statistics
-			$catch['stats'] = {
-				time:Date.parse($catch.timestamp)
-				,span:0
-				,lines:1
+			$catch.stats = {
+				time:Date.parse($catch.timestamp),
+				span:0,
+				lines:1,
 			};
 			
 			//determine the len/weigth ratio factor
-			$len = $catch.fish.length || null;
-			$weight = $catch.fish.weight || null;
+			var $len = $catch.fish.length || null;
+			var $weight = $catch.fish.weight || null;
 			if($len && $weight){
-				$catch.stats['lwFactor'] = Math.log($weight) / Math.log($len);
+				$catch.stats.lwFactor = Math.log($weight) / Math.log($len);
 			}
 		
 			//calculate the lookup key
-			$key = (new Date(Date.parse($catch.timestamp))).toISOString();
+			var $key = (new Date(Date.parse($catch.timestamp))).toISOString();
 			$catches.push({key:$key,val:$catch});
 			
-		};
+		}
 		
 		//calculate the time spent catching the fish
 		$catches.sort(function(a,b){
@@ -91,7 +92,7 @@ var catchUtils = {
 		});
 		
 		//average time before/after spent 
-		for($i=$catches.length-2; $i>0; $i--){
+		for(var $i=$catches.length-2; $i>0; $i--){
 			$catches[$i].val.stats.span = ($catches[$i+1].val.stats.time-$catches[$i-1].val.stats.time)/2000;
 		}
 		
@@ -102,8 +103,8 @@ var catchUtils = {
 		
 		
 		// push the work out to the world
-		for($c in $catches){
-			$catch = $catches[$c];
+		for(let $c in $catches){
+			let $catch = $catches[$c];
 			//clean it up as we go
 			$catch.val.stats.fef = $catch.val.stats.span / $catch.val.stats.lines;
 			delete $catch.val.stats.time;
@@ -121,7 +122,7 @@ var catchUtils = {
 
 // CommonJS bindings
 if( typeof(exports) === 'object' ) {
-	for($e in catchUtils){
+	for(let $e in catchUtils){
 		exports[$e] = catchUtils[$e];
 	}
-};
+}

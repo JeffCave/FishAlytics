@@ -1,11 +1,12 @@
-function(doc, req) {
+/* global toJSON */
+function trips(doc, req) {
 	if (!doc) {
 		return [null,''];
 	}
 	//setup the meta data
 	var now = Date.getDate().toISOString();
 	doc._meta = doc._meta || {
-		'created' : now;
+		'created' : now,
 	};
 	doc._meta.modified = now;
 	doc._meta.type = 'trip';

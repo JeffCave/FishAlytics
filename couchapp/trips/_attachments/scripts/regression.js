@@ -11,8 +11,7 @@
 
 ;(function() {
 	'use strict';
-	alert('here');
-	
+
 	var gaussianElimination = function(a, o) {
 		var i = 0, j = 0, k = 0, maxrow = 0, tmp = 0, n = a.length - 1, x = new Array(o);
 		for (i = 0; i < n; i++) {
@@ -73,7 +72,7 @@
 			var sum = [0, 0], n = 0, results = [];
 			
 			for (; n < data.length; n++) {
-				if (data[n][1] != null) {
+				if (data[n][1] !== null) {
 					sum[0] += data[n][0] * data[n][0]; //sumSqX
 					sum[1] += data[n][0] * data[n][1]; //sumXY
 				}
@@ -95,7 +94,7 @@
 			var sum = [0, 0, 0, 0, 0, 0], n = 0, results = [];
 			
 			for (len = data.length; n < len; n++) {
-				if (data[n][1] != null) {
+				if (data[n][1] !== null) {
 				sum[0] += data[n][0];
 				sum[1] += data[n][1];
 				sum[2] += data[n][0] * data[n][0] * data[n][1];

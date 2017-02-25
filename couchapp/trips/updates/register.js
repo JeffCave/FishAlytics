@@ -1,4 +1,4 @@
-function(doc,req){
+function updatesRegister(doc,req){
 	var resp =  {
 		"headers" : {
 			"Content-Type" : "text/html"
