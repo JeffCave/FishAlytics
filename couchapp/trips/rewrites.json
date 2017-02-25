@@ -7,7 +7,12 @@
 	},
 	
 	
-	
+	{
+		"from":"~/*",
+		"to":"/*",
+		"method":"*",
+		"query":{}
+	},
 	{
 		"from": "/catches",
 		"to": "_list/catches/catches",

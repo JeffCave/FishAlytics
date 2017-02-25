@@ -10,18 +10,19 @@
     "grunt-exec": "latest",
     "grunt-mocha-test": "latest",
     "grunt-npm-install": "latest",
+    "grunt-shell": "^2.1.0",
     "grunt-shell-spawn": "latest",
     "jshint": "latest",
     "mocha": "lastest",
     "mocha-jshint": "latest",
     "node-netstat": "latest",
-    "sync-request": "latest",
-    "selenium-webdriver":"latest"
+    "selenium-webdriver": "latest",
+    "sync-request": "latest"
   },
   "scripts": {
     "lint": "jshint **.js",
     "start:c9": "couchdb -n -a ./couchdb/default.ini -a ./couchdb/couch.ini -p ./couchdb/couch.pid -b",
-    "stop:c9" : "couchdb -n -a ./couchdb/default.ini -a ./couchdb/couch.ini -p ./couchdb/couch.pid -d"
+    "stop:c9": "couchdb -n -a ./couchdb/default.ini -a ./couchdb/couch.ini -p ./couchdb/couch.pid -d"
   },
   "version": "0.1.0",
   "description": "Share and track sport angling data to co-operatively improve ecological management",

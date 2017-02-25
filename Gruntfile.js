@@ -60,13 +60,13 @@ module.exports = function(grunt) {
         sudo chmod +w /var/lib/couchdb/*
         sudo chmod +x /var/lib/couchdb
         */
-        command: 'couchdb -a ./couch.ini -p ./bin/couchdb/couch.pid -d',
+        command: 'couchdb -n -a ./couchdb/default.ini -a ./couchdb/couch.ini -p ./couchdb/couch.pid -b &',
         options: {
           async: true
         }
       },
       "couch-stop": {
-        command: 'couchdb -a ./couch.ini -p ./bin/couchdb/couch.pid -d',
+        command: 'couchdb -n -a ./couchdb/default.ini -a ./couchdb/couch.ini -p ./couchdb/couch.pid -d',
         options: {
           async: false
         }
@@ -90,7 +90,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-exec');
   grunt.loadNpmTasks('grunt-couch');
-  grunt.loadNpmTasks('grunt-shell-spawn');
+  grunt.loadNpmTasks('grunt-shell');
   grunt.loadNpmTasks('grunt-mocha-test');
   
   grunt.registerTask('default', ['build']);
