@@ -30,9 +30,6 @@ module.exports = function(grunt) {
       files: ['<%= jshint.files %>'],
       tasks: ['build']
     },
-    exec:{
-      config:'echo not implemented',
-    },
     'couch-compile': {
       app: {
         files: {
@@ -45,7 +42,15 @@ module.exports = function(grunt) {
     },
     'couch-push': {
         //options: {user: 'karin',pass: 'secure'},
-        app: {
+        dev: {
+          files: [
+            {dest:'http://localhost:8080/fish', src:'bin/alldata.json'},
+            {dest:'http://localhost:8080/fish', src:'bin/licenses.json'},
+            //{dest:'http://localhost:8080/fish', src:'bin/triggerjob.json'},
+            {dest:'http://localhost:8080/fish', src:'bin/trips.json'}
+          ]
+        },
+        prod:{
           files: [
             {dest:'http://localhost:8080/fish', src:'bin/alldata.json'},
             {dest:'http://localhost:8080/fish', src:'bin/licenses.json'},
@@ -53,24 +58,6 @@ module.exports = function(grunt) {
             {dest:'http://localhost:8080/fish', src:'bin/trips.json'}
           ]
         }
-    },
-    shell: {
-      "couch-start": {
-        /*
-        sudo chmod +w /var/lib/couchdb/*
-        sudo chmod +x /var/lib/couchdb
-        */
-        command: 'couchdb -n -a ./couchdb/default.ini -a ./couchdb/couch.ini -p ./couchdb/couch.pid -b &',
-        options: {
-          async: true
-        }
-      },
-      "couch-stop": {
-        command: 'couchdb -n -a ./couchdb/default.ini -a ./couchdb/couch.ini -p ./couchdb/couch.pid -d',
-        options: {
-          async: false
-        }
-      }
     },
     mochaTest: {
         test: {
@@ -95,8 +82,6 @@ module.exports = function(grunt) {
   
   grunt.registerTask('default', ['build']);
   grunt.registerTask('test', ['mochaTest']);
-  grunt.registerTask('start',['shell:couch-start']);
-  grunt.registerTask('stop',['shell:couch-stop']);
   grunt.registerTask('config',[
     'checkDependencies',
     'couch-configure',
@@ -106,30 +91,6 @@ module.exports = function(grunt) {
     'jshint',
     'couch',
     ]);
-  
-  /*
-  grunt.registerTask('setcouchport',function(){
-    const request = require('sync-request');
-    const done = this.async();
-    var port = 0;
-    request('http://localhost:8080', function (error, response, body) {
-      grunt.log.writeln('aklsdjf;lksda');
-      if (!error && response.statusCode == 200) { 
-        port = 8080;
-        done();
-      }
-      else request('http://localhost:5986', function (error, response, body) {
-      grunt.log.writeln('aklsdjf;lksda');
-        if (!error && response.statusCode == 200) { 
-          port = 5984;
-          done();
-        }
-      });
-    });
-      grunt.log.writeln('Port:'+port);
-    return port;
-  });
-  */
   
 };
 
