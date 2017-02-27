@@ -2,12 +2,13 @@ image: couchdb
 
 before_script:
   - apt-get update -qq && apt-get install -y -qq nodejs npm
-  - npm install 
+  - ln -s /usr/bin/nodejs /usr/bin/node
   - npm install -g grunt-cli
-#  - npm run start:c9
+  - npm install 
+  #- npm run start:c9
 
 after_script:
-#  - npm run stop:c9
+  #- npm run stop:c9
 
 build:
   script:
