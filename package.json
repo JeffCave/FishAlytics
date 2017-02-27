@@ -3,6 +3,7 @@
   "devDependencies": {
     "follow": "latest",
     "grunt": "latest",
+    "grunt-cli":"latest",
     "grunt-check-dependencies": "latest",
     "grunt-contrib-jshint": "latest",
     "grunt-contrib-watch": "latest",
