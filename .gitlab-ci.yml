@@ -16,4 +16,4 @@ build:
 
 deploy:
   script:
-    - grunt couch-deploy
+    - grunt couch-push:prod
