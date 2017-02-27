@@ -11,7 +11,7 @@
     "grunt-exec": "latest",
     "grunt-mocha-test": "latest",
     "grunt-npm-install": "latest",
-    "grunt-shell": "^2.1.0",
+    "grunt-shell": "latest",
     "grunt-shell-spawn": "latest",
     "jshint": "latest",
     "mocha": "latest",
