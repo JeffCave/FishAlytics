@@ -1,3 +1,4 @@
+
 image: couchdb
 
 before_script:
@@ -8,12 +9,21 @@ before_script:
   #- npm run start:c9
 
 after_script:
-  #- npm run stop:c9
+  - npm run stop:c9
 
 build:
   script:
+    - jshint **/*.js
     - grunt couch-compile
+    
+test:
+  script:
+    - npm run start:c9
+    - grunt couch-push:dev
+    #- mocha
 
 deploy:
+  only: master
+  environment: production
   script:
     - grunt couch-push:prod

@@ -3,8 +3,8 @@
   "devDependencies": {
     "follow": "latest",
     "grunt": "latest",
-    "grunt-cli":"latest",
     "grunt-check-dependencies": "latest",
+    "grunt-cli": "latest",
     "grunt-contrib-jshint": "latest",
     "grunt-contrib-watch": "latest",
     "grunt-couch": "latest",
@@ -13,17 +13,21 @@
     "grunt-npm-install": "latest",
     "grunt-shell": "latest",
     "grunt-shell-spawn": "latest",
-    "jshint": "latest",
+    "jshint": "^2.9.4",
     "mocha": "latest",
     "mocha-jshint": "latest",
     "node-netstat": "latest",
+    "phantomjs": "^2.1.7",
     "selenium-webdriver": "latest",
-    "sync-request": "latest"
+    "sync-request": "latest",
+    "webdriverjs": "latest"
   },
   "scripts": {
     "lint": "jshint **.js",
     "start:c9": "couchdb -n -a ./couchdb/default.ini -a ./couchdb/couch.ini -p ./couchdb/couch.pid -b",
-    "stop:c9": "couchdb -n -a ./couchdb/default.ini -a ./couchdb/couch.ini -p ./couchdb/couch.pid -d"
+    "stop:c9": "couchdb -n -a ./couchdb/default.ini -a ./couchdb/couch.ini -p ./couchdb/couch.pid -d",
+    "config:test": "wget -nc --content-disposition https://goo.gl/sLTIW7",
+    "test": "PATH=\"$PWD/node_modules/phantomjs/lib/phantom/bin/:$PATH\" java -jar selenium-server-standalone-3.1.0.jar"
   },
   "version": "0.1.0",
   "description": "Share and track sport angling data to co-operatively improve ecological management",
@@ -40,3 +44,4 @@
   },
   "homepage": "https://gitlab.com/jefferey-cave/Fishalytics#README"
 }
+PATH="/home/ubuntu/workspace/node_modules/phantomjs/lib/phantom/bin/:$PATH" java -jar selenium-server-standalone-3.1.0.jar 
