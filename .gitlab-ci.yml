@@ -2,11 +2,11 @@
 image: couchdb
 
 before_script:
-  - curl -sL https://deb.nodesource.com/setup_7.x  | bash -
-  - apt-get update -qq && apt-get install -y -qq nodejs npm
+  - curl -sL https://deb.nodesource.com/setup_6.x  | bash -
+  - apt-get update -qq && apt-get install -y -qq nodejs 
   - ln -s /usr/bin/nodejs /usr/bin/node
   - npm install -g grunt-cli
-  - npm install 
+  - npm install -q 
   #- npm run start:c9
 
 after_script:
@@ -18,17 +18,20 @@ stages:
   - deploy
 
 build:
+  stage: build
   script:
     #- grunt jshint
     - grunt couch-compile
 
 test:
+  stage: test
   script:
     - npm run start:c9
     - grunt couch-push:dev
     - grunt test
 
 deploy:
+  stage: deploy
   only: 
     - master
   environment: production
