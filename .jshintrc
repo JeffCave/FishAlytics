@@ -1,0 +1,10 @@
+{
+	"couch":true,
+	"node":true,
+	
+	"esversion": 6,
+	"strict": "implied",
+	"laxcomma": true,
+	"globals": {
+	}
+}

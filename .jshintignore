@@ -1,0 +1,4 @@
+couchapp/*/lib/*
+couchapp/trips/_attachments/scripts/regression.js
+couchapp/trips/_attachments/scripts/leaflet.js
+couchapp/triggerjob/**

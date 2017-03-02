@@ -25,7 +25,7 @@
     "lint": "jshint **.js",
     "start:c9": "couchdb -n -a ./couchdb/default.ini -a ./couchdb/couch.ini -p ./couchdb/couch.pid -b",
     "stop:c9": "couchdb -n -a ./couchdb/default.ini -a ./couchdb/couch.ini -p ./couchdb/couch.pid -d",
-    "test": "PATH=\"$PWD/node_modules/phantomjs/lib/phantom/bin/:$PATH\" java -jar selenium-server-standalone-3.1.0.jar"
+    "test": "mocha"
   },
   "version": "0.1.0",
   "description": "Share and track sport angling data to co-operatively improve ecological management",
