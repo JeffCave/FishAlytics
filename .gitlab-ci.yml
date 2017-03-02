@@ -13,14 +13,14 @@ after_script:
 
 build:
   script:
-    - jshint **/*.js
+    #- grunt jshint
     - grunt couch-compile
 
 test:
   script:
     - npm run start:c9
     - grunt couch-push:dev
-    - mocha
+    - grunt test
 
 deploy:
   only: 
