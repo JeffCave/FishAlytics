@@ -22,10 +22,10 @@
     "webdriverjs": "latest"
   },
   "scripts": {
-    "lint": "jshint **.js",
+    "lint": "grunt jshint",
     "start:c9": "couchdb -n -a ./couchdb/default.ini -a ./couchdb/couch.ini -p ./couchdb/couch.pid -b",
     "stop:c9": "couchdb -n -a ./couchdb/default.ini -a ./couchdb/couch.ini -p ./couchdb/couch.pid -d",
-    "test": "mocha"
+    "test": "grunt test"
   },
   "version": "0.1.0",
   "description": "Share and track sport angling data to co-operatively improve ecological management",
