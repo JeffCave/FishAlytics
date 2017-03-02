@@ -6,8 +6,10 @@ module.exports = function(grunt) {
 			url: 'http://localhost:8080/fish'
 		}
 	});
+	
+	
 	grunt.config.merge({
-		prodTarget: (() => {
+		prodTarget: (function(){
 			try {
 				grunt.log.writeln(process.env.deployProd);
 				return JSON.parse(process.env.deployProd);
@@ -114,8 +116,7 @@ module.exports = function(grunt) {
 	grunt.registerTask('default', ['build']);
 	grunt.registerTask('test', ['mochaTest']);
 	grunt.registerTask('config', [
-		'checkDependencies',
-		'couch-configure',
+		'checkDependencies'
 	]);
 	grunt.registerTask('build', [
 		'checkDependencies',
