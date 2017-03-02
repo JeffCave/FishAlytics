@@ -25,6 +25,7 @@
     "lint": "grunt jshint",
     "start:c9": "couchdb -n -a ./couchdb/default.ini -a ./couchdb/couch.ini -p ./couchdb/couch.pid -b",
     "stop:c9": "couchdb -n -a ./couchdb/default.ini -a ./couchdb/couch.ini -p ./couchdb/couch.pid -d",
+    "conf":"curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash - && sudo apt-get install -y nodejs && ln -s /usr/bin/nodejs /usr/bin/node",
     "test": "grunt test"
   },
   "version": "0.1.0",
