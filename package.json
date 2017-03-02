@@ -17,7 +17,7 @@
     "mocha": "latest",
     "mocha-jshint": "latest",
     "node-netstat": "latest",
-    "phantom@2": "^2.*",
+    "phantom": "^2.1.21",
     "sync-request": "latest",
     "webdriverjs": "latest"
   },
