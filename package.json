@@ -17,8 +17,7 @@
     "mocha": "latest",
     "mocha-jshint": "latest",
     "node-netstat": "latest",
-    "phantomjs": "^2.1.7",
-    "selenium-webdriver": "latest",
+    "phantom@2": "^2.*",
     "sync-request": "latest",
     "webdriverjs": "latest"
   },
@@ -26,7 +25,6 @@
     "lint": "jshint **.js",
     "start:c9": "couchdb -n -a ./couchdb/default.ini -a ./couchdb/couch.ini -p ./couchdb/couch.pid -b",
     "stop:c9": "couchdb -n -a ./couchdb/default.ini -a ./couchdb/couch.ini -p ./couchdb/couch.pid -d",
-    "config:test": "wget -nc --content-disposition https://goo.gl/sLTIW7",
     "test": "PATH=\"$PWD/node_modules/phantomjs/lib/phantom/bin/:$PATH\" java -jar selenium-server-standalone-3.1.0.jar"
   },
   "version": "0.1.0",
@@ -44,4 +42,3 @@
   },
   "homepage": "https://gitlab.com/jefferey-cave/Fishalytics#README"
 }
-PATH="/home/ubuntu/workspace/node_modules/phantomjs/lib/phantom/bin/:$PATH" java -jar selenium-server-standalone-3.1.0.jar 

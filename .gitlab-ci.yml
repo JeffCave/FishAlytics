@@ -15,15 +15,16 @@ build:
   script:
     - jshint **/*.js
     - grunt couch-compile
-    
+
 test:
   script:
     - npm run start:c9
     - grunt couch-push:dev
-    #- mocha
+    - mocha
 
 deploy:
-  only: master
+  only: 
+    - master
   environment: production
   script:
     - grunt couch-push:prod
