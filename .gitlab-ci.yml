@@ -4,7 +4,6 @@ image: couchdb
 before_script:
   - curl -sL https://deb.nodesource.com/setup_6.x  | bash -
   - apt-get update -qq && apt-get install -y -qq nodejs 
-  - ln -s /usr/bin/nodejs /usr/bin/node
   - npm install -g grunt-cli
   - npm install -q 
   #- npm run start:c9
