@@ -21,6 +21,9 @@ build:
   script:
     #- grunt jshint
     - grunt couch-compile
+  artifacts:
+    paths:
+      - bin/
 
 test:
   stage: test
@@ -28,6 +31,8 @@ test:
     - npm run start:c9
     - grunt couch-push:dev
     - grunt test
+  dependencies:
+    -build
 
 deploy:
   stage: deploy
@@ -36,3 +41,5 @@ deploy:
   environment: production
   script:
     - grunt couch-push:prod
+  dependencies:
+    - build
