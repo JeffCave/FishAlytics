@@ -7,11 +7,9 @@ module.exports = function(grunt) {
 		}
 	});
 	
-	
 	grunt.config.merge({
 		prodTarget: (function(){
 			try {
-				grunt.log.writeln(process.env.deployProd);
 				return JSON.parse(process.env.deployProd);
 			}
 			catch (e) {
@@ -77,19 +75,20 @@ module.exports = function(grunt) {
 			},
 			prod: {
 				options: grunt.config.process('<%= prodTarget %>'),
-				files: [{
-						dest: grunt.config.get('prodTarget').url,
-						src: 'bin/alldata.json'
-					}, {
-						dest: grunt.config.get('prodTarget').url,
-						src: 'bin/licenses.json'
-					},
+				files: /*[
+					{dest: grunt.config.get('prodTarget').url,src: 'bin/alldata.json'}, 
+					{dest: grunt.config.get('prodTarget').url,src: 'bin/licenses.json'},
 					//{dest: grunt.cofig.get('prodTarget').url, src:'bin/triggerjob.json'},
-					{
-						dest: grunt.config.get('prodTarget').url,
-						src: 'bin/trips.json'
-					}
-				]
+					{dest: grunt.config.get('prodTarget').url,src: 'bin/trips.json'}
+				]*/
+					[
+					'alldata.json',
+					'licenses.json',
+					//'triggerjob.json',
+					'trips.json'
+				].map(function(d){
+					return {dest:grunt.config.get('prodTarget').url,src:'bin/'+d};
+				})
 			}
 		},
 		mochaTest: {

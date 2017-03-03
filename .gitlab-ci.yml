@@ -24,7 +24,7 @@ build:
   artifacts:
     paths:
       - bin/
-    expire_in: 30 mins
+    expire_in: 1 hour
 
 test:
   stage: test
@@ -34,6 +34,10 @@ test:
     - grunt test
   dependencies:
     - build
+  artifacts:
+    paths:
+      - couchdb*
+    expire_in: 1 week
 
 deploy:
   stage: deploy
