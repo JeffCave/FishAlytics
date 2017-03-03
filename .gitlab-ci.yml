@@ -33,7 +33,7 @@ test:
     - grunt couch-push:dev
     - grunt test
   dependencies:
-    -build
+    - build
 
 deploy:
   stage: deploy
