@@ -2,8 +2,7 @@
 image: couchdb
 
 services:
-  couchdb:
-    ports: "8080:8080"
+  - couchdb
 
 before_script:
   - curl -sL https://deb.nodesource.com/setup_6.x | bash -
