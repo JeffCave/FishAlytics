@@ -1,8 +1,12 @@
 
 image: couchdb
 
+services:
+  couchdb:
+    ports: "8080:8080"
+
 before_script:
-  - curl -sL https://deb.nodesource.com/setup_6.x  | bash -
+  - curl -sL https://deb.nodesource.com/setup_6.x | bash -
   - apt-get update -qq && apt-get install -y -qq nodejs bzip2 
   - npm install -g grunt-cli
   - npm install -q 
