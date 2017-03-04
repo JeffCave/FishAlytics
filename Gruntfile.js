@@ -57,38 +57,36 @@ module.exports = function(grunt) {
 			}
 		},
 		'couch-push': {
-			//options: {user: 'karin',pass: 'secure'},
 			dev: {
-				files: [{
-						dest: 'http://localhost:8080/fish',
-						src: 'bin/alldata.json'
-					}, {
-						dest: 'http://localhost:8080/fish',
-						src: 'bin/licenses.json'
-					},
-					//{dest:'http://localhost:8080/fish', src:'bin/triggerjob.json'},
-					{
-						dest: 'http://localhost:8080/fish',
-						src: 'bin/trips.json'
-					}
-				]
+				files: [
+						'alldata.json',
+						'licenses.json',
+						//'triggerjob.json',
+						'trips.json'
+					].map(function(d){
+						return {dest:'http://localhost:8080/fish',src:'bin/'+d};
+					})
+			},
+			git: {
+				files: [
+						'alldata.json',
+						'licenses.json',
+						//'triggerjob.json',
+						'trips.json'
+					].map(function(d){
+						return {dest:'http://localhost:5984/fish',src:'bin/'+d};
+					})
 			},
 			prod: {
 				options: grunt.config.process('<%= prodTarget %>'),
-				files: /*[
-					{dest: grunt.config.get('prodTarget').url,src: 'bin/alldata.json'}, 
-					{dest: grunt.config.get('prodTarget').url,src: 'bin/licenses.json'},
-					//{dest: grunt.cofig.get('prodTarget').url, src:'bin/triggerjob.json'},
-					{dest: grunt.config.get('prodTarget').url,src: 'bin/trips.json'}
-				]*/
-					[
-					'alldata.json',
-					'licenses.json',
-					//'triggerjob.json',
-					'trips.json'
-				].map(function(d){
-					return {dest:grunt.config.get('prodTarget').url,src:'bin/'+d};
-				})
+				files: [
+						'alldata.json',
+						'licenses.json',
+						//'triggerjob.json',
+						'trips.json'
+					].map(function(d){
+						return {dest:grunt.config.get('prodTarget').url,src:'bin/'+d};
+					})
 			}
 		},
 		mochaTest: {

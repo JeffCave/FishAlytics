@@ -32,8 +32,8 @@ build:
 test:
   stage: test
   script:
-    - npm run start:c9
-    - grunt couch-push:dev
+    #- npm run start:c9
+    - grunt couch-push:git
     - grunt test
   dependencies:
     - build
