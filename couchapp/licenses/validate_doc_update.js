@@ -1,7 +1,7 @@
 /**
  * Validations for Licenses
  */ 
-function validate_doc_update(newDoc, oldDoc, usserCtx, secObj) {
+function /*validate_doc_update*/(newDoc, oldDoc, usserCtx, secObj) { // jshint ignore:line
 	if('lic' != newDoc._id.split('.')[0].toLowerCase()){
 		return;
 	}

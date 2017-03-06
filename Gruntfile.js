@@ -30,11 +30,13 @@ module.exports = function(grunt) {
 			options: {
 				ignores: [
 					'couchapp/*/lib/*',
+					'couchapp/trips/_attachments/intro/**',
 					'couchapp/trips/_attachments/scripts/regression.js',
 					'couchapp/trips/_attachments/scripts/leaflet.js',
 					'couchapp/triggerjob/**',
 				],
 				esversion: 6,
+				evil:true,
 				//strict : 'implied',
 				laxcomma: true,
 				globals: {

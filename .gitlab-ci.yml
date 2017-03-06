@@ -22,7 +22,6 @@ stages:
 build:
   stage: build
   script:
-    #- grunt jshint
     - grunt couch-compile
   artifacts:
     paths:
@@ -32,7 +31,7 @@ build:
 test:
   stage: test
   script:
-    - echo No Testing
+    - grunt jshint
 #    - npm run start:c9
 #    - grunt couch-push:git
 #    - grunt test

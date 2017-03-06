@@ -1,7 +1,7 @@
 /**
  * Validations for Trip documents
  */ 
-function validate_doc_update(newDoc, oldDoc, userCtx, secObj) {
+function /*validate_doc_update*/(newDoc, oldDoc, userCtx, secObj) { //jshint ignore:line
 	if('trip' != newDoc._id.split('.')[0].toLowerCase()){
 		return;
 	}

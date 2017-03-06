@@ -8,6 +8,7 @@
     "grunt-contrib-jshint": "latest",
     "grunt-contrib-watch": "latest",
     "grunt-couch": "latest",
+    "grunt-eslint": "^19.0.0",
     "grunt-exec": "latest",
     "grunt-mocha-test": "latest",
     "grunt-npm-install": "latest",

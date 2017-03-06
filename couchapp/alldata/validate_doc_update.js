@@ -12,7 +12,7 @@
  * </ul>
  * 
  */
-function validate_doc_update(newDoc, oldDoc, userCtx, secObj) {
+function /*validate_doc_update*/(newDoc, oldDoc, userCtx, secObj) { // jshint ignore:line
 	var isChanged = (function(oldDoc,newDoc){
 			if(!oldDoc) return true;
 			

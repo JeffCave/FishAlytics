@@ -2,7 +2,7 @@
  * Authentication Handler
  * 
  */
-function updatesAuth(doc,req){
+function /*updatesAuth*/(doc,req){ // jshint ignore:line
 	var base64 = require("lib/base64");
 	var utils = require("lib/utils");
 	//generally useful calculations

@@ -26,7 +26,7 @@ function showLicense(doc, req) {
 				
 				switch(typeof $val){
 					case 'string':
-					case 'number':
+					case 'number': // jshint ignore:line
 					default:
 						$rtn += $tmpl
 							.replace(/{{key}}/g,$key)
@@ -58,9 +58,9 @@ function showLicense(doc, req) {
 				case 'string':
 					if(!isNaN(Date.parse($val))){
 						$val = (new Date(Date.parse($val))).toISOString();
-					}
+					} // jshint ignore:line
 				case 'number':
-				case 'boolean':
+				case 'boolean': // jshint ignore:line
 				default:
 					$rtn = '<dd>{{val}}</dd>'
 						.replace('{{val}}',$val);
