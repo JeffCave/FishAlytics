@@ -120,7 +120,37 @@ module.exports = function(grunt) {
 	grunt.registerTask('build', [
 		'checkDependencies',
 		'jshint',
-		'couch',
+		'couch-compile',
+		'secretkeys',
+		'couch-push:dev'
 	]);
+	
+	grunt.task.registerTask('secretkeys', 'Replace various keys', function() {
+		var oauth;
+		try{
+			oauth = JSON.parse(process.env.oauth);
+		}
+		catch(e){
+			oauth = {google:{}};
+		}
+		var replaces = {
+			'239959269801-rc9sbujsr5gv4gm43ecsavjk6s149ug7.apps.googleusercontent.com':oauth.google.client_id || '{**GOOGLECLIENTID**}',
+			'QyYKQRBx7HuKI-q11oJnkK-d':oauth.google.client_secret || '{**GOOGLESECRETKEY**}',
+		};
+		const fs = require('fs');
+		const child = require('child_process');
+		fs.readdir('bin', function(err, files) {
+			files.forEach(function(file) {
+				for(var key in replaces){
+					var cmd = 'sed -i s/{{orig}}/{{new}}/g bin/{{file}}'
+						.replace(/{{file}}/g,file)
+						.replace(/{{orig}}/g,key)
+						.replace(/{{new}}/g,replaces[key])
+						;
+					child.spawnSync(cmd);
+				}
+			});
+		});
+	});
 
 };
