@@ -11,7 +11,12 @@ function /*updatesAuth*/(doc,req){ // jshint ignore:line
 	var timestamp = Date.now();
 	//var localAuth = "Basic " + base64.btoa("triggerjob:triggerjob");
 	var localAuth = "Basic dHJpZ2dlcmpvYjp0cmlnZ2Vyam9i";
-	
+	var oauth={
+		google:{
+			client_id:"239959269801-rc9sbujsr5gv4gm43ecsavjk6s149ug7.apps.googleusercontent.com",
+			client_secret:"QyYKQRBx7HuKI-q11oJnkK-d",
+		}
+	};
 	
 	
 	if(!doc){
@@ -90,7 +95,7 @@ function /*updatesAuth*/(doc,req){ // jshint ignore:line
 					,"Location" : [""
 						,"https://accounts.google.com/o/oauth2/v2/auth?"
 						,"&response_type=code" 
-						,"&client_id=239959269801-rc9sbujsr5gv4gm43ecsavjk6s149ug7.apps.googleusercontent.com"
+						,"&client_id="+oauth.google.client_id
 						,"&scope=email"
 						,"&state="+encodeURIComponent(JSON.stringify(doc))+""
 						,"&redirect_uri=" + encodeURIComponent(doc.BaseUrl + "/auth")
@@ -318,8 +323,8 @@ function /*updatesAuth*/(doc,req){ // jshint ignore:line
 				,start:0
 				,form:{
 					code:doc.code
-					,client_id:"239959269801-rc9sbujsr5gv4gm43ecsavjk6s149ug7.apps.googleusercontent.com"
-					,client_secret:"QyYKQRBx7HuKI-q11oJnkK-d"
+					,client_id:oauth.google.client_id
+					,client_secret:oath.google.client_secret
 					,redirect_uri: (doc.BaseUrl + "/auth")
 					,grant_type:"authorization_code"
 				}
