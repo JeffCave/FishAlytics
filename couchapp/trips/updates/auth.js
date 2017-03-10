@@ -324,7 +324,7 @@ function /*updatesAuth*/(doc,req){ // jshint ignore:line
 				,form:{
 					code:doc.code
 					,client_id:oauth.google.client_id
-					,client_secret:oath.google.client_secret
+					,client_secret:oauth.google.client_secret
 					,redirect_uri: (doc.BaseUrl + "/auth")
 					,grant_type:"authorization_code"
 				}
