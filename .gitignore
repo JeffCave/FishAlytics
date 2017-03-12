@@ -6,5 +6,6 @@ couchdb/couch.log
 couchdb/couch.pid
 couchdb/couch.uri
 couchdb/*.couch
+couchdb/*
 couchdb.std*
 erl_crash.dump
