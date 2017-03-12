@@ -1,6 +1,10 @@
 /* global provides */
 /* global getRow */
-function lists_catches(head, req) {
+// jshint -W025
+/**
+ * trips/lists/catches
+ */
+function (head, req) {
 	if(!req.userCtx.name){
 		provides("html",function(){
 			return [""

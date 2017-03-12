@@ -1,5 +1,9 @@
-function trips(doc) {
-    if (doc._id.substring(0,5) !== 'trip.') {
+// jshint -W025
+/**
+ * trips/views/trips/map
+ */
+function (doc) {
+	if (doc._id.substring(0,5) !== 'trip.') {
 		return;
 	}
 	

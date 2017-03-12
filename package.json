@@ -31,7 +31,7 @@
     "lint": "grunt jshint",
     "start:c9": "couchdb -n -a ./couchdb/default.ini -a ./couchdb/couch.ini -p ./couchdb/couch.pid -b",
     "stop:c9": "couchdb -n -a ./couchdb/default.ini -a ./couchdb/couch.ini -p ./couchdb/couch.pid -d",
-    "conf": "curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash - && sudo apt-get install -y nodejs && sudo rm /usr/bin/node && sudo ln -s /usr/bin/nodejs /usr/bin/node && LC_ALL=C",
+    "conf": "curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash - && sudo apt-get install -y nodejs && sudo rm /usr/bin/node && sudo ln -s /usr/bin/nodejs /usr/bin/node && export LC_ALL=C",
     "test": "grunt test"
   },
   "version": "0.1.0",

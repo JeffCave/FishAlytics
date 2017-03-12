@@ -1,5 +1,9 @@
 /* global emit */
-function TripSummary(doc) {
+// jshint -W025
+/**
+ * trips/views/TripSummary
+ */
+function (doc) {
     if (doc._id.substring(0,5) !== 'trip.') {
 		return;
 	}

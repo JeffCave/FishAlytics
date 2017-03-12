@@ -1,13 +1,12 @@
 /* global emit */
-/* global catchUtils */
-
+// jshint -W025
 /**
  * Species Maps
  * 
  * Within our catches we record the species caught.
  * 
  */
-function bySpecies(doc) {
+function(doc) {
 	'use strict';
 	
 	var catchUtils = require('lib/catch');
