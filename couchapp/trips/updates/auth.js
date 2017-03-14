@@ -58,10 +58,10 @@ function /*updatesAuth*/(doc,req){ // jshint ignore:line
 	doc.meta.modified = timestamp;
 	
 	var phases = {
-		error:{
+		timeout:{
 			phase:-1
 			,isphase:function(doc,req){
-				return false;
+				return (doc && doc.expires < doc.meta.modified.timestamp);
 			}
 			,resp:{
 				code:504
@@ -129,6 +129,7 @@ function /*updatesAuth*/(doc,req){ // jshint ignore:line
 						,"<body>"
 						,"<p class='pagecenter'>Verifying with {{{authsource}}}...</p>"
 						,"<form method='POST' action='{{{BaseUrl}}}/auth/{{{_id}}}'>"
+						,"<p class='pagecenter'>Verifying with {{{authsource}}}...</p>"
 						//,"<input type='submit' value='waitmore' />"
 						,"</form>"
 						,"<script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1000)</script>"
@@ -241,10 +242,10 @@ function /*updatesAuth*/(doc,req){ // jshint ignore:line
 	
 	
 	
-	if(doc && doc.expires < timestamp){ 
+	if(phases.timeout.isphase(doc,req)){ 
 		return [
 			null //{"_id":doc._id,"_rev":doc._rev,"_deleted":true}
-			,phases.error.resp
+			,phases.timeout.resp
 		];
 	}
 	else if(phases.dologin.isphase(doc,req)){

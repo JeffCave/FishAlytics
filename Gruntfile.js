@@ -53,7 +53,7 @@ module.exports = function(grunt) {
 				files: {
 					'bin/alldata.json': 'couchapp/alldata',
 					'bin/licenses.json': 'couchapp/licenses',
-					//'bin/triggerjob.json' : 'couchapp/triggerjob/*',
+					'bin/triggerjob.json' : 'couchapp/triggerjob',
 					'bin/trips.json': 'couchapp/trips',
 				}
 			}
@@ -73,7 +73,7 @@ module.exports = function(grunt) {
 				files: [
 						'alldata.json',
 						'licenses.json',
-						//'triggerjob.json',
+						'triggerjob.json',
 						'trips.json'
 					].map(function(d){
 						return {dest:'http://localhost:5984/fish',src:'bin/'+d};
@@ -84,7 +84,7 @@ module.exports = function(grunt) {
 				files: [
 						'alldata.json',
 						'licenses.json',
-						//'triggerjob.json',
+						'triggerjob.json',
 						'trips.json'
 					].map(function(d){
 						return {dest:grunt.config.get('prodTarget').url,src:'bin/'+d};

@@ -9,3 +9,5 @@ couchdb/*.couch
 couchdb/*
 couchdb.std*
 erl_crash.dump
+node_modules/
+

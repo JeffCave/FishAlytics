@@ -6,7 +6,7 @@
     "follow": "latest",
     "grunt": "latest",
     "grunt-check-dependencies": "latest",
-    "grunt-cli": "latest",
+    "grunt-cli": "*",
     "grunt-contrib-jshint": "latest",
     "grunt-contrib-watch": "latest",
     "grunt-couch": "latest",
