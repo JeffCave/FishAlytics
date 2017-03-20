@@ -16,6 +16,7 @@ module.exports = function(grunt) {
 				return grunt.config.get('localTarget');
 			}
 		})(),
+		isProd : (process.env.isProd == 'true')
 	});
 	grunt.config.merge({
 		checkDependencies: {
@@ -63,7 +64,7 @@ module.exports = function(grunt) {
 				files: [
 						'alldata.json',
 						'licenses.json',
-						//'triggerjob.json',
+						'triggerjob.json',
 						'trips.json'
 					].map(function(d){
 						return {dest:'http://localhost:8080/fish',src:'bin/'+d};
@@ -123,7 +124,7 @@ module.exports = function(grunt) {
 		'jshint',
 		'couch-compile',
 		'secretkeys',
-		'couch-push:dev'
+		'couch-push:' + (grunt.config.isProd ? 'prod' : 'dev')
 	]);
 	
 	grunt.task.registerTask('secretkeys', 'Replace various keys', function() {
@@ -137,6 +138,7 @@ module.exports = function(grunt) {
 		var replaces = {
 			'239959269801-rc9sbujsr5gv4gm43ecsavjk6s149ug7.apps.googleusercontent.com':oauth.google.client_id || '{**GOOGLECLIENTID**}',
 			'QyYKQRBx7HuKI-q11oJnkK-d':oauth.google.client_secret || '{**GOOGLESECRETKEY**}',
+			'../../_session': (grunt.config.isProd ? '../' : '') + '../../_session',
 		};
 		const fs = require('fs');
 		const child = require('child_process');

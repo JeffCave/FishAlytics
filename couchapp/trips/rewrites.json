@@ -28,7 +28,7 @@
 	},
 	{
 		"from": "/_session",
-		"to": "../../../_session",
+		"to": "../../_session",
 		"method": "*",
 		"query": {}
 	},
