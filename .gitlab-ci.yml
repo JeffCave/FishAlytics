@@ -49,6 +49,6 @@ deploy:
     - master
   environment: production
   script:
-    - grunt couch-push:prod
+    - grunt deploy
   dependencies:
     - build

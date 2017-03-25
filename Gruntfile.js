@@ -119,7 +119,8 @@ module.exports = function(grunt) {
 	grunt.registerTask('config', [
 		'checkDependencies'
 	]);
-	grunt.registerTask('build', [
+	grunt.registerTask('build', ['deploy']);
+	grunt.registerTask('deploy', [
 		'checkDependencies',
 		'jshint',
 		'couch-compile',

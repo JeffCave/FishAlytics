@@ -17,7 +17,7 @@ describe('Development environment tests', function() {
 //			});
 //		});
 		it('needs browser',function(){
-			const phantomFactory = require('phantom');
+			var phantomFactory = require('phantom');
 			var instance;
 			return phantomFactory.create()
 				.then(function(i){
