@@ -1,5 +1,5 @@
 module.exports = function(grunt) {
-
+	
 	grunt.initConfig({});
 	grunt.config.merge({
 		localTarget: {
@@ -18,6 +18,7 @@ module.exports = function(grunt) {
 		})(),
 		isProd : (process.env.isProd == 'true')
 	});
+	
 	grunt.config.merge({
 		checkDependencies: {
 			this: {
@@ -125,13 +126,14 @@ module.exports = function(grunt) {
 		'jshint',
 		'couch-compile',
 		'secretkeys',
-		'couch-push:' + (grunt.config.isProd ? 'prod' : 'dev')
+		'couch-push:' + (grunt.config.get('isProd') ? 'prod' : 'dev')
 	]);
 	
 	grunt.task.registerTask('secretkeys', 'Replace various keys', function() {
 		var oauth;
+		//grunt.log.write('HERE:'+ JSON.stringify(JSON.parse(process.env.oauthKeys),null,4) + '\n');
 		try{
-			oauth = JSON.parse(process.env.oauth);
+			oauth = JSON.parse(process.env.oauthKeys).oauth;
 		}
 		catch(e){
 			oauth = {google:{}};
@@ -139,21 +141,22 @@ module.exports = function(grunt) {
 		var replaces = {
 			'239959269801-rc9sbujsr5gv4gm43ecsavjk6s149ug7.apps.googleusercontent.com':oauth.google.client_id || '{**GOOGLECLIENTID**}',
 			'QyYKQRBx7HuKI-q11oJnkK-d':oauth.google.client_secret || '{**GOOGLESECRETKEY**}',
-			'../../_session': (grunt.config.isProd ? '../' : '') + '../../_session',
+			'../../_session': (grunt.config.get('isProd') ? '../' : '') + '../../_session',
 		};
 		const fs = require('fs');
 		const child = require('child_process');
-		fs.readdir('bin', function(err, files) {
-			files.forEach(function(file) {
-				for(var key in replaces){
-					var cmd = 'sed -i s/{{orig}}/{{new}}/g bin/{{file}}'
-						.replace(/{{file}}/g,file)
-						.replace(/{{orig}}/g,key)
-						.replace(/{{new}}/g,replaces[key])
-						;
-					child.spawnSync(cmd);
-				}
-			});
+		fs.readdirSync('bin').forEach(function(file) {
+			grunt.log.write(`${file} \n`);
+			for(var key in replaces){
+				var cmd = 'sed -i s~{{orig}}~{{new}}~g bin/{{file}}'
+					.replace(/{{file}}/g,file)
+					.replace(/{{orig}}/g,key.replace(/~/g,'\\~'))
+					.replace(/{{new}}/g,replaces[key].replace(/~/g,'\\~'))
+					;
+				grunt.log.write(` - ${key} \n`);
+				//grunt.log.write(` ${cmd} \n`);
+				child.execSync(cmd);
+			}
 		});
 	});
 
