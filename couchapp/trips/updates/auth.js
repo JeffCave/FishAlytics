@@ -2,7 +2,7 @@
  * Authentication Handler
  * 
  */
-function /*updatesAuth*/(doc,req){ // jshint ignore:line
+function (doc,req){ // jshint ignore:line
 	var base64 = require("lib/base64");
 	var utils = require("lib/utils");
 	//generally useful calculations
@@ -117,7 +117,7 @@ function /*updatesAuth*/(doc,req){ // jshint ignore:line
 		,waitOnAuthSource: {
 			phase:2
 			,isphase:function(doc,req){
-				return false;
+				return doc.triggers && Object.keys(doc.triggers).length > 0;
 			}
 			,resp:{
 				headers : {
@@ -306,7 +306,7 @@ function /*updatesAuth*/(doc,req){ // jshint ignore:line
 				,start:0
 			};
 	}
-	else if(doc.triggers && doc.triggers.verify){
+	else if(phases.waitOnAuthSource.isphase(doc,req)){
 		//we are still waiting... nothignt really to do
 		doc.phase = phases.waitOnAuthSource.phase;
 		resp = phases.waitOnAuthSource.resp;
