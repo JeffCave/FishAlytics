@@ -132,8 +132,8 @@ module.exports = function(grunt) {
 		var replaces = {
 			'239959269801-rc9sbujsr5gv4gm43ecsavjk6s149ug7.apps.googleusercontent.com':oauth.google.client_id || '{**GOOGLECLIENTID**}',
 			'QyYKQRBx7HuKI-q11oJnkK-d':oauth.google.client_secret || '{**GOOGLESECRETKEY**}',
-			'../../_session': (grunt.config.get('isProd') ? '../' : '') + '../../_session',
-			'../../_users': (grunt.config.get('isProd') ? '../' : '') + '../../_users',
+			//'../../_session': (grunt.config.get('isProd') ? '../' : '') + '../../_session',
+			//'../../_users': (grunt.config.get('isProd') ? '../' : '') + '../../_users',
 		};
 		const child = require('child_process');
 		grunt.file.expand('bin/**/*.json').forEach(function(file) {

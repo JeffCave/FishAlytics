@@ -1,15 +1,17 @@
 /**
  * 
  */
-function showAuth(doc, req) {
+function (doc, req) { // jshint ignore: line
 	var Mustache = require("lib/mustache");
 	
-	req.params = Object.keys(req.form).map(function(k){
+	req.params = [];
+	
+	req.params = req.params.concat(Object.keys(req.form).map(function(k){
 			return {
 				'key' : k, 
 				'val' : req.form[k],
 			};
-		});
+		}));
 	req.params = req.params.concat(Object.keys(req.query).map(function(k){
 			return {
 				'key' : k, 
@@ -20,6 +22,7 @@ function showAuth(doc, req) {
 	req.action = req.raw_path
 		.split('#')[0]
 		.split("?")[0]
+		.replace(/\/_show\/auth$/,'/_update/auth')
 		;
 	if(req.query.state){
 		var state = JSON.parse(req.query.state);
@@ -28,6 +31,6 @@ function showAuth(doc, req) {
 		}
 	}
 	
-	return Mustache.to_html(this.lib.proxy, req);
+	return Mustache.to_html(this.lib.templates.proxy, req);
 }
 
