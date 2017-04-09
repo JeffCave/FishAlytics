@@ -1,10 +1,18 @@
 [
 	{
+		"comment":[
+			"Default view"
+		],
 		"from": "",
 		"to": "redirect.html"
 	},
 	
 	{
+		"comment":[
+			"The static introduction page. This page requires no special ",
+			"permissions and does nothing special. It is meant as a fail safe ",
+			"for things like robots."
+		],
 		"from": "intro/",
 		"to": "/intro/index.html"
 	},
@@ -12,14 +20,47 @@
 		"from": "intro/*",
 		"to": "/intro/*"
 	},
-
 	
 	{
+		"comment":[
+			"Redirect to the underlying fishing database. Useful for ",
+			"debugging, and use as an api"
+		],
 		"from":"~/*",
-		"to":"/*",
+		"to":"../../*",
 		"method":"*",
 		"query":{}
 	},
+	{
+		"from":"~/",
+		"to":"../../",
+		"method":"*",
+		"query":{}
+	},
+	{
+		"comment":["Futon"],
+		"from": "/_utils/*",
+		"to":"../../_utils/*",
+		"method":"*"
+	},
+	{
+		"comment":["Underlying couch service."],
+		"from":"-/",
+		"to":"../../",
+		"method":"*",
+		"query":{}
+	},
+	{
+		"comment":["Underlying couch service."],
+		"from":"-/*",
+		"to":"../../*",
+		"method":"*",
+		"query":{}
+	},
+	
+	
+	
+	
 	{
 		"from": "/catches",
 		"to": "_list/catches/catches",
@@ -46,19 +87,19 @@
 	},
 	{
 		"from": "/auth",
-		"to": "proxy.html",
+		"to": "../../_users/_design/oauth/_show/auth/",
 		"method": "GET",
 		"query": {}
 	},
 	{
 		"from": "/auth",
-		"to": "_update/auth",
+		"to": "../../_users/_design/oauth/_update/auth",
 		"method": "*",
 		"query": {}
 	},
 	{
 		"from": "/auth/:key",
-		"to": "_update/auth/:key",
+		"to": "../../_users/_design/oauth/_update/auth/:key",
 		"method": "*",
 		"query": {}
 	},
@@ -71,12 +112,6 @@
 	{
 		"from":"/stdweight",
 		"to":"_list/scatterplot/catches",
-		"method":"GET",
-		"query":{}
-	},
-	{
-		"from":"/experimental",
-		"to":"index.html",
 		"method":"GET",
 		"query":{}
 	},
@@ -149,7 +184,7 @@
 		"to": "404.html",
 		"method": "*",
 		"query": {}
-	}    
+	}
 
 
 ]

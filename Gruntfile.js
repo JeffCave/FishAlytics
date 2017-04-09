@@ -1,20 +1,24 @@
 module.exports = function(grunt) {
-	
+	const fs = require('fs');
+
 	grunt.initConfig({});
+
 	grunt.config.merge({
-		localTarget: {
-			url: 'http://localhost:8080/fish'
-		}
-	});
-	
-	grunt.config.merge({
-		prodTarget: (function(){
+		target: (function(){
+			var targ = '';
 			try {
-				return JSON.parse(process.env.deployProd);
+				targ = JSON.parse(process.env.deployment);
 			}
 			catch (e) {
-				return grunt.config.get('localTarget');
+				targ = {
+					port: process.env.PORT || 5964,
+					hostname: 'localhost',
+					db:'fish',
+					protocol:'http',
+				};
 			}
+			targ.url = targ.protocol + '://' + targ.hostname + ':' + targ.port + '/';
+			return targ;
 		})(),
 		isProd : (process.env.isProd == 'true')
 	});
@@ -31,11 +35,11 @@ module.exports = function(grunt) {
 			files: ['Gruntfile.js', 'couchapp/**/*.js'],
 			options: {
 				ignores: [
-					'couchapp/*/lib/*',
-					'couchapp/trips/_attachments/intro/**',
-					'couchapp/trips/_attachments/scripts/regression.js',
-					'couchapp/trips/_attachments/scripts/leaflet.js',
-					'couchapp/triggerjob/**',
+					'couchapp/**/lib/*.js',
+					'couchapp/fish/trips/_attachments/intro/**',
+					'couchapp/fish/trips/_attachments/scripts/regression.js',
+					'couchapp/fish/trips/_attachments/scripts/leaflet.js',
+					'couchapp/fish/triggerjob/**',
 				],
 				esversion: 6,
 				evil:true,
@@ -53,44 +57,31 @@ module.exports = function(grunt) {
 		'couch-compile': {
 			app: {
 				files: {
-					'bin/alldata.json': 'couchapp/alldata',
-					'bin/licenses.json': 'couchapp/licenses',
-					'bin/triggerjob.json' : 'couchapp/triggerjob',
-					'bin/trips.json': 'couchapp/trips',
+					'bin/fish/alldata.json': 'couchapp/fish/alldata',
+					'bin/fish/licenses.json': 'couchapp/fish/licenses',
+					'bin/fish/trips.json': 'couchapp/fish/trips',
+					'bin/_users/triggerjob.json' : 'couchapp/fish/triggerjob',
+					'bin/_users/oauth.json': 'couchapp/_users/oauth',
 				}
 			}
 		},
 		'couch-push': {
-			dev: {
-				files: [
-						'alldata.json',
-						'licenses.json',
-						'triggerjob.json',
-						'trips.json'
-					].map(function(d){
-						return {dest:'http://localhost:8080/fish',src:'bin/'+d};
-					})
-			},
-			git: {
-				files: [
-						'alldata.json',
-						'licenses.json',
-						'triggerjob.json',
-						'trips.json'
-					].map(function(d){
-						return {dest:'http://localhost:5984/fish',src:'bin/'+d};
-					})
-			},
-			prod: {
-				options: grunt.config.process('<%= prodTarget %>'),
-				files: [
-						'alldata.json',
-						'licenses.json',
-						'triggerjob.json',
-						'trips.json'
-					].map(function(d){
-						return {dest:grunt.config.get('prodTarget').url,src:'bin/'+d};
-					})
+			app: {
+				options: grunt.config.process('<%= target %>'),
+				files: (()=>{
+					var f = {};
+					f[grunt.config.get('target').url + 'fish'] = [
+							'bin/fish/alldata.json',
+							'bin/fish/licenses.json',
+							'bin/fish/trips.json',
+						];
+					
+					f[grunt.config.get('target').url + '_users'] = [
+							'bin/_users/oauth.json',
+							'bin/_users/triggerjob.json',
+						];
+					return f;
+				})()
 			}
 		},
 		mochaTest: {
@@ -126,7 +117,7 @@ module.exports = function(grunt) {
 		'jshint',
 		'couch-compile',
 		'secretkeys',
-		'couch-push:' + (grunt.config.get('isProd') ? 'prod' : 'dev')
+		'couch-push'
 	]);
 	
 	grunt.task.registerTask('secretkeys', 'Replace various keys', function() {
