@@ -39,7 +39,7 @@ module.exports = function(grunt) {
 					'couchapp/fish/trips/_attachments/intro/**',
 					'couchapp/fish/trips/_attachments/scripts/regression.js',
 					'couchapp/fish/trips/_attachments/scripts/leaflet.js',
-					'couchapp/fish/triggerjob/**',
+					'couchapp/**/triggerjob/**',
 				],
 				esversion: 6,
 				evil:true,
@@ -135,12 +135,11 @@ module.exports = function(grunt) {
 			'../../_session': (grunt.config.get('isProd') ? '../' : '') + '../../_session',
 			'../../_users': (grunt.config.get('isProd') ? '../' : '') + '../../_users',
 		};
-		const fs = require('fs');
 		const child = require('child_process');
-		fs.readdirSync('bin').forEach(function(file) {
+		grunt.file.expand('bin/**/*.json').forEach(function(file) {
 			grunt.log.write(`${file} \n`);
 			for(var key in replaces){
-				var cmd = 'sed -i s~{{orig}}~{{new}}~g bin/{{file}}'
+				var cmd = 'sed -i s~{{orig}}~{{new}}~g {{file}}'
 					.replace(/{{file}}/g,file)
 					.replace(/{{orig}}/g,key.replace(/~/g,'\\~'))
 					.replace(/{{new}}/g,replaces[key].replace(/~/g,'\\~'))
