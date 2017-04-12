@@ -19,7 +19,7 @@ function (doc, req) { // jshint ignore: line
 			};
 		}));
 	
-	req.action = req.raw_path
+	req.action = req.requested_path.join('/')
 		.split('#')[0]
 		.split("?")[0]
 		.replace(/\/_show\/auth$/,'/_update/auth')

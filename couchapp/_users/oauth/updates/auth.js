@@ -3,7 +3,7 @@
  * 
  */
 function (doc,req){ // jshint ignore:line
-	var base64 = require("lib/base64");
+	var base64 = require("lib/crypto/enc-base64");
 	var utils = require("lib/utils");
 	//generally useful calculations
 	var token = {email:'',sub:'',email_verified:''};
@@ -80,7 +80,7 @@ function (doc,req){ // jshint ignore:line
 				headers : {
 					"Content-Type" : "text/html"
 				}
-				,body : this.templates.login
+				,body : this.lib.templates.login
 			}
 		}
 		,redirectToAuthSource:{
@@ -348,7 +348,7 @@ function (doc,req){ // jshint ignore:line
 	
 	
 	var Mustache = require("lib/mustache");
-	resp.body = Mustache.to_html(resp.body, doc, this.templates.partials);
+	resp.body = Mustache.to_html(resp.body, doc);
 	if(doc.blockSave){
 		doc = null;
 	}

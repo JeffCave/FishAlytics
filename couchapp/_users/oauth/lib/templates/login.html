@@ -1,0 +1,127 @@
+<html>
+<head>
+
+ <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css">
+ 
+ <link rel="stylesheet" type="text/css" media="screen" href="{{{BaseUrl}}}/style/screen.css">
+ 
+ <style type="text/css">
+	button.login{
+		display:inline-block;
+		background:white;
+		color:#444;
+		width:190px;
+		border-radius:5px;
+		border:thin solid #888;
+		box-shadow: 1px 1px 1px grey;
+		white-space: nowrap;
+		padding:0px;
+	}
+	button.login > img{
+		display:inline-block;
+		vertical-align:middle;
+		width:32px;
+		height:32px;
+		margin:5px;
+		padding:0px;
+		border:0px;
+	}
+	button.login > span{
+		display:inline-block;
+		vertical-align:middle;
+		font-size:14px;
+		font-weight:bold;
+		font-family:'Roboto', sans-serif;margin:auto;
+	}
+	main{
+		/* border:3px solid magenta; */
+		position:absolute;
+		top:0;
+		left:0;
+		right:0;
+		bottom:0;
+	}
+	form{
+		display:block;
+		position: absolute;
+		top: 25%;
+		transform: translateY(-50%);
+		left: 50%;
+		transform: translateX(-50%);
+	}
+	form input{
+		display:block;
+	}
+	form fieldset{
+		margin:auto;
+	}
+	main ul{
+		/* border:3px solid lightgreen; */
+		margin:auto;
+		list-style:none;
+		
+	}
+	main li{
+		/* border:3px solid blue; */
+		margin:auto;
+		margin:0.5em;
+	}
+ </style>
+</head>
+<body>
+<header class="inner">
+ <h1>{{PageTitle}}</h1>
+ <span>{{userCtx.name}}</span>
+ 
+</header>
+
+ <nav id='menu'>
+  <ul>
+   <li><a href="catchmap">My Catches</a></li>
+   <li><a href="stdweight">Standard Weight</a></li>
+   <li><a href="experimental">Experiments</a></li>
+  </ul>
+ </nav>
+ 
+ <nav id='panic'>
+  <ul>
+   <li><a href="{{{BaseUrl}}}/catch">Fish On!</a></li>
+   {{^userCtx.name}}<li><a href="{{{BaseUrl}}}/auth">Login</a></li>{{/userCtx.name}}
+  </ul>
+ </nav>
+ 
+ <main>
+
+<form id='mainform' method='POST' action='auth/{{_id}}'>
+ <p>Sign in to Fishalytics</p>
+ <ul>
+  <li>
+   <button class="login" onclick="toggleLocalLogin();return false;">
+    <img src="/intro/img/logo/logo_draft.png" />
+    <span>Sign in with FishAdvisor</span>
+   </button>
+   <fieldset id='local' style='display:none;'>
+    <input type='email'    name='name' placeholder='myemail@example.com' />
+    <input type='password' name='password' />
+    <input type='submit' value='Login' onclick='document.getElementById("mainform").action="_session";' />
+   </fieldset>
+   <script>
+	function toggleLocalLogin(){
+		var s = document.getElementById('local').style; 
+		s.display = (s.display==='none')?'block':'none';
+	}
+   </script>
+  </li>
+  <li>
+   <button class="login" type="submit" name="authsource" value="Google">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4AIUABAvnjgNggAAApBJREFUWMPtlk9Ik3EYxz/v+7o2ndPV/JM5RZGWlGKpaEWGWZ4i6NAhb0EmQhARhXURpUM1gg558xBCHTooYR1MpA56CLJD+YeUlSljOLHNMbf2/+0warxIc7qllz2334/v+3y/7/f3/J7fI8iyLLOLIbLLkRaQFrDrAjK2+kFwbhbf6yFCCxbCNityMIBkyEdVfRR1cyt76o9vKZ+QaB8I25dxm3sJfv4U/4+qasjp6kEqKk6dgODsFK7uO8hrjoSSqmob0Jv7UiMgvLqCs70Ned2t2JeMpWRUmJAjEULf5onYrFEHDlaSa+5D1OWkpgbc5h4FuZhfQPaNLtQnmhQ4//h7fCPD6O72Jky+qQOycwLvs0t43xohLCIa8tA/6Uc6ULwztyCy/Bx1jQNp/y88Q+Vor15PKfmmDoQ+1IJnOiomZEB1zoogSQrMg2F/XIJTJommyoxt1oBvKXb2hkMbyAHGpkNxU2SriSvgv3fCQCiZW6ApAc9M1AzvApmRMJKodMG4T1D2jDDYXbFT1WuFJIpQV4/omWE+lMM9x2E6Fsc5X96swAx0ZinWryaDPB0N/F2XGsTtP0aRwjbe+Eq4ttaELaKl78sLrOv2f+JdXpnBj8FYhQMNFdL2BWjyWhjTXiFANMmqz0nnu27GbZMbsHPOBW6+/IHNGbP/bJVEbpaQXCte8f7k8sgt3EGPYr80uwjT3nIkQWTRbeOr8ztCRIPG3oHKW4dWDf3tmRTmisk/RlOr89yeeITD70qo8gv9F7l/uo1jZVJqBpLqPBMDrQ+pKziyKbZMV8zjCycTIt/SPPAnZh0WBi2jWFxLWNeX8YcDGDR6qgwmWoyNnDE2IgpialpxeihNC0gL2In4DW319gdMRvScAAAAAElFTkSuQmCC" />
+    <span>Sign in with Google</span>
+   </button>
+  </li>
+ </ul>
+</form>
+
+
+ </main>
+</body>
+</html>

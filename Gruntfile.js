@@ -35,7 +35,8 @@ module.exports = function(grunt) {
 			files: ['Gruntfile.js', 'couchapp/**/*.js'],
 			options: {
 				ignores: [
-					'couchapp/**/lib/*.js',
+					'couchapp/**/lib/**/*.js',
+					'couchapp/_users/_auth/*',
 					'couchapp/fish/trips/_attachments/intro/**',
 					'couchapp/fish/trips/_attachments/scripts/regression.js',
 					'couchapp/fish/trips/_attachments/scripts/leaflet.js',
@@ -62,6 +63,7 @@ module.exports = function(grunt) {
 					'bin/fish/trips.json': 'couchapp/fish/trips',
 					'bin/_users/triggerjob.json' : 'couchapp/fish/triggerjob',
 					'bin/_users/oauth.json': 'couchapp/_users/oauth',
+					'bin/_users/_auth.json': 'couchapp/_users/_auth',
 				}
 			}
 		},
@@ -77,6 +79,7 @@ module.exports = function(grunt) {
 						];
 					
 					f[grunt.config.get('target').url + '_users'] = [
+							'bin/_users/_auth.json',
 							'bin/_users/oauth.json',
 							'bin/_users/triggerjob.json',
 						];
