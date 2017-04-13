@@ -75,21 +75,6 @@
  
 </header>
 
- <nav id='menu'>
-  <ul>
-   <li><a href="catchmap">My Catches</a></li>
-   <li><a href="stdweight">Standard Weight</a></li>
-   <li><a href="experimental">Experiments</a></li>
-  </ul>
- </nav>
- 
- <nav id='panic'>
-  <ul>
-   <li><a href="{{{BaseUrl}}}/catch">Fish On!</a></li>
-   {{^userCtx.name}}<li><a href="{{{BaseUrl}}}/auth">Login</a></li>{{/userCtx.name}}
-  </ul>
- </nav>
- 
  <main>
 
 <form id='mainform' method='POST' action='auth/{{_id}}'>
@@ -103,7 +88,7 @@
    <fieldset id='local' style='display:none;'>
     <input type='email'    name='name' placeholder='myemail@example.com' />
     <input type='password' name='password' />
-    <input type='submit' value='Login' onclick='document.getElementById("mainform").action="_session";' />
+    <input type='submit'   name='authsource' value='Local' onclick='document.getElementById("mainform").action="_session";' />
    </fieldset>
    <script>
 	function toggleLocalLogin(){

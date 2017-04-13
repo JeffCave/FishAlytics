@@ -169,7 +169,7 @@ exports.utils = function(req) {
     };
 
     v.isAdmin = function() {
-        return req.userCtx.roles.indexOf('_admin') != -1
+        return req.userCtx.roles.indexOf('_admin') != -1;
     };
 
     v.isRole = function(role) {

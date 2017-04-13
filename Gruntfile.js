@@ -40,7 +40,7 @@ module.exports = function(grunt) {
 					'couchapp/fish/trips/_attachments/intro/**',
 					'couchapp/fish/trips/_attachments/scripts/regression.js',
 					'couchapp/fish/trips/_attachments/scripts/leaflet.js',
-					'couchapp/**/triggerjob/**',
+					'couchapp/**/trigger/**',
 				],
 				esversion: 6,
 				evil:true,

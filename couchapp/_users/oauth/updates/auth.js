@@ -24,8 +24,8 @@ function (doc,req){ // jshint ignore:line
 			_id : "auth." + req.uuid
 			,phase:-1
 			,meta:{
-				created:timestamp
-				,modified:timestamp
+				created:timestamp,
+				modified:timestamp,
 			}
 			,BaseUrl : utils.getBaseUrl(req)
 			,expires:timestamp + 1000*60
@@ -108,8 +108,8 @@ function (doc,req){ // jshint ignore:line
 						,"<style>.pagecenter{display:block; position:absolute; top:33%; transform:translateY(-50%); left:50%; transform:translateX(-50%); }</style>"
 						,"<body>"
 						,"<p class='pagecenter'>Attempting to redirect to google auth</p>"
-						//,"<pre>"+JSON.stringify(doc,null,"\t")+"</pre><hr />"
-						//,"<pre>"+JSON.stringify(req,null,"\t")+"</pre>"
+						,"<pre>"+JSON.stringify(doc,null,"\t")+"</pre><hr />"
+						,"<pre>"+JSON.stringify(req,null,"\t")+"</pre>"
 						,"</body></html>"
 					].join('\n')
 			}
@@ -130,11 +130,11 @@ function (doc,req){ // jshint ignore:line
 						,"<p class='pagecenter'>Verifying with {{{authsource}}}...</p>"
 						,"<form method='POST' action='{{{BaseUrl}}}/auth/{{{_id}}}'>"
 						,"<p class='pagecenter'>Verifying with {{{authsource}}}...</p>"
-						//,"<input type='submit' value='waitmore' />"
+						,"<input type='submit' value='waitmore' />"
 						,"</form>"
-						,"<script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1000)</script>"
-						//,"<pre>"+JSON.stringify(doc,null,"\t")+"</pre><hr />"
-						//,"<pre>"+JSON.stringify(req,null,"\t")+"</pre>"
+						//,"<script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1000)</script>"
+						,"<pre>"+JSON.stringify(doc,null,"\t")+"</pre><hr />"
+						,"<pre>"+JSON.stringify(req,null,"\t")+"</pre>"
 						,"</body></html></html>"
 					].join('\n')
 			}
@@ -154,16 +154,16 @@ function (doc,req){ // jshint ignore:line
 						,"<body>"
 						,"<p class='pagecenter'>Verified with {{{authsource}}}.</p>"
 						,"<form method='POST' action='./{{{_id}}}'>"
-						//,"<input type='submit' value='waitmore' />"
+						,"<input type='submit' value='waitmore' />"
 						,"</form>"
-						,"<script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1000)</script>"
-						//,"<table>"
-						//," <tr><td>Email</td><td>"+token.email+"</td></tr>"
-						//," <tr><td>Sub</td><td>"+token.sub+"</td></tr>"
-						//," <tr><td>Verified</td><td>"+token.email_verified+"</tr>"
-						//,"</table>"
-						//,"<pre>"+JSON.stringify(doc,null,"\t")+"</pre><hr />"
-						//,"<pre>"+JSON.stringify(req,null,"\t")+"</pre>"
+						//,"<script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1000)</script>"
+						,"<table>"
+						," <tr><td>Email</td><td>"+token.email+"</td></tr>"
+						," <tr><td>Sub</td><td>"+token.sub+"</td></tr>"
+						," <tr><td>Verified</td><td>"+token.email_verified+"</tr>"
+						,"</table>"
+						,"<pre>"+JSON.stringify(doc,null,"\t")+"</pre><hr />"
+						,"<pre>"+JSON.stringify(req,null,"\t")+"</pre>"
 						,"</body></html></html>"
 					].join('\n')
 			}
@@ -183,16 +183,16 @@ function (doc,req){ // jshint ignore:line
 						,"<body>"
 						,"<p class='pagecenter'>Logging in...</p>"
 						,"<form method='POST' action='./{{{_id}}}'>"
-						//,"<input type='submit' value='waitmore' />"
+						,"<input type='submit' value='waitmore' />"
 						,"</form>"
-						,"<script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1000)</script>"
-						//,"<table>"
-						//," <tr><td>Email</td><td>"+token.email+"</td></tr>"
-						//," <tr><td>Sub</td><td>"+token.sub+"</td></tr>"
-						//," <tr><td>Verified</td><td>"+token.email_verified+"</tr>"
-						//,"</table>"
-						//,"<pre>"+JSON.stringify(doc,null,"\t")+"</pre><hr />"
-						//,"<pre>"+JSON.stringify(req,null,"\t")+"</pre>"
+						//,"<script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1000)</script>"
+						,"<table>"
+						," <tr><td>Email</td><td>"+token.email+"</td></tr>"
+						," <tr><td>Sub</td><td>"+token.sub+"</td></tr>"
+						," <tr><td>Verified</td><td>"+token.email_verified+"</tr>"
+						,"</table>"
+						,"<pre>"+JSON.stringify(doc,null,"\t")+"</pre><hr />"
+						,"<pre>"+JSON.stringify(req,null,"\t")+"</pre>"
 						,"</body></html></html>"
 					].join('\n')
 			}
@@ -212,19 +212,19 @@ function (doc,req){ // jshint ignore:line
 						,"<body>"
 						,"<p class='pagecenter'>Logging in</p>"
 						,"<form method='POST' action='/_session?next=/catchmap'>"
-						//," <input type='hidden' name='next' value='{{{BaseUrl}}}' />"
+						," <input type='hidden' name='next' value='{{{BaseUrl}}}' />"
 						," <input type='hidden' name='name'     value='{{{id_token.email}}}' />"
 						," <input type='hidden' name='password' value='{{{code}}}' />"
-						//," <input type='submit' value='Try logging in ' />"
+						," <input type='submit' value='Try logging in ' />"
 						,"</form>"
-						,"<script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1)</script>"
-						//,"<table>"
-						//," <tr><td>Email</td><td>"+token.email+"</td></tr>"
-						//," <tr><td>Sub</td><td>"+token.sub+"</td></tr>"
-						//," <tr><td>Verified</td><td>"+token.email_verified+"</tr>"
-						//,"</table>"
-						//,"<pre>"+JSON.stringify(doc,null,"\t")+"</pre><hr />"
-						//,"<pre>"+JSON.stringify(req,null,"\t")+"</pre>"
+						//,"<script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1)</script>"
+						,"<table>"
+						," <tr><td>Email</td><td>"+token.email+"</td></tr>"
+						," <tr><td>Sub</td><td>"+token.sub+"</td></tr>"
+						," <tr><td>Verified</td><td>"+token.email_verified+"</tr>"
+						,"</table>"
+						,"<pre>"+JSON.stringify(doc,null,"\t")+"</pre><hr />"
+						,"<pre>"+JSON.stringify(req,null,"\t")+"</pre>"
 						,"</body></html></html>"
 					].join('\n')
 			}
