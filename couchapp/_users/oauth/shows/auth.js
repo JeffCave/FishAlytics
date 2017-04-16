@@ -27,7 +27,7 @@ function (doc, req) { // jshint ignore: line
 	if(req.query.state){
 		var state = JSON.parse(req.query.state);
 		if(state._id){
-			req.loc += "/" + state._id;
+			req.action += "/" + state._id;
 		}
 	}
 	
