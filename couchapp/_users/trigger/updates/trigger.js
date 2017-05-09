@@ -3,8 +3,8 @@ function(doc, req) {
         var v = require("lib/utils").utils(req),msg='',isNew=false, params = v.getParams();
         v.assert(req.method == "PUT", "Only PUT method allowed", 400);
 
-        v.shouldBeLogged();
-        v.assert(v.isAdmin(),"You must be admin",401);
+        //v.shouldBeLogged();
+        //v.assert(v.isAdmin(),"You must be admin",401);
         v.assert(doc, "Doc not found", 404);
         v.assert(params.action, "Param \"action\" not specified",400);
         var trkey = params.trkey||params.triggerid||false;

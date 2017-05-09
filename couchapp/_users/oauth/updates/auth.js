@@ -3,7 +3,7 @@
  * 
  */
 function (doc,req){ // jshint ignore:line
-	var base64 = require("lib/crypto/enc-base64");
+	var base64 = require("lib/base64");
 	var utils = require("lib/utils");
 	//generally useful calculations
 	var token = {email:'',sub:'',email_verified:''};
@@ -31,11 +31,11 @@ function (doc,req){ // jshint ignore:line
 			,BaseUrl : utils.getBaseUrl(req)
 			,expires:timestamp + 1000*60
 			,triggers:{
-				expire:{
-					path:"auth." + req.uuid
-					,method:"DELETE"
-					,start:1000*60*60
-				}
+			//	expire:{
+			//		path:"auth." + req.uuid
+			//		,method:"DELETE"
+			//		,start:1000*60*60
+			//	}
 			}
 		};
 	}
@@ -83,8 +83,10 @@ function (doc,req){ // jshint ignore:line
 					"</head>",
 					"<body>",
 					"<p class='pagecenter'>Did not receive a timely response from authentication party.</p>",
+					"{#debug}",
 					"<pre>{{debug.doc}}</pre><hr />",
 					"<pre>{{debug.req}}</pre>",
+					"{/debug}",
 					"</body>",
 					"</html>",
 					''
@@ -147,9 +149,11 @@ function (doc,req){ // jshint ignore:line
 							,"&nonce=" + encodeURIComponent(doc._id)
 							].join('') + "'>Click to get there...</a>"
 						,"<p class='pagecenter'>Attempting to redirect to {{{authsource}}}</p>",
+						"{#debug}",
 						"<pre>{{debug.doc}}</pre><hr />",
 						"<pre>{{debug.req}}</pre>",
-						"</body></html>"
+						"</body></html>",
+						"{/debug}"
 					].join('\n')
 			}
 		}
@@ -161,7 +165,7 @@ function (doc,req){ // jshint ignore:line
 				return false !== (doc.code || false);
 			},
 			action: function(){
-				doc = JSON.parse(req.form.state);
+				//doc = JSON.parse(req.form.state);
 				doc.triggers = {verify:{
 					path:"https://accounts.google.com/o/oauth2/token"
 					,headers:{'content-type':'application/x-www-form-urlencoded'}
@@ -170,11 +174,11 @@ function (doc,req){ // jshint ignore:line
 					,storepositive:true
 					,start:0
 					,form:{
-						code:doc.code
-						,client_id:oauth.google.client_id
-						,client_secret:oauth.google.client_secret
-						,redirect_uri: (doc.BaseUrl + "/auth")
-						,grant_type:"authorization_code"
+						code:''+doc.code,
+						client_id:oauth.google.client_id,
+						client_secret:oauth.google.client_secret,
+						redirect_uri: (doc.BaseUrl + "/auth"),
+						grant_type:"authorization_code",
 					}
 				}};
 
@@ -191,7 +195,7 @@ function (doc,req){ // jshint ignore:line
 						,"<p class='pagecenter'>Verifying with {{{authsource}}}...</p>"
 						,"<input type='submit' value='waitmore' />"
 						,"</form>",
-						//,"<script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1000)</script>"
+						"{{^debug}}<script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1000)</script>{{/debug}}",
 						"</body></html></html>"
 					].join('\n')
 			}
@@ -234,7 +238,7 @@ function (doc,req){ // jshint ignore:line
 		,checkuser:{
 			phase:4
 			,isphase:function(doc,req){
-				// if the google responded with a verification package, this 
+				// if google responded with a verification package, this 
 				// phase is applicable 
 				return doc.triggered && doc.triggered.verify;
 			},
@@ -252,12 +256,11 @@ function (doc,req){ // jshint ignore:line
 				}
 				doc.triggers.checkuser={
 						path: doc.BaseUrl + "/_users/org.couchdb.user%3A" + encodeURIComponent(doc.id_token.email)
-						,headers:{"Authorization":localAuth}
+						//,headers:{"Authorization":localAuth}
 						,method:"GET"
 						,storepositive:true
 						,start:0
 					};
-
 			}
 			,resp:{
 				headers : {
@@ -269,14 +272,14 @@ function (doc,req){ // jshint ignore:line
 						"<body>",
 						"<p class='pagecenter'>Verified with {{{authsource}}}.</p>",
 						"<form method='POST' action='./{{{_id}}}'>",
-						"<input type='submit' value='waitmore' />",
+						"{{#debug}}<input type='submit' value='waitmore' />{{/debug}}",
 						"</form>",
-						//"<script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1000)</script>",
+						"{{^debug}}<script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1000)</script>{{/debug}}",
 						"{{#debug}}",
 						"<table>",
-						" <tr><td>Email</td><td>"+token.email+"</td></tr>",
-						" <tr><td>Sub</td><td>"+token.sub+"</td></tr>",
-						" <tr><td>Verified</td><td>"+token.email_verified+"</tr>",
+						" <tr><td>Email</td><td>{{doc.id_token.email}}</td></tr>",
+						" <tr><td>Sub</td><td>{{doc.id_token.sub}}</td></tr>",
+						" <tr><td>Verified</td><td>{{doc.id_token.email_verified}}</td></tr>",
 						"</table>",
 						"<pre>{{debug.doc}}</pre><hr />",
 						"<pre>{{debug.req}}</pre>",
@@ -285,105 +288,124 @@ function (doc,req){ // jshint ignore:line
 					].join('\n')
 			}
 		}
-		,setpass:{
+		,createuser:{
 			phase:5
 			,isphase:function(doc,req){
 				// if we know that a verififed user is in our database, this 
 				// phase is applicable
-				return doc.triggered && doc.triggered.checkuser;
+				return doc.triggered && doc.triggered.checkuser && 
+					doc.triggered.checkuser.code == 404
+					;
 			},
 			action: function(){
 				doc.triggers = doc.triggers || {};
-				doc.triggers.setPass = {
-					path: doc.BaseUrl + "/_users/org.couchdb.user%3A" + encodeURIComponent(doc.id_token.email)
-					,headers:{"Authorization":localAuth}
-					,method:"PUT"
-					,start:0
+				doc.triggers.createUser = {
+					path: doc.BaseUrl + "/_users/org.couchdb.user%3A" + encodeURIComponent(doc.id_token.email),
+					//headers:{"Authorization":localAuth},
+					method: "PUT",
+					start: 0,
+					storepositive:true,
+					params: {
+						_id: "org.couchdb.user:" + doc.id_token.email,
+						name: doc.id_token.email,
+						roles: [],
+						type: "user",
+						password: doc.code,
+					},
 				};
-				switch(doc.triggered.checkuser.code){
-					case 200:
-						doc.triggers.setPass.params = JSON.parse(doc.triggered.checkuser.out);
-						break;
-					//case 404:
-					default:
-						doc.triggers.setPass.params = {
-							_id:"org.couchdb.user:" + doc.id_token.email
-							,name:doc.id_token.email
-							,roles:[]
-							,type:"user"
-						};
-						break;
-				}
-				doc.triggers.setPass.params.password = doc.code;
-
 			}
 			,resp:{
 				headers : {
 					"Content-Type" : "text/html"
 				}
-				,body : [""
-						,"<html>"
-						,"<style>.pagecenter{display:block; position:absolute; top:33%; transform:translateY(-50%); left:50%; transform:translateX(-50%); }</style>"
-						,"<body>"
-						,"<p class='pagecenter'>Logging in...</p>"
-						,"<form method='POST' action='./{{{_id}}}'>"
-						,"<input type='submit' value='waitmore' />"
-						,"</form>"
-						//,"<script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1000)</script>"
-						,"<table>"
-						," <tr><td>Email</td><td>"+token.email+"</td></tr>"
-						," <tr><td>Sub</td><td>"+token.sub+"</td></tr>"
-						," <tr><td>Verified</td><td>"+token.email_verified+"</tr>"
-						,"</table>",
-						"<pre>{{debug.doc}}</pre><hr />",
+				,body : [
+						"<html>",
+						"<style>.pagecenter{display:block; position:absolute; top:33%; transform:translateY(-50%); left:50%; transform:translateX(-50%); }</style>",
+						"<body>",
+						"<p class='pagecenter'>Verified with {{{authsource}}}.</p>",
+						"<form method='POST' action='./{{{_id}}}'>",
+						"{{#debug}}<input type='submit' value='waitmore' />{{/debug}}",
+						"</form>",
+						"{{^debug}}<script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1000)</script>{{/debug}}",
+						"{{#debug}}",
+						"<table>",
+						" <tr><td>Email</td><td>{{doc.id_token.email}}</td></tr>",
+						" <tr><td>Sub</td><td>{{doc.id_token.sub}}</td></tr>",
+						" <tr><td>Verified</td><td>{{doc.id_token.email_verified}}</td></tr>",
+						"</table>",
+						"<hr />",
+						"<pre>{{debug.doc}}</pre>",
+						"<hr />",
 						"<pre>{{debug.req}}</pre>",
+						"{{/debug}}",
+						"</body></html></html>"
+					].join('\n')
+			}
+		}
+		,getuser:{
+			phase:6
+			,isphase:function(doc,req){
+				return (doc.triggered && doc.triggered.checkuser && doc.triggered.checkuser.code != 404) ||
+					(doc.triggered && doc.triggered.createUser)
+					;
+			},
+			action: function(){
+				doc.triggers = doc.triggers || {};
+				doc.triggers.getUser = {
+					path: doc.BaseUrl + "/_users/org.couchdb.user%3A" + encodeURIComponent(doc.id_token.email),
+					//headers:{"Authorization":localAuth},
+					method: "GET",
+					start: 0,
+					storepositive:true,
+				};
+			}
+			,resp:{
+				headers : {
+					"Content-Type" : "text/html"
+				}
+				,body : [
+						"<html>",
+						"<style>.pagecenter{display:block; position:absolute; top:33%; transform:translateY(-50%); left:50%; transform:translateX(-50%); }</style>",
+						"<body>",
+						"<p class='pagecenter'>Logging in...</p>",
+						"<form method='POST' action='./{{{_id}}}'>",
+						"{{#debug}}<input type='submit' value='waitmore' />{{/debug}}",
+						"</form>",
+						"{{^debug}}<script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1000)</script>{{/debug}}",
+						"{{#debug}}",
+						"<table>",
+						" <tr><td>Email</td><td>{{doc.id_token.email}}</td></tr>",
+						" <tr><td>Sub</td><td>{{doc.id_token.sub}}</td></tr>",
+						" <tr><td>Verified</td><td>{{doc.id_token.email_verified}}</td></tr>",
+						"</table>",
+						"<hr />",
+						"<pre>{{debug.doc}}</pre>",
+						"<hr />",
+						"<pre>{{debug.req}}</pre>",
+						"{{/debug}}",
 						"</body></html></html>"
 					].join('\n')
 			}
 		}
 		,dologin:{
-			phase:6
+			phase:7
 			,isphase:function(doc,req){
-				return doc.triggered && doc.triggered.setPass;
+				return (doc.triggered && doc.triggered.getUser);
 			},
-			action : function(){
-				doc.setpass = doc.triggered.setPass.code;
-				doc.canDelete = true;
-				//if(doc.triggered.setPass.code !== 200){
-				//	
-				//}
-				// TODO: username/password == doc.id_token.sub / doc.code
+			action: function(){
 			}
-			,resp:{
-				headers : {
-					"Content-Type" : "text/html"
-				}
-				,body : [""
-						,"<html>"
-						,"<style>.pagecenter{display:block; position:absolute; top:33%; transform:translateY(-50%); left:50%; transform:translateX(-50%); }</style>"
-						,"<body>"
-						,"<p class='pagecenter'>Logging in</p>"
-						,"<form method='POST' action='/_session?next=/catchmap'>"
-						," <input type='hidden' name='next' value='{{{BaseUrl}}}' />"
-						," <input type='hidden' name='name'     value='{{{id_token.email}}}' />"
-						," <input type='hidden' name='password' value='{{{code}}}' />"
-						," <input type='submit' value='Try logging in ' />"
-						,"</form>"
-						,"{{^debug}}<script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1)</script>{{/debug}}"
-						,"<table>"
-						," <tr><td>Email</td><td>"+token.email+"</td></tr>"
-						," <tr><td>Sub</td><td>"+token.sub+"</td></tr>"
-						," <tr><td>Verified</td><td>"+token.email_verified+"</tr>"
-						,"</table>",
-						"<pre>{{debug.doc}}</pre><hr />",
-						"<pre>{{debug.req}}</pre>",
-						"</body></html></html>"
-					].join('\n')
+			,resp: function(){
+				const signin = require('lib/signin').signin;
+				var user = JSON.parse(doc.triggered.getUser.out);
+				var cookie = signin(user,req,'WOUpQ37Vcfz4cV8rTewKGwypbnJ5UT');
+				return cookie;
 			}
 		}
 	};
 	
 	
+	doc.sortedPhases = '';
+	var phase = null;
 	// sort them in descending order. We want to test things closest to 
 	// completion as possible first.
 	var sortedPhases = Object
@@ -392,8 +414,6 @@ function (doc,req){ // jshint ignore:line
 		.sort(function(a,b){return b.phase - a.phase;})
 		;
 	// find the most relevant phase
-	var phase = null;
-	doc.sortedPhases = '';
 	for(var p in sortedPhases){
 		doc.sortedPhases += p + ',';
 		phase = sortedPhases[p];
@@ -403,14 +423,9 @@ function (doc,req){ // jshint ignore:line
 	}
 	phase.action();
 	doc.phase = phase.phase;
-
-	/** DEAD
-	if(doc.id_token){
-		token.email = doc.id_token.email;
-		token.sub = doc.id_token.sub;
-		token.email_verified = doc.id_token.email_verified;
-	}
-	*/
+	
+	if(typeof phase.resp === 'function') phase.resp = phase.resp();
+	if(typeof phase.resp.body === 'object') phase.resp.body = JSON.stringify(phase.resp.body);
 	
 	if(doc.debug) [doc,req].forEach(function(d){
 			phase.resp.body += "<pre>"+JSON.stringify(d,null,'\t')+"</pre><hr />";

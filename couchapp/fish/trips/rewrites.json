@@ -38,26 +38,12 @@
 		"query":{}
 	},
 	{
-		"comment":["Futon"],
-		"from": "/_utils/*",
-		"to":"../../../_utils/*",
-		"method":"*"
-	},
-	{
 		"comment":["Underlying couch service."],
 		"from":"-/",
 		"to":"../../../",
 		"method":"*",
 		"query":{}
 	},
-	{
-		"comment":["Underlying couch service."],
-		"from":"-/*",
-		"to":"../../../*",
-		"method":"*",
-		"query":{}
-	},
-	
 	
 	
 	
@@ -65,12 +51,6 @@
 		"from": "/catches",
 		"to": "_list/catches/catches",
 		"method": "GET",
-		"query": {}
-	},
-	{
-		"from": "/_session",
-		"to": "../../../_session",
-		"method": "*",
 		"query": {}
 	},
 	
@@ -104,6 +84,11 @@
 		"method": "*",
 		"query": {}
 	},
+
+
+	
+	
+	
 	{
 		"from":"/catchmap",
 		"to":"_list/catches/catches",
@@ -178,12 +163,6 @@
 		"from": "/401.html",
 		"to": "401.html",
 		"method": "GET",
-		"query": {}
-	},
-	{
-		"from": "/*",
-		"to": "404.html",
-		"method": "*",
 		"query": {}
 	}
 ]
