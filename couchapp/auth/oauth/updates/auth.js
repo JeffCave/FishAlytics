@@ -160,7 +160,7 @@ function (doc,req){ // jshint ignore:line
 					].join('\n')
 			}
 		}
-		,confirmWithOnAuthSource: {
+		,confirmWithOAuthSource: {
 			phase:2
 			,isphase:function(doc,req){
 				// This phase can handle it if the user has returned with a code
@@ -171,8 +171,10 @@ function (doc,req){ // jshint ignore:line
 				//doc = JSON.parse(req.form.state);
 				if(req.form.state){
 					doc.authsource = JSON.parse(req.form.state).authsource;
+					doc.next = JSON.parse(req.form.state).next;
 				}
-				doc.triggers = {verify:{
+				doc.triggers = doc.triggers || {};
+				doc.triggers.verify = {
 					path:"https://accounts.google.com/o/oauth2/token"
 					,headers:{'content-type':'application/x-www-form-urlencoded'}
 					,method:"POST"
@@ -186,7 +188,7 @@ function (doc,req){ // jshint ignore:line
 						redirect_uri: (doc.BaseUrl + "/auth"),
 						grant_type:"authorization_code",
 					}
-				}};
+				};
 
 			}
 			,resp: {
@@ -404,6 +406,11 @@ function (doc,req){ // jshint ignore:line
 				const signin = require('lib/signin').signin;
 				var user = JSON.parse(doc.triggered.getUser.out);
 				var cookie = signin(user,req,'WOUpQ37Vcfz4cV8rTewKGwypbnJ5UT');
+				if(doc.next){
+					cookie.code = 303;
+					cookie.headers.Status = "303";
+					cookie.headers.Location = doc.next;
+				}
 				return cookie;
 			}
 		}

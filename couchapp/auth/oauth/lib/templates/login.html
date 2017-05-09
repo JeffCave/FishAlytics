@@ -88,7 +88,7 @@
    <fieldset id='local' style='display:none;'>
     <input type='email'    name='name' placeholder='myemail@example.com' />
     <input type='password' name='password' />
-    <input type='submit'   name='authsource' value='Local' onclick='document.getElementById("mainform").action="_session";' />
+    <input type='submit'   name='authsource' value='Local' onclick='document.getElementById("mainform").action="_session?next={{next}}";' />
    </fieldset>
    <script>
 	function toggleLocalLogin(){
