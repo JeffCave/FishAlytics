@@ -36,7 +36,6 @@ module.exports = function(grunt) {
 			options: {
 				ignores: [
 					'couchapp/**/lib/**/*.js',
-					'couchapp/_users/_auth/*',
 					'couchapp/fish/trips/_attachments/intro/**',
 					'couchapp/fish/trips/_attachments/scripts/regression.js',
 					'couchapp/fish/trips/_attachments/scripts/leaflet.js',
@@ -61,9 +60,8 @@ module.exports = function(grunt) {
 					'bin/fish/alldata.json': 'couchapp/fish/alldata',
 					'bin/fish/licenses.json': 'couchapp/fish/licenses',
 					'bin/fish/trips.json': 'couchapp/fish/trips',
-					'bin/_users/_auth.json': 'couchapp/_users/_auth',
-					'bin/_users/oauth.json': 'couchapp/_users/oauth',
-					'bin/_users/trigger.json' : 'couchapp/_users/trigger',
+					'bin/auth/oauth.json': 'couchapp/auth/oauth',
+					'bin/auth/trigger.json' : 'couchapp/auth/trigger',
 				}
 			}
 		},
@@ -78,10 +76,9 @@ module.exports = function(grunt) {
 							'bin/fish/trips.json',
 						];
 					
-					f[grunt.config.get('target').url + '_users'] = [
-							'bin/_users/_auth.json',
-							'bin/_users/oauth.json',
-							'bin/_users/trigger.json',
+					f[grunt.config.get('target').url + 'auth'] = [
+							'bin/auth/oauth.json',
+							'bin/auth/trigger.json',
 						];
 					return f;
 				})()
@@ -136,8 +133,6 @@ module.exports = function(grunt) {
 			'239959269801-rc9sbujsr5gv4gm43ecsavjk6s149ug7.apps.googleusercontent.com':oauth.google.client_id || '{**GOOGLECLIENTID**}',
 			'QyYKQRBx7HuKI-q11oJnkK-d':oauth.google.client_secret || '{**GOOGLESECRETKEY**}',
 			'WOUpQ37Vcfz4cV8rTewKGwypbnJ5UT':oauth.secret || '{**SECRETKEY**}',
-			//'../../_session': (grunt.config.get('isProd') ? '../' : '') + '../../_session',
-			//'../../_users': (grunt.config.get('isProd') ? '../' : '') + '../../_users',
 		};
 		const child = require('child_process');
 		grunt.file.expand('bin/**/*.json').forEach(function(file) {

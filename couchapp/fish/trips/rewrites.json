@@ -68,19 +68,19 @@
 	},
 	{
 		"from": "/auth",
-		"to": "../../../_users/_design/oauth/_show/auth/",
+		"to": "../../../auth/_design/oauth/_show/auth/",
 		"method": "GET",
 		"query": {}
 	},
 	{
 		"from": "/auth",
-		"to": "../../../_users/_design/oauth/_update/auth",
+		"to": "../../../auth/_design/oauth/_update/auth",
 		"method": "*",
 		"query": {}
 	},
 	{
 		"from": "/auth/:key",
-		"to": "../../../_users/_design/oauth/_update/auth/:key",
+		"to": "../../../auth/_design/oauth/_update/auth/:key",
 		"method": "*",
 		"query": {}
 	},

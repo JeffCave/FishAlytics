@@ -21,7 +21,7 @@ function (doc,req){ // jshint ignore:line
 	
 	if(!doc){
 		doc = {
-			debug : {},
+			//debug : {},
 			_id : "auth." + req.uuid
 			,phase:0
 			,meta:{
@@ -31,13 +31,16 @@ function (doc,req){ // jshint ignore:line
 			,BaseUrl : utils.getBaseUrl(req)
 			,expires:timestamp + 1000*60
 			,triggers:{
-			//	expire:{
-			//		path:"auth." + req.uuid
-			//		,method:"DELETE"
-			//		,start:1000*60*60
-			//	}
+				expire:{
+					path:"auth." + req.uuid
+					,method:"DELETE"
+					,start:1000*60*60
+				}
 			}
 		};
+		if(doc.debug){
+			delete doc.triggers.expire;
+		}
 	}
 	
 	
@@ -166,6 +169,9 @@ function (doc,req){ // jshint ignore:line
 			},
 			action: function(){
 				//doc = JSON.parse(req.form.state);
+				if(req.form.state){
+					doc.authsource = JSON.parse(req.form.state).authsource;
+				}
 				doc.triggers = {verify:{
 					path:"https://accounts.google.com/o/oauth2/token"
 					,headers:{'content-type':'application/x-www-form-urlencoded'}
@@ -193,7 +199,7 @@ function (doc,req){ // jshint ignore:line
 						,"<body>"
 						,"<form method='POST' action='{{{BaseUrl}}}/auth/{{{_id}}}'>"
 						,"<p class='pagecenter'>Verifying with {{{authsource}}}...</p>"
-						,"<input type='submit' value='waitmore' />"
+						,"{{#debug}}<input type='submit' value='waitmore' />{{/debug}}"
 						,"</form>",
 						"{{^debug}}<script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1000)</script>{{/debug}}",
 						"</body></html></html>"
@@ -223,9 +229,9 @@ function (doc,req){ // jshint ignore:line
 						,"<style>.pagecenter{display:block; position:absolute; top:33%; transform:translateY(-50%); left:50%; transform:translateX(-50%); }</style>"
 						,"<body>"
 						,"<form method='POST' action='{{{BaseUrl}}}/auth/{{{_id}}}'>"
-						,"<p class='pagecenter'>Verifying with {{{authsource}}}....</p>"
-						,"<input type='submit' value='waitmore' />"
-						,"</form>",
+						,"<p class='pagecenter'>Verifying with {{{authsource}}}....</p>",
+						"{{#debug}}<input type='submit' value='waitmore' />{{/debug}}",
+						"</form>",
 						"{{^debug}}<script>setTimeout(function(){document.getElementsByTagName('form')[0].submit();},1000)</script>{{/debug}}",
 						"{{#debug}}",
 						"<pre>{{doc}}</pre><hr />",
