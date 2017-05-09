@@ -1,0 +1,13 @@
+<html>
+<body style='display:none;'>
+<form method='POST' action='{{{action}}}'>
+ <input type='submit' value='Manual Submit' />
+ {{#params}}
+ <input type='hidden' name='{{key}}' value='{{val}}' />
+ {{/params}}
+</form>
+<script>
+	document.getElementsByTagName('form')[0].submit();
+</script>
+</body>
+</html>
